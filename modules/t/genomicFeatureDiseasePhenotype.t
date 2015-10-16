@@ -14,7 +14,6 @@ use strict;
 use warnings;
 
 use Test::More;
-use Bio::EnsEMBL::G2P::GenomicFeatureDisease;
 use Bio::EnsEMBL::Test::MultiTestDB;
 use Bio::EnsEMBL::Test::TestUtils;
 
@@ -23,23 +22,26 @@ my $multi = Bio::EnsEMBL::Test::MultiTestDB->new('homo_sapiens');
 my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePhenotypeAdaptor;
-my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor'), 'isa GenomicFeatureDiseasePhenotypeAdaptor');
 
-my $GFDP_id = 997;
+my $GFDP_id = 3184;
+my $GFD_id = 204; 
+my $phenotype_id = 365;
 
-my $GFDP = $gfdpa->fetch_by_dbID($GFDP_id);
-ok($GFDP->dbID == $GFDP_id, 'fetch_by_dbID');
+my $GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
+  -GFD_phenotype_id => $GFDP_id,
+  -genomic_feature_disease_id => $GFD_id,
+  -phenotype_id => $phenotype_id,
+  -adaptor => $gfdpa,
+); 
 
-my $GFD_id = 49; 
-my $phenotype_id = 2534;
-$GFDP = $gfdpa->fetch_by_GFD_id_phenotype_id($GFD_id, $phenotype_id);
-ok($GFDP->dbID == $GFDP_id, 'fetch_by_GFD_id_phenotype_id');
-
-my $GFD = $gfda->fetch_by_dbID($GFD_id);
-my $GFDPs = $gfdpa->fetch_all_by_GenomicFeatureDisease($GFD);
-ok(scalar @$GFDPs == 34, 'fetch_all_by_GenomicFeatureDisease');
+my $GFD = $GFDP->get_GenomicFeatureDisease();
+ok($GFD->dbID == $GFD_id, 'get_GenomicFeatureDisease');
+my $phenotype = $GFDP->get_Phenotype();
+ok($phenotype->dbID == $phenotype_id, 'get_Phenotype');
+my $GFDPComments = $GFDP->get_all_GFDPhenotypeComments();
+ok(scalar @$GFDPComments == 1, 'get_all_GFDPhenotypeComments');
 
 done_testing();
 1;
