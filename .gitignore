@@ -1,1 +1,3 @@
 /modules/t/MultiTestDB.conf
+/modules/t/CLEAN.t
+/modules/t/homo_sapiens.MultiTestDB.frozen.conf
