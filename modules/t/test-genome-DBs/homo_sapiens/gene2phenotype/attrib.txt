@@ -33,3 +33,9 @@
 33	3	possible DD gene
 34	3	probable DD gene
 35	3	child IF
+36	4	ALL
+37	4	Cardiac
+38	4	DD
+39	4	Ear
+40	4	Eye
+41	4	Skin

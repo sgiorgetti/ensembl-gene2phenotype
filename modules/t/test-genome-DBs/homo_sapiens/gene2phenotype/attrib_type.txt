@@ -1,3 +1,4 @@
 1	allelic_requirement	Allelic requirement	Allelic requirement
 2	mutation_consequence	Mutation consequence	Mutation consequence
 3	DDD_Category	DDD category	DDD category
+4	g2p_panel	G2P panel	G2P panel
