@@ -1,0 +1,5 @@
+1	user1	user1@ebi.ac.uk	38
+2	user2	user2@ebi.ac.uk	38
+3	user3	user3@ebi.ac.uk	38
+4	user4	user4@ebi.ac.uk	38
+5	user5	user5@ebi.ac.uk	38

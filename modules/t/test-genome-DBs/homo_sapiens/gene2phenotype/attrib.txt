@@ -1,0 +1,35 @@
+1	1	monoallelic (autosome)
+2	1	monoallelic (autosome; obligate mosaic)
+3	1	biallelic
+4	1	monoallelic (X; heterozygous)
+5	1	monoallelic (X; hemizygous)
+6	1	monoallelic (Y)
+7	1	mtDNA (homoplasmic)
+8	1	mtDNA (heteroplasmic)
+9	1	digenic (biallelic)
+10	1	digenic (triallelic)
+11	1	digenic (tetra-allelic)
+12	1	imprinted
+13	1	uncertain
+14	1	monoallelic
+15	1	hemizygous
+16	1	x-linked dominant
+17	1	x-linked over-dominance
+18	1	mosaic
+19	1	mitochondrial
+20	1	digenic
+21	2	5_prime or 3_prime UTR mutation
+22	2	all missense/in frame
+23	2	cis-regulatory or promotor mutation
+24	2	dominant negative
+25	2	loss of function
+26	2	uncertain
+27	2	activating
+28	2	increased gene dosage
+29	2	part of contiguous gene duplication
+30	2	part of contiguous genomic interval deletion
+31	3	both DD and IF
+32	3	confirmed DD gene
+33	3	possible DD gene
+34	3	probable DD gene
+35	3	child IF

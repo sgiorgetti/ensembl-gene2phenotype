@@ -1,0 +1,24 @@
+464	7874117	A single amino acid substitution (G103D) in the type II collagen triple helix produces Kniest dysplasia.	Hum Mol Genet. 3: 1999-2003, 1994.
+721	15930420	Type II collagen gene variants and inherited osteonecrosis of the femoral head.	N Engl J Med. 352: 2294-2301, 2005.
+1407	1429602	An amino acid substitution (Gly853-->Glu) in the collagen alpha 1(II) chain produces hypochondrogenesis.	J Biol Chem. 267: 22522-22526, 1992.
+4190	21671384	Avascular necrosis of the femoral head due to a novel C propeptide mutation in COL2A1.	Am J Med Genet A. 155A: 1759-1762, 2011.
+5508	3195588	Type II achondrogenesis-hypochondrogenesis: identification of abnormal type II collagen.	Am J Hum Genet. 43: 904-913, 1988.
+8177	7757081	A radiographic, morphologic, biochemical and molecular analysis of a case of achondrogenesis type II resulting from substitution for a glycine residue (Gly691-->Arg) in the type II collagen trimer.	Hum Mol Genet. 4: 285-288, 1995.
+8249	15671297	A novel mutation of COL2A1 resulting in dominantly inherited rhegmatogenous retinal detachment.	Invest Ophthalmol Vis Sci. 46: 663-668, 2005.
+10742	8325895	Characterization of an arginine 789 to cysteine substitution in alpha 1 (II) collagen chains of a patient with spondyloepiphyseal dysplasia.	J Biol Chem. 268: 15238-15245, 1993.
+11068	7550321	Dominant mutations in the type II collagen gene, COL2A1, produce spondyloepimetaphyseal dysplasia, Strudwick type.	Nat Genet. 11: 87-89, 1995.
+11777	16088915	Novel amino acid substitution in the Y-position of collagen type II causes spondyloepimetaphyseal dysplasia congenita.	Am J Med Genet A. 137A: 292-297, 2005.
+12177	7981752	Kniest and Stickler dysplasia phenotypes caused by collagen type II gene (COL2A1) defect.	Nat Genet. 3: 323-326, 1993.
+15257	14729840	Identification of COL2A1 mutations in platyspondylic skeletal dysplasia, Torrance type.	J Med Genet. 41: 75-79, 2004.
+15911	15316962	Spondyloperipheral dysplasia is caused by truncating mutations in the C-propeptide of COL2A1.	Am J Med Genet A. 129A: 144-148, 2004.
+17174	16752401	High efficiency of mutation detection in type 1 stickler syndrome using a two-stage approach: vitreoretinal assessment coupled with exon sequencing for screening COL2A1.	Hum Mutat. 27: 696-704, 2006.
+19102	2339128	Tandem duplication within a type II collagen gene (COL2A1) exon in an individual with spondyloepiphyseal dysplasia.	Proc Natl Acad Sci U S A. 87: 3889-3893, 1990.
+19404	2543071	Identification of the molecular defect in a family with spondyloepiphyseal dysplasia.	Science. 244: 978-980, 1989.
+20634	15054848	Recurrence of achondrogenesis type II within the same family: evidence for germline mosaicism.	Am J Med Genet A. 126A: 308-312, 2004.
+21104	17721977	Missense and nonsense mutations in the alternatively-spliced exon 2 of COL2A1 cause the ocular variant of Stickler syndrome.	Hum Mutat. 29: 83-90, 2008.
+23387	8723097	A specific collagen type II gene (COL2A1) mutation presenting as spondyloperipheral dysplasia.	Am J Med Genet. 63: 123-128, 1996.
+23730	8423604	The clinical features of spondyloepiphyseal dysplasia congenita resulting from the substitution of glycine 997 by serine in the alpha 1(II) chain of type II collagen.	J Med Genet. 30: 27-35, 1993.
+23836	7829510	A COL2A1 mutation in achondrogenesis type II results in the replacement of type II collagen by type I and III collagens in cartilage.	J Biol Chem. 270: 1747-1753, 1995.
+23889	7849719	Alternative splicing as the result of a type II procollagen gene (COL2A1) mutation in a patient with Kniest dysplasia.	Hum Mol Genet. 3: 1891-1893, 1994.
+24096	8486375	A mutation in the amino-terminal end of the triple helix of type II collagen causing severe osteochondrodysplasia.	Genomics. 16: 282-285, 1993.
+24247	1374906	Characterization of a type II collagen gene (COL2A1) mutation identified in cultured chondrocytes from human hypochondrogenesis.	Proc Natl Acad Sci U S A. 89: 4583-4587, 1992.
