@@ -40,8 +40,8 @@ sub fetch_by_GFD_id_publication_id {
 sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
   my $GFD = shift;
-  if (!ref($GFD) || !$GFD->isa('G2P::GenomicFeatureDisease')) {
-    die('G2P::GenomicFeatureDisease arg expected');
+  if (!ref($GFD) || !$GFD->isa('Bio::EnsEMBL::G2P::GenomicFeatureDisease')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDisease arg expected');
   }
   my $GFD_id = $GFD->dbID;
   my $constraint = "gfdp.genomic_feature_disease_id=$GFD_id"; 

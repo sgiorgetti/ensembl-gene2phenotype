@@ -86,6 +86,4 @@ sub _objs_from_sth {
   return \@objs;
 }
 
-
 1;
-

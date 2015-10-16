@@ -87,7 +87,7 @@ sub _objs_from_sth {
   my @objs;
   while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::Phenotype->new(
-      -phenoype_id => $phenotype_id,
+      -phenotype_id => $phenotype_id,
       -stable_id => $stable_id,
       -name => $name, 
       -adaptor => $self,
