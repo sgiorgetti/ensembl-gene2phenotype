@@ -44,7 +44,7 @@ sub dbID {
 
 sub get_GenomicFeatureDisease {
   my $self = shift;
-  my $genomic_feature_disease_adaptor = $self->{adaptor}->db->get_GenomicFetaureDiseaseAdaptor;
+  my $genomic_feature_disease_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseAdaptor;
   return $genomic_feature_disease_adaptor->fetch_by_dbID($self->{genomic_feature_disease_id});
 }
 

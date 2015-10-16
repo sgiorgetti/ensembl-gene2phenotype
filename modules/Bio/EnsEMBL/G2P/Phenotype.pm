@@ -40,6 +40,7 @@ sub new {
 
 sub dbID {
   my $self = shift;
+  $self->{phenotype_id} = shift if @_;
   return $self->{phenotype_id};
 }
 

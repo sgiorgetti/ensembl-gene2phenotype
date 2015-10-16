@@ -25,7 +25,7 @@ sub new {
   my $class = ref($caller) || $caller;
 
   my ($genomic_feature_disease_action_id, $genomic_feature_disease_id, $allelic_requirement_attrib, $allelic_requirement, $mutation_consequence_attrib, $mutation_consequence, $adaptor) =
-    rearrange(['genomic_feature_disease_action_id', 'genomic_feature_disease_id', 'allelic_requirement_attrib', 'allelic_requirement', 'mutation_consequence_attrib', 'mutation_consequence' , 'ADAPTOR'], @_);
+    rearrange(['genomic_feature_disease_action_id', 'genomic_feature_disease_id', 'allelic_requirement_attrib', 'allelic_requirement', 'mutation_consequence_attrib', 'mutation_consequence' , 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_action_id,
