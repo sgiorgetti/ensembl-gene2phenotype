@@ -34,14 +34,14 @@ sub fetch_by_dbID {
 sub fetch_by_name {
   my $self = shift;
   my $name = shift;
-  my $constraint = "o.name='$name'";
+  my $constraint = "o.organ_specificity='$name'";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];
 }
 
 sub fetch_all {
   my $self = shift;
-  return $self->generic_fetch_all();
+  return $self->generic_fetch();
 }
 
 sub _columns {
