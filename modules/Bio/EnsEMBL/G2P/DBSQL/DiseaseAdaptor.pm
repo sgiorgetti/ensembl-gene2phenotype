@@ -20,6 +20,31 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $disease = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO disease (
+      name,
+      mim
+    ) VALUES (?, ?)
+  });
+
+  $sth->execute(
+    $disease->name,
+    $disease->mim || undef,
+  );
+
+  $sth->finish();
+  
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'disease', 'disease_id');
+  $disease->{disease_id} = $dbID;
+  return $disease;
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $disease_id = shift;
