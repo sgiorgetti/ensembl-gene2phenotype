@@ -37,6 +37,12 @@ sub new {
   return $self;
 }
 
+sub dbID {
+  my $self = shift;
+  $self->{user_id} = shift if ( @_ );
+  return $self->{user_id};
+}
+
 sub user_id {
   my $self = shift;
   return $self->{user_id};
@@ -44,16 +50,19 @@ sub user_id {
 
 sub username {
   my $self = shift;
+  $self->{username} = shift if ( @_ );
   return $self->{username};
 }
 
 sub email {
   my $self = shift;
+  $self->{email} = shift if ( @_ );
   return $self->{email};
 }
 
 sub panel {
   my $self = shift;
+  $self->{panel} = shift if ( @_ );
   return $self->{panel};
 }
 
