@@ -22,7 +22,7 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 sub fetch_by_publication_id {
   my $self = shift;
   my $publication_id = shift;
-  return $self->SUPER::fetch_by_dbID();  
+  return $self->SUPER::fetch_by_dbID($publication_id);
 }
 
 sub fetch_by_dbID {
@@ -36,6 +36,7 @@ sub fetch_by_PMID {
   my $pmid = shift;
   my $constraint = "p.pmid=$pmid";
   my $result = $self->generic_fetch($constraint);
+  return $result->[0];
 }
 
 sub _columns {
