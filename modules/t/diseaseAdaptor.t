@@ -48,5 +48,10 @@ ok($da->store($disease), 'store');
 $disease = $da->fetch_by_name('disease_name');
 ok($disease && $disease->name eq 'disease_name', 'fetch stored');
 
+$disease->name('update_name');
+ok($da->update($disease), 'update');
+$disease = $da->fetch_by_name('update_name');
+ok($disease && $disease->name eq 'update_name', 'fetch updated');
+
 done_testing();
 1;
