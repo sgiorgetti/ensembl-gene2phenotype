@@ -23,7 +23,6 @@ sub fetch_by_organ_id {
   my $self = shift;
   my $organ_id = shift;
   return $self->SUPER::fetch_by_dbID($organ_id);
-
 }
 
 sub fetch_by_dbID {
@@ -48,8 +47,8 @@ sub fetch_all {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'o.organ_id',
-    'o.name',
+    'o.organ_specificity_id',
+    'o.organ_specificity',
   );
   return @cols;
 }
@@ -57,7 +56,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-    ['organ', 'o'],
+    ['organ_specificity', 'o'],
   );
   return @tables;
 }
