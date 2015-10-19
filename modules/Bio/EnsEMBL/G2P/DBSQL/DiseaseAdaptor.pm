@@ -45,6 +45,31 @@ sub store {
   return $disease;
 }
 
+sub update {
+  my $self = shift;
+  my $disease = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($disease) || !$disease->isa('Bio::EnsEMBL::G2P::Disease')) {
+    die ('Bio::EnsEMBL::G2P::Disease arg expected');
+  }
+  
+  my $sth = $dbh->prepare(q{
+    UPDATE disease
+      SET name = ?,
+          mim = ?
+      WHERE disease_id = ?
+  });
+  $sth->execute(
+    $disease->name,
+    $disease->mim,
+    $disease->dbID
+  ); 
+  $sth->finish();
+
+  return $disease;
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $disease_id = shift;
