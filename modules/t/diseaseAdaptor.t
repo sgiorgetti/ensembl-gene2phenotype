@@ -38,5 +38,15 @@ ok($disease->dbID == $dbID, 'fetch_by_name');
 $disease = $da->fetch_by_mim($mim); 
 ok($disease->name eq $name, 'fetch_by_mim');
 
+$disease = Bio::EnsEMBL::G2P::Disease->new(
+  -name => 'disease_name',
+  -mim => 12345,
+);
+
+ok($da->store($disease), 'store');
+
+$disease = $da->fetch_by_name('disease_name');
+ok($disease && $disease->name eq 'disease_name', 'fetch stored');
+
 done_testing();
 1;
