@@ -56,7 +56,7 @@ sub fetch_by_name {
 
 sub fetch_all {
   my $self = shift;
-  return $self->fetch_all();
+  return $self->generic_fetch();
 }
 
 sub _columns {
