@@ -19,12 +19,60 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::Phenotype;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
-
 sub store {
+  my $self = shift;
+  my $phenotype = shift;  
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO phenotype (
+      stable_id,
+      name,
+      description
+    ) VALUES (?,?,?);
+  });
+  $sth->execute(
+    $phenotype->stable_id || undef,
+    $phenotype->name || undef,
+    $phenotype->description || undef,
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'phenotype', 'phenotype_id');
+  $phenotype->{phenotype_id} = $dbID;
+  return $phenotype;
 }
 
 sub update {
+  my $self = shift;
+  my $phenotype = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($phenotype) || !$phenotype->isa('Bio::EnsEMBL::G2P::Phenotype')) {
+    die('Bio::EnsEMBL::G2P::Phenotype arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    UPDATE phenotype
+      SET stable_id = ?,
+          name = ?,
+          description = ?
+      WHERE phenotype_id = ? 
+  });
+  $sth->execute(
+    $phenotype->{stable_id},
+    $phenotype->{name},
+    $phenotype->{description},
+    $phenotype->dbID
+  );
+  $sth->finish();
+
+  return $phenotype;
 }
+
+
 
 sub fetch_by_phenotype_id {
   my $self = shift;
