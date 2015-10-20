@@ -20,6 +20,55 @@ use Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $GFD_publication = shift;  
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_publication (
+      genomic_feature_disease_id,
+      publication_id
+    ) VALUES (?,?);
+  });
+  $sth->execute(
+    $GFD_publication->get_GenomicFeatureDisease()->dbID(),
+    $GFD_publication->get_Publication()->dbID()
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_publication', 'GFD_publication_id');
+  $GFD_publication->{GFD_publication_id} = $dbID;
+  return $GFD_publication;
+}
+
+sub delete {
+  my $self = shift;
+  my $GFDP = shift; 
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFDP) || !$GFDP->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication')) {
+    die ('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    DELETE FROM GFD_publication_comment WHERE GFD_publication_id = ?;
+  });
+  $sth->execute($GFDP->dbID);
+  $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease_publication WHERE GFD_publication_id = ?;
+  });
+  $sth->execute($GFDP->dbID);
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_publication_id = shift;
