@@ -40,5 +40,18 @@ ok($organ->name eq $name, 'fetch_by_name');
 my $organs = $oa->fetch_all();
 ok(scalar @$organs == 23, 'fetch_all');
 
+
+$organ = Bio::EnsEMBL::G2P::Organ->new(
+  -name => 'test_organ',
+  -adaptor => $oa,
+);
+  
+ok($oa->store($organ), 'store');
+
+$organ_id = $organ->{organ_specificity_id};
+
+my $dbh = $oa->dbc->db_handle;
+$dbh->do(qq{DELETE FROM organ_specificity WHERE organ_specificity_id=$organ_id;}) or die $dbh->errstr;
+
 done_testing();
 1;
