@@ -21,6 +21,117 @@ use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $gfd = shift;
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($gfd) || !$gfd->isa('Bio::EnsEMBL::G2P::GenomicFeatureDisease')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDisease arg expected');
+  }
+
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease(
+      genomic_feature_id,
+      disease_id,
+      DDD_category_attrib,
+      is_visible,
+      panel
+    ) VALUES (?, ?, ?, ?, ?)
+  });
+
+  $sth->execute(
+    $gfd->{genomic_feature_id},
+    $gfd->{disease_id},
+    $gfd->DDD_category_attrib || undef,
+    $gfd->is_visible || 1,
+    $gfd->panel,
+  );
+
+  $sth->finish();
+  
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease', 'genomic_feature_disease_id'); 
+  $gfd->{genomic_feature_disease_id} = $dbID;
+
+  $self->update_log($gfd, $user, 'create');
+
+  return $gfd;
+}
+
+sub update {
+  my $self = shift;
+  my $gfd = shift;
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($gfd) || !$gfd->isa('Bio::EnsEMBL::G2P::GenomicFeatureDisease')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDisease arg expected');
+  }
+
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    UPDATE genomic_feature_disease
+      SET genomic_feature_id = ?,
+          disease_id = ?,
+          DDD_category_attrib = ?,
+          is_visible = ?,
+          panel = ?
+      WHERE genomic_feature_disease_id = ? 
+  });
+  $sth->execute(
+    $gfd->genomic_feature_id,
+    $gfd->disease_id,
+    $gfd->DDD_category_attrib,
+    $gfd->is_visible,
+    $gfd->panel_attrib,
+    $gfd->dbID
+  );
+  $sth->finish();
+
+  $self->update_log($gfd, $user, 'update');
+
+  return $gfd;
+}
+
+sub update_log {
+  my $self = shift;
+  my $gfd = shift;
+  my $user = shift;
+  my $action = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_log(
+      genomic_feature_disease_id,
+      genomic_feature_id,
+      disease_id,
+      DDD_category_attrib,
+      is_visible,
+      created,
+      user_id,
+      action
+    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+  }); 
+  $sth->execute(
+    $gfd->dbID,
+    $gfd->genomic_feature_id,
+    $gfd->disease_id,
+    $gfd->DDD_category_attrib || undef,
+    $gfd->is_visible || 1,
+    $user->user_id,
+    $action
+  );
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $genomic_feature_disease_id = shift;
@@ -146,6 +257,7 @@ sub _objs_from_sth {
       -DDD_category_attrib => $DDD_category_attrib,
       -is_visible => $is_visible,
       -panel => $panel,
+      -panel_attrib => $panel_attrib,
       -adaptor => $self,
     );
     push(@objs, $obj);
