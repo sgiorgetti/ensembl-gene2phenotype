@@ -24,8 +24,8 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category, $DDD_category_attrib, $is_visible, $panel, $adaptor) =
-    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'DDD_category', 'DDD_category_attrib', 'is_visible', 'panel', 'adaptor'], @_);
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category, $DDD_category_attrib, $is_visible, $panel, $panel_attrib, $adaptor) =
+    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'DDD_category', 'DDD_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
@@ -37,6 +37,7 @@ sub new {
     'DDD_category_attrib' => $DDD_category_attrib,
     'is_visible' => $is_visible,
     'panel' => $panel,
+    'panel_attrib' => $panel_attrib,
   }, $class;
 
   return $self;
@@ -44,8 +45,8 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  $self->{dbID} = shift if ( @_ );
-  return $self->{dbID};
+  $self->{genomic_feature_disease_id} = shift if ( @_ );
+  return $self->{genomic_feature_disease_id};
 }
 
 sub genomic_feature_id {
@@ -62,10 +63,16 @@ sub disease_id {
 
 sub DDD_category {
   my $self = shift;
-  $self->{DDD_category} = shift if ( @_ );
-  if (!$self->{DDD_category} && $self->{DDD_category_attrib}) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    $self->{DDD_category} = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
+  my $DDD_category = shift;
+  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+  if ($DDD_category) {
+    $self->{DDD_category} = $DDD_category;
+    my $DDD_category_attrib = $attribute_adaptor->attrib_id_for_value($DDD_category);
+    $self->DDD_category_attrib($DDD_category_attrib);
+  } else {
+    if (!$self->{DDD_category} && $self->{DDD_category_attrib}) {
+      $self->{DDD_category} = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
+    }
   }
   return $self->{DDD_category};
 }
@@ -86,6 +93,12 @@ sub panel {
   my $self = shift;
   $self->{panel} = shift if ( @_ );
   return $self->{panel};
+}
+
+sub panel_attrib {
+  my $self = shift;
+  $self->{panel_attrib} = shift if ( @_ );
+  return $self->{panel_attrib};
 }
 
 sub get_all_GenomicFeatureDiseaseActions {
