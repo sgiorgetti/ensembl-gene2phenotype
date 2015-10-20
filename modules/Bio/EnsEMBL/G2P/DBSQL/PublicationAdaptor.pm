@@ -19,6 +19,32 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::Publication;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $publication = shift;  
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO publication (
+      pmid,
+      title,
+      source
+    ) VALUES (?,?,?);
+  });
+  $sth->execute(
+    $publication->pmid || undef,
+    $publication->title || undef,
+    $publication->source || undef,
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'publication', 'publication_id');
+  $publication->{publication_id} = $dbID;
+  return $publication;
+}
+
 sub fetch_by_publication_id {
   my $self = shift;
   my $publication_id = shift;
