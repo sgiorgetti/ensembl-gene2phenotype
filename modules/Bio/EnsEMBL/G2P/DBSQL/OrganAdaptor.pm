@@ -19,6 +19,28 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::Organ;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $organ = shift;  
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO organ_specificity (
+      organ_specificity
+    ) VALUES (?);
+  });
+  $sth->execute(
+    $organ->name || undef,
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'organ_specificity', 'organ_specificity_id');
+  $organ->{organ_specificity_id} = $dbID;
+  return $organ;
+}
+
 sub fetch_by_organ_id {
   my $self = shift;
   my $organ_id = shift;
