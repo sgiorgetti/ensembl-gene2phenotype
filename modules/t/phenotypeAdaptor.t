@@ -57,7 +57,5 @@ my $phenotype_id = $phenotype->{phenotype_id};
 my $dbh = $pa->dbc->db_handle;
 $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
 
-
-
 done_testing();
 1;
