@@ -20,6 +20,85 @@ use Bio::EnsEMBL::G2P::GFDPhenotypeComment;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $GFD_phenotype_comment = shift; 
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFD_phenotype_comment) || !$GFD_phenotype_comment->isa('Bio::EnsEMBL::G2P::GFDPhenotypeComment')) {
+    die ('Bio::EnsEMBL::G2P::GFDPhenotypeComment arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+ 
+  my $sth = $dbh->prepare(q{
+    INSERT INTO GFD_phenotype_comment (
+      GFD_phenotype_id,
+      comment_text,
+      created,
+      user_id
+    ) VALUES (?,?,CURRENT_TIMESTAMP,?)
+  });
+
+  $sth->execute(
+    $GFD_phenotype_comment->get_GFD_phenotype()->dbID(),
+    $GFD_phenotype_comment->comment_text,
+    $user->user_id 
+  );
+  $sth->finish();
+
+  my $dbID = $dbh->last_insert_id(undef, undef, 'GFD_phenotype_comment', 'GFD_phenotype_comment_id');
+
+  $GFD_phenotype_comment->{GFD_phenotype_comment_id} = $dbID;
+
+  return $GFD_phenotype_comment;
+}
+
+sub delete {
+  my $self = shift;
+  my $GFD_phenotype_comment = shift; 
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFD_phenotype_comment) || !$GFD_phenotype_comment->isa('Bio::EnsEMBL::G2P::GFDPhenotypeComment')) {
+    die ('Bio::EnsEMBL::G2P::GFDPhenotypeComment arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO GFD_phenotype_comment_deleted (
+      GFD_phenotype_id,
+      comment_text,
+      created,
+      user_id,
+      deleted,
+      deleted_by_user_id
+    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+  });
+
+  $sth->execute(
+    $GFD_phenotype_comment->GFD_phenotype_id,
+    $GFD_phenotype_comment->comment_text,
+    $GFD_phenotype_comment->created,
+    $GFD_phenotype_comment->{user_id},
+    $user->user_id
+  );
+  $sth->finish();
+
+  $sth = $dbh->prepare(q{
+    DELETE FROM GFD_phenotype_comment WHERE GFD_phenotype_comment_id = ?;
+  });
+  
+  $sth->execute($GFD_phenotype_comment->dbID);
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_phenotype_comment_id = shift;
