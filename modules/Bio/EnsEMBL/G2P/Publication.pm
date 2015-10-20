@@ -40,11 +40,13 @@ sub new {
 
 sub dbID {
   my $self = shift;
+  $self->{publication_id} = shift if @_;
   return $self->{publication_id};
 }
 
 sub publication_id {
   my $self = shift;
+  $self->{publication_id} = shift if @_;
   return $self->{publication_id};
 }
 
