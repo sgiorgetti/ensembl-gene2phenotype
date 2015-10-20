@@ -43,8 +43,8 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  $self->{dbID} = shift if @_;
-  return $self->{dbID};
+  $self->{genomic_feature_disease_action_id} = shift if @_;
+  return $self->{genomic_feature_disease_action_id};
 }
 
 sub genomic_feature_disease_id {
@@ -55,16 +55,26 @@ sub genomic_feature_disease_id {
 
 sub allelic_requirement {
   my $self = shift;
-  $self->{allelic_requirement} = shift if @_;
-  
-  if (!$self->{allelic_requirement} && $self->{allelic_requirement_attrib} ) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my @ids = split(',', $self->{allelic_requirement_attrib});
-    my @values = ();
-    foreach my $id (@ids) {
-      push @values, $attribute_adaptor->attrib_value_for_id($id);
+  my $allelic_requirement = shift;
+  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+
+  if ($allelic_requirement) {
+    my @values = split(',', $allelic_requirement); 
+    my @ids = ();
+    foreach my $value (@values) {
+      push @ids, $attribute_adaptor->attrib_id_for_value($value);
+    }        
+    $self->{allelic_requirement_attrib} = join(',', @ids);
+    $self->{allelic_requirement} = $allelic_requirement;
+  } else {
+    if (!$self->{allelic_requirement} && $self->{allelic_requirement_attrib} ) {
+      my @ids = split(',', $self->{allelic_requirement_attrib});
+      my @values = ();
+      foreach my $id (@ids) {
+        push @values, $attribute_adaptor->attrib_value_for_id($id);
+      }
+      $self->{allelic_requirement} = join(',', @values);
     }
-    $self->{allelic_requirement} = join(',', @values);
   }
   return $self->{allelic_requirement};
 }
@@ -77,11 +87,15 @@ sub allelic_requirement_attrib {
 
 sub mutation_consequence {
   my $self = shift;
-  $self->{mutation_consequence} = shift if @_;
-
-  if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    $self->{mutation_consequence} = $attribute_adaptor->attrib_value_for_id($self->{mutation_consequence_attrib});
+  my $mutation_consequence = shift;
+  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+  if ($mutation_consequence) {
+    $self->{mutation_consequence_attrib} = $attribute_adaptor->attrib_id_for_value($mutation_consequence);
+    $self->{mutation_consequence} = $mutation_consequence;
+  } else { 
+    if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
+      $self->{mutation_consequence} = $attribute_adaptor->attrib_value_for_id($self->{mutation_consequence_attrib});
+    }
   }
   return $self->{mutation_consequence};
 }
@@ -91,5 +105,8 @@ sub mutation_consequence_attrib {
   $self->{mutation_consequence_attrib} = shift if @_;
   return $self->{mutation_consequence_attrib};
 }
+
+
+
 
 1;
