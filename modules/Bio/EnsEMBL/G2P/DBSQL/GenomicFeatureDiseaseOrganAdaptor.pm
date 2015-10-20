@@ -19,6 +19,30 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $GFD_organ = shift;  
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_organ (
+      genomic_feature_disease_id,
+      organ_id
+    ) VALUES (?,?);
+  });
+  $sth->execute(
+    $GFD_organ->get_GenomicFeatureDisease()->dbID(),
+    $GFD_organ->get_Organ()->dbID()
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_organ', 'GFD_organ_id');
+  $GFD_organ->{GFD_organ_id} = $dbID;
+  return $GFD_organ;
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_organ_id = shift;
