@@ -58,5 +58,15 @@ ok($gf->gene_symbol eq 'COL2A1', 'get_GenomicFeature');
 my $disease = $gfd->get_Disease();
 ok($disease->name eq 'KNIEST DYSPLASIA (KD)', 'get_Disease');
 
+my $GFDPs = $gfd->get_all_GFDPublications();
+ok(scalar @$GFDPs == 3, 'get_all_GFDPublications');
+
+$GFDPs = $gfd->get_all_GFDPhenotypes();
+ok(scalar @$GFDPs == 34, 'get_all_GFDPhenotypes');
+
+my $GFDOs = $gfd->get_all_GFDOrgans();
+ok(@$GFDOs == 2, 'get_all_GFDOrgans');
+
 done_testing();
+
 1;
