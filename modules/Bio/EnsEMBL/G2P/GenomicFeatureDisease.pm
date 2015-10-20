@@ -125,14 +125,20 @@ sub get_all_Variations {
 
 sub get_all_GFDPublications {
   my $self = shift;
+  my $GFD_publication_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseasePublicationAdaptor;
+  return $GFD_publication_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
 sub get_all_GFDPhenotypes {
   my $self = shift;
+  my $GFD_phenotype_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseasePhenotypeAdaptor;
+  return $GFD_phenotype_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
 sub get_all_GFDOrgans {
   my $self = shift;
+  my $GFD_organ_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseOrganAdaptor;
+  return $GFD_organ_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
 1;
