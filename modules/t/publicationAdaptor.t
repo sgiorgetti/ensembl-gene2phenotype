@@ -37,5 +37,17 @@ ok($publication->dbID == $publication_id, 'fetch_by_dbID');
 $publication = $pa->fetch_by_PMID($pmid);
 ok($publication->pmid == $pmid, 'fetch_by_PMID');
 
+$publication = Bio::EnsEMBL::G2P::Publication->new(
+  -title => 'test_publication',
+  -adaptor => $pa,
+);
+
+ok($pa->store($publication), 'store');
+
+my $publication_id = $publication->{publication_id};
+
+my $dbh = $pa->dbc->db_handle;
+$dbh->do(qq{DELETE FROM publication WHERE publication_id=$publication_id;}) or die $dbh->errstr;
+
 done_testing();
 1;
