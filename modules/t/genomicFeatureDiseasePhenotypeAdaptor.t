@@ -24,6 +24,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePhenotypeAdaptor;
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
+my $pa = $g2pdb->get_PhenotypeAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor'), 'isa GenomicFeatureDiseasePhenotypeAdaptor');
 
@@ -40,6 +41,27 @@ ok($GFDP->dbID == $GFDP_id, 'fetch_by_GFD_id_phenotype_id');
 my $GFD = $gfda->fetch_by_dbID($GFD_id);
 my $GFDPs = $gfdpa->fetch_all_by_GenomicFeatureDisease($GFD);
 ok(scalar @$GFDPs == 34, 'fetch_all_by_GenomicFeatureDisease');
+
+my $phenotype = Bio::EnsEMBL::G2P::Phenotype->new(
+  -stable_id => 'HP:0000218',
+  -name => 'High palate',
+);
+
+$pa->store($phenotype);
+$phenotype_id = $phenotype->{phenotype_id};
+
+$GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
+  -genomic_feature_disease_id => 49,
+  -phenotype_id => $phenotype_id,
+  -adaptor => $gfdpa
+);
+
+ok($gfdpa->store($GFDP), 'store');
+$GFDP_id = $GFDP->{GFD_phenotype_id};
+
+my $dbh = $gfda->dbc->db_handle;
+$dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+$dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype WHERE GFD_phenotype_id=$GFDP_id;}) or die $dbh->errstr;
 
 done_testing();
 1;
