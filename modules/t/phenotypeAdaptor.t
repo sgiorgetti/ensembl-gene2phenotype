@@ -45,5 +45,19 @@ ok($phenotype->name eq $name, 'fetch_by_name');
 my $phenotypes = $pa->fetch_all();
 ok(scalar @$phenotypes == 125, 'fetch_all');
 
+$phenotype = Bio::EnsEMBL::G2P::Phenotype->new(
+  -name => 'test_phenotype',
+  -adaptor => $pa,
+);
+
+ok($pa->store($phenotype), 'store');
+
+my $phenotype_id = $phenotype->{phenotype_id};
+
+my $dbh = $pa->dbc->db_handle;
+$dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+
+
+
 done_testing();
 1;
