@@ -40,5 +40,18 @@ my $GFD = $gfda->fetch_by_dbID($GFD_id);
 my $GFDOs = $gfdoa->fetch_all_by_GenomicFeatureDisease($GFD);
 ok(scalar @$GFDOs == 2, 'fetch_all_by_GenomicFeatureDisease');
 
+$GFDO = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan->new(
+  -genomic_feature_disease_id => 49,
+  -organ_id => 12,
+  -adaptor => $gfdoa
+);
+
+ok($gfdoa->store($GFDO), 'store');
+
+my $GFDO_id = $GFDO->{GFD_organ_id};
+
+my $dbh = $gfda->dbc->db_handle;
+$dbh->do(qq{DELETE FROM genomic_feature_disease_organ WHERE GFD_organ_id=$GFDO_id;}) or die $dbh->errstr;
+
 done_testing();
 1;
