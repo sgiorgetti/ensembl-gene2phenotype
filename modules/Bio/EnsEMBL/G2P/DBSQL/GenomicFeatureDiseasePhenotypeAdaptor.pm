@@ -20,6 +20,52 @@ use Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $GFD_phenotype = shift;  
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_phenotype (
+      genomic_feature_disease_id,
+      phenotype_id
+    ) VALUES (?,?);
+  });
+  $sth->execute(
+    $GFD_phenotype->get_GenomicFeatureDisease()->dbID(),
+    $GFD_phenotype->get_Phenotype()->dbID()
+  );
+
+  $sth->finish();
+
+  # get dbID
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_phenotype', 'GFD_phenotype_id');
+  $GFD_phenotype->{GFD_phenotype_id} = $dbID;
+  return $GFD_phenotype;
+}
+
+sub delete {
+  my $self = shift;
+  my $GFDP = shift; 
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFDP) || !$GFDP->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype')) {
+    die ('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease_phenotype WHERE GFD_phenotype_id = ?;
+  });
+  
+  $sth->execute($GFDP->dbID);
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_phenotype_id = shift;
