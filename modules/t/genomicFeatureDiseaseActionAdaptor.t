@@ -43,7 +43,7 @@ my $genomic_feature_disease_id = 49;
 my $allelic_requirement_attrib = '15';
 my $mutation_consequence_attrib = '25';
 
-my $gfda = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseAction->new(
+$gfda = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseAction->new(
   -genomic_feature_disease_id => $genomic_feature_disease_id,
   -allelic_requirement_attrib => $allelic_requirement_attrib,
   -mutation_consequence_attrib => $mutation_consequence_attrib,
