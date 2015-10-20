@@ -23,6 +23,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePublicationAdaptor;
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
+my $pa = $g2pdb->get_PublicationAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor'), 'isa GenomicFeatureDiseasePublicationAdaptor');
 
@@ -39,6 +40,29 @@ ok($GFDP->dbID == $GFDP_id, 'fetch_by_GFD_id_publication_id');
 my $GFD = $gfda->fetch_by_dbID($GFD_id);
 my $GFDPs = $gfdpa->fetch_all_by_GenomicFeatureDisease($GFD);
 ok(scalar @$GFDPs == 6, 'fetch_all_by_GenomicFeatureDisease');
+
+my $publication = Bio::EnsEMBL::G2P::Publication->new(
+  -pmid => 12345,
+  -title => 'test_title',
+  -source => 'test_source',
+  -adaptor => $pa,
+);
+
+$pa->store($publication);
+
+$publication_id = $publication->{publication_id};
+$GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication->new(
+  -genomic_feature_disease_id => 49,
+  -publication_id => $publication_id,
+  -adaptor => $gfdpa
+);
+
+ok($gfdpa->store($GFDP), 'store');
+$GFDP_id = $GFDP->{GFD_publication_id};
+
+my $dbh = $gfda->dbc->db_handle;
+$dbh->do(qq{DELETE FROM publication WHERE publication_id=$publication_id;}) or die $dbh->errstr;
+$dbh->do(qq{DELETE FROM genomic_feature_disease_publication WHERE GFD_publication_id=$GFDP_id;}) or die $dbh->errstr;
 
 done_testing();
 1;
