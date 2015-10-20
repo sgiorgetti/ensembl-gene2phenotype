@@ -23,6 +23,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpca = $g2pdb->get_GFDPublicationCommentAdaptor;
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePublicationAdaptor;
+my $ua = $g2pdb->get_UserAdaptor;
 
 ok($gfdpca && $gfdpca->isa('Bio::EnsEMBL::G2P::DBSQL::GFDPublicationCommentAdaptor'), 'isa GFDPublicationCommentAdaptor');
 
@@ -32,6 +33,25 @@ ok($gfdpc->comment_text eq 'test', 'comment text');
 my $gfdp = $gfdpa->fetch_by_dbID(455);
 my $gfdps = $gfdpca->fetch_all_by_GenomicFeatureDiseasePublication($gfdp);
 ok(scalar @$gfdps == 1, 'fetch_all_by_GenomicFeatureDiseasePublication');
+
+my $user = $ua->fetch_by_dbID(1);
+
+my $GFD_publication_id = 133;
+my $comment_text = 'test';
+
+$gfdpc = Bio::EnsEMBL::G2P::GFDPublicationComment->new(
+  -GFD_publication_id => $GFD_publication_id,
+  -comment_text => $comment_text,
+  -adaptor => $gfdpca,
+);
+
+ok($gfdpca->store($gfdpc, $user), 'store');
+
+$gfdpc = $gfdpca->fetch_by_dbID($gfdpc->{GFD_publication_comment_id});
+
+ok($gfdpc && $gfdpc->isa('Bio::EnsEMBL::G2P::GFDPublicationComment'), 'isa GFDPublicationComment');
+
+ok($gfdpca->delete($gfdpc, $user), 'delete');
 
 done_testing();
 1;
