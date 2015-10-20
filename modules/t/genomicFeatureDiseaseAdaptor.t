@@ -24,6 +24,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 my $da = $g2pdb->get_DiseaseAdaptor;
 my $gfa = $g2pdb->get_GenomicFeatureAdaptor;
+my $ua = $g2pdb->get_UserAdaptor;
 
 ok($gfda && $gfda->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor'), 'isa GenomicFeatureDiseaseAdaptor');
 
@@ -60,5 +61,43 @@ ok(scalar @$gfds == 1, 'fetch_all_by_disease_id');
 $gfds = $gfda->fetch_all();
 ok(scalar @$gfds == 9, 'fetch_all');
 
+# store and update
+$disease = Bio::EnsEMBL::G2P::Disease->new(
+  -name => 'test_GFD_disease',
+);
+$da->store($disease);
+$disease_id = $disease->{disease_id};
+$genomic_feature_id = 1252;
+my $DDD_category_attrib = 32;
+my $is_visible = 1;
+$panel = 38;
+
+my $user = $ua->fetch_by_dbID(1);
+
+$gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
+  -genomic_feature_id => $genomic_feature_id,
+  -disease_id => $disease_id,
+  -DDD_category_attrib => $DDD_category_attrib,
+  -is_visible => $is_visible,
+  -panel => $panel,
+  -adaptor => $gfda,
+);
+
+ok($gfda->store($gfd, $user), 'store');
+
+my $GFD_id = $gfd->{genomic_feature_disease_id};
+
+$gfd = $gfda->fetch_by_dbID($GFD_id);
+$gfd->DDD_category('possible DD gene');
+ok($gfda->update($gfd, $user), 'update');
+
+$gfd = $gfda->fetch_by_dbID($GFD_id);
+ok($gfd->DDD_category eq 'possible DD gene', 'test update');
+
+my $dbh = $gfda->dbc->db_handle;
+$dbh->do(qq{DELETE FROM genomic_feature_disease WHERE disease_id=$disease_id;}) or die $dbh->errstr;
+$dbh->do(qq{DELETE FROM disease WHERE disease_id=$disease_id;}) or die $dbh->errstr;
+
 done_testing();
 1;
+
