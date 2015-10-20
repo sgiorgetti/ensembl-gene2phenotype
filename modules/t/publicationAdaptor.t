@@ -44,7 +44,7 @@ $publication = Bio::EnsEMBL::G2P::Publication->new(
 
 ok($pa->store($publication), 'store');
 
-my $publication_id = $publication->{publication_id};
+$publication_id = $publication->{publication_id};
 
 my $dbh = $pa->dbc->db_handle;
 $dbh->do(qq{DELETE FROM publication WHERE publication_id=$publication_id;}) or die $dbh->errstr;
