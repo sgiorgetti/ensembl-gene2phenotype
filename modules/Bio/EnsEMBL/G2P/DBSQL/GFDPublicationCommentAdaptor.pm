@@ -20,6 +20,85 @@ use Bio::EnsEMBL::G2P::GFDPublicationComment;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+sub store {
+  my $self = shift;
+  my $GFD_publication_comment = shift; 
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFD_publication_comment) || !$GFD_publication_comment->isa('Bio::EnsEMBL::G2P::GFDPublicationComment')) {
+    die ('Bio::EnsEMBL::G2P::GFDPublicationComment arg expected');
+  }
+  
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+ 
+  my $sth = $dbh->prepare(q{
+    INSERT INTO GFD_publication_comment (
+      GFD_publication_id,
+      comment_text,
+      created,
+      user_id
+    ) VALUES (?,?,CURRENT_TIMESTAMP,?)
+  });
+
+  $sth->execute(
+    $GFD_publication_comment->get_GFD_publication()->dbID(),
+    $GFD_publication_comment->comment_text,
+    $user->user_id 
+  );
+  $sth->finish();
+
+  my $dbID = $dbh->last_insert_id(undef, undef, 'GFD_publication_comment', 'GFD_publication_comment_id');
+
+  $GFD_publication_comment->{GFD_publication_comment_id} = $dbID;
+
+  return $GFD_publication_comment;
+}
+
+sub delete {
+  my $self = shift;
+  my $GFD_publication_comment = shift; 
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFD_publication_comment) || !$GFD_publication_comment->isa('Bio::EnsEMBL::G2P::GFDPublicationComment')) {
+    die ('Bio::EnsEMBL::G2P::GFDPublicationComment arg expected');
+  }
+
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO GFD_publication_comment_deleted (
+      GFD_publication_id,
+      comment_text,
+      created,
+      user_id,
+      deleted,
+      deleted_by_user_id
+    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+  });
+
+  $sth->execute(
+    $GFD_publication_comment->GFD_publication_id,
+    $GFD_publication_comment->comment_text,
+    $GFD_publication_comment->created,
+    $GFD_publication_comment->{user_id},
+    $user->user_id
+  );
+  $sth->finish();
+
+  $sth = $dbh->prepare(q{
+    DELETE FROM GFD_publication_comment WHERE GFD_publication_comment_id = ?;
+  });
+  
+  $sth->execute($GFD_publication_comment->dbID);
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $GFD_publication_comment_id = shift;
