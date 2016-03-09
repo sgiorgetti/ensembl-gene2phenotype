@@ -6,7 +6,7 @@ CREATE TABLE `GFD_phenotype_comment` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_phenotype_comment_id`),
   KEY `GFD_phenotype_idx` (`GFD_phenotype_id`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `GFD_phenotype_comment_deleted` (
   `GFD_phenotype_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -28,7 +28,7 @@ CREATE TABLE `GFD_publication_comment` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_publication_comment_id`),
   KEY `GFD_publication_idx` (`GFD_publication_id`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `GFD_publication_comment_deleted` (
   `GFD_publication_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -134,21 +134,11 @@ CREATE TABLE `genomic_feature_disease_log` (
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
 ) ENGINE=InnoDB ;
 
-CREATE TABLE `genomic_feature_disease_organ` (
-  `GFD_organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `genomic_feature_disease_id` int(10) unsigned NOT NULL,
-  `organ_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`GFD_organ_id`),
-  KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB  ;
-
 CREATE TABLE `genomic_feature_disease_phenotype` (
-  `GFD_phenotype_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_disease_id` int(10) unsigned NOT NULL,
   `phenotype_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`GFD_phenotype_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `genomic_feature_disease_publication` (
   `GFD_publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -156,13 +146,26 @@ CREATE TABLE `genomic_feature_disease_publication` (
   `publication_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_publication_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
+
+CREATE TABLE `genomic_feature_organ_specificity` (
+  `genomic_feature_id` int(10) unsigned NOT NULL,
+  `organ_specificity_id` int(10) unsigned NOT NULL,
+  KEY `genomic_feature_idx` (`genomic_feature_id`)
+) ENGINE=InnoDB ;
+
+CREATE TABLE `genomic_feature_synonym` (
+  `genomic_feature_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL,
+  UNIQUE KEY `name` (`genomic_feature_id`,`name`),
+  KEY `genomic_feature_idx` (`genomic_feature_id`)
+) ENGINE=InnoDB ;
 
 CREATE TABLE `organ_specificity` (
   `organ_specificity_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `organ_specificity` varchar(255) NOT NULL,
   PRIMARY KEY (`organ_specificity_id`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `phenotype` (
   `phenotype_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -173,7 +176,7 @@ CREATE TABLE `phenotype` (
   UNIQUE KEY `desc_idx` (`description`),
   KEY `name_idx` (`name`),
   KEY `stable_idx` (`stable_id`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `publication` (
   `publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -182,7 +185,7 @@ CREATE TABLE `publication` (
   `source` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`publication_id`),
   KEY `pmid_idx` (`pmid`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `search` (
   `search_term` varchar(255) NOT NULL,
@@ -197,7 +200,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `user_idx` (`username`),
   UNIQUE KEY `email_idx` (`email`)
-) ENGINE=InnoDB  ;
+) ENGINE=InnoDB ;
 
 CREATE TABLE `variation` (
   `variation_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
