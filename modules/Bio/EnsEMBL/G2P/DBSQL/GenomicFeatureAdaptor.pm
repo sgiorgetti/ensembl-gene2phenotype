@@ -17,6 +17,7 @@ package Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureAdaptor;
 
 use Bio::EnsEMBL::G2P::GenomicFeature;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
+
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
@@ -93,6 +94,8 @@ sub fetch_by_ensembl_stable_id {
   return $result->[0];
 }
 
+
+
 sub _columns {
   my $self = shift;
   my @cols = (
@@ -104,6 +107,7 @@ sub _columns {
     'gf.seq_region_start',
     'gf.seq_region_end',
     'gf.seq_region_strand',
+    'gfs.name AS gfs_name'
   );
   return @cols;
 }
@@ -112,29 +116,58 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['genomic_feature', 'gf'],
+    ['genomic_feature_synonym', 'gfs'],
   );
   return @tables;
 }
 
+sub _left_join {
+  my $self = shift;
+
+  my @left_join = (
+    ['genomic_feature_synonym', 'gf.genomic_feature_id = gfs.genomic_feature_id'],
+  );
+  return @left_join;
+}
+
 sub _objs_from_sth {
   my ($self, $sth) = @_;
+  my %row;
+  $sth->bind_columns( \( @row{ @{$sth->{NAME_lc} } } ));
+  while ($sth->fetch) {
+    # we don't actually store the returned object because
+    # the _obj_from_row method stores them in a temporary
+    # hash _temp_objs in $self 
+    $self->_obj_from_row(\%row);
+  }
 
-  my ($genomic_feature_id, $gene_symbol, $mim, $ensembl_stable_id, $seq_region_id, $seq_region_start, $seq_region_end, $seq_region_strand);
-  $sth->bind_columns(\($genomic_feature_id, $gene_symbol, $mim, $ensembl_stable_id, $seq_region_id, $seq_region_start, $seq_region_end, $seq_region_strand));
+  # Get the created objects from the temporary hash
+  my @objs = values %{ $self->{_temp_objs} };
+  delete $self->{_temp_objs};
 
-  my @objs;
+  # Return the created objects 
+  return \@objs;
+}
 
-  while ($sth->fetch()) {
-    my $obj = Bio::EnsEMBL::G2P::GenomicFeature->new(
-      -genomic_feature_id => $genomic_feature_id,
-      -gene_symbol => $gene_symbol,
-      -mim => $mim,
-      -ensembl_stable_id => $ensembl_stable_id,      
+sub _obj_from_row {
+  my ($self, $row) = @_;
+  my $obj = $self->{_temp_objs}{$row->{genomic_feature_id}}; 
+  unless ( defined $obj ) {
+    $obj = Bio::EnsEMBL::G2P::GenomicFeature->new(
+      -genomic_feature_id => $row->{genomic_feature_id},
+      -gene_symbol => $row->{gene_symbol},
+      -mim => $row->{mim},
+      -ensembl_stable_id => $row->{ensembl_stable_id},      
       -adaptor => $self,
     );
-    push(@objs, $obj);
+
+    $self->{_temp_objs}{$row->{genomic_feature_id}} = $obj;
   }
-  return \@objs;
+
+  # Add a synonym if available
+  if (defined $row->{gfs_name} ) {
+    $obj->add_synonym($row->{gfs_name});
+  }
 }
 
 1;
