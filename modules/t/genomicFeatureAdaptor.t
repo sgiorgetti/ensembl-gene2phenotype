@@ -17,6 +17,7 @@ my $dbID = 2141;
 my $mim = '614828';
 my $gene_symbol = 'POMGNT2';
 my $ensembl_stable_id = 'ENSG00000144647';
+my $synonym = 'GTDC2'; 
 
 my $gfs = $gfa->fetch_all;
 ok(scalar @$gfs == 9, 'fetch_all');
@@ -32,6 +33,12 @@ ok($gf->ensembl_stable_id eq $ensembl_stable_id, 'fetch_by_ensembl_stable_id');
 
 $gf = $gfa->fetch_by_gene_symbol($gene_symbol);
 ok($gf->gene_symbol eq $gene_symbol, 'fetch_by_gene_symbol');
+
+$gf = $gfa->fetch_by_synonym($synonym);
+ok($gf->gene_symbol eq $gene_symbol, 'fetch_by_synonym');
+
+my $gfs = $gfa->fetch_all_by_substring('KM');
+ok(scalar @$gfs == 2, 'fetch_all_by_substring');
 
 $gf = Bio::EnsEMBL::G2P::GenomicFeature->new(
   -mim => '610142',
