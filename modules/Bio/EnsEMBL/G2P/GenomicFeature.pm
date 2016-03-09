@@ -69,4 +69,17 @@ sub ensembl_stable_id {
   return $self->{ensembl_stable_id};
 }
 
+sub add_synonym {
+  my $self = shift;
+  my $synonym = shift;
+  $self->{'synonyms'}{$synonym}++;
+  return;
+}
+
+sub get_all_synonyms {
+  my $self = shift;
+  my @synonyms = keys %{$self->{synonyms}};
+  return \@synonyms;
+}
+
 1;
