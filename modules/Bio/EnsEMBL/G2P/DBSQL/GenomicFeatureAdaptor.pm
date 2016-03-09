@@ -56,6 +56,38 @@ sub store {
   $GF->{adaptor} = $self;
 }
 
+sub update {
+  my $self = shift;
+  my $gf = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(q{
+    UPDATE genomic_feature
+      SET gene_symbol = ?,
+          mim = ?,
+          ensembl_stable_id = ?,
+          seq_region_id = ?,
+          seq_region_start = ?,
+          seq_region_end = ?,
+          seq_region_strand = ?
+      WHERE genomic_feature_id  = ?
+  });
+
+  $sth->execute(
+    $gf->gene_symbol,
+    $gf->mim,
+    $gf->ensembl_stable_id,
+    $gf->{seq_region_id} || undef,
+    $gf->{seq_region_start} || undef,
+    $gf->{seq_region_end} || undef,
+    $gf->{seq_region_strand} || undef,
+    $gf->{genomic_feature_id}
+  );
+
+  $sth->finish();
+  return $gf;
+}
+
 sub fetch_all {
   my $self = shift;
   return $self->generic_fetch();
@@ -93,8 +125,6 @@ sub fetch_by_ensembl_stable_id {
   my $result =  $self->generic_fetch($constraint);
   return $result->[0];
 }
-
-
 
 sub _columns {
   my $self = shift;
