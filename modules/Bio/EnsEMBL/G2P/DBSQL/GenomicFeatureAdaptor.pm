@@ -126,6 +126,38 @@ sub fetch_by_ensembl_stable_id {
   return $result->[0];
 }
 
+sub fetch_by_synonym {
+  my $self = shift;
+  my $name = shift;
+  # Do a query to get the current variation for the synonym and call a fetch method on this variation
+  my $constraint = qq{ gfs.name = ? };
+
+  # This statement will only return 1 row which is consistent with the behaviour of fetch_by_name.
+  # However, the synonym name is only guaranteed to be unique in combination with the source 
+  my $stmt = qq{ SELECT genomic_feature_id FROM genomic_feature_synonym gfs WHERE $constraint LIMIT 1};
+
+  my $sth = $self->prepare($stmt);
+  $sth->bind_param(1, $name, SQL_VARCHAR);
+  $sth->execute();
+
+  # Bind the results
+  my $dbID;
+  $sth->bind_columns(\$dbID);
+  # Fetch the results
+  $sth->fetch();
+
+  # Return undef in case no data could be found
+  return undef unless (defined $dbID );
+  return $self->fetch_by_dbID($dbID);
+}
+
+sub fetch_all_by_substring {
+  my $self = shift;
+  my $substring = shift;
+  my $constraint = "gf.gene_symbol LIKE '%$substring%' LIMIT 20"; 
+  return $self->generic_fetch($constraint);
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
