@@ -13,13 +13,13 @@ my $gfa = $g2pdb->get_GenomicFeatureAdaptor;
 
 ok($gfa && $gfa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureAdaptor'), 'isa genomic_feature_adaptor');
 
-my $dbID = 1252;
-my $mim = '120140';
-my $gene_symbol = 'COL2A1';
-my $ensembl_stable_id = 'ENSG00000139219';
+my $dbID = 2141;
+my $mim = '614828';
+my $gene_symbol = 'POMGNT2';
+my $ensembl_stable_id = 'ENSG00000144647';
 
 my $gfs = $gfa->fetch_all;
-ok(scalar @$gfs == 1, 'fetch_all');
+ok(scalar @$gfs == 9, 'fetch_all');
 
 my $gf = $gfa->fetch_by_dbID($dbID);
 ok($gf->dbID == $dbID, 'fetch_by_dbID');
