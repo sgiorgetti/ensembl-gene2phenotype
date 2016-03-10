@@ -74,6 +74,25 @@ CREATE TABLE `disease_name_synonym` (
   KEY `disease_idx` (`disease_id`)
 ) ENGINE=InnoDB ;
 
+CREATE TABLE `ensembl_variant` (
+  `variant_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `genomic_feature_id` int(10) unsigned NOT NULL,
+  `seq_region` varchar(128) DEFAULT NULL,
+  `seq_region_start` int(11) NOT NULL,
+  `seq_region_end` int(11) NOT NULL,
+  `seq_region_strand` tinyint(4) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `source` varchar(24) NOT NULL,
+  `allele_string` varchar(50000) DEFAULT NULL,
+  `consequence` varchar(128) DEFAULT NULL,
+  `feature_stable_id` varchar(128) DEFAULT NULL,
+  `amino_acid_string` varchar(255) DEFAULT NULL,
+  `polyphen_prediction` varchar(128) DEFAULT NULL,
+  `sift_prediction` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`variant_id`),
+  KEY `genomic_feature_idx` (`genomic_feature_id`)
+) ENGINE=InnoDB ;
+
 CREATE TABLE `genomic_feature` (
   `genomic_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `gene_symbol` varchar(128) DEFAULT NULL,
@@ -95,9 +114,9 @@ CREATE TABLE `genomic_feature_disease` (
   `disease_id` int(10) unsigned NOT NULL,
   `DDD_category_attrib` set('31','32','33','34','35') DEFAULT NULL,
   `is_visible` tinyint(1) unsigned NOT NULL DEFAULT '1',
-  `panel` tinyint(1) DEFAULT NULL,
+  `panel_attrib` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`genomic_feature_disease_id`),
-  UNIQUE KEY `genomic_feature_disease` (`genomic_feature_id`,`disease_id`),
+  UNIQUE KEY `genomic_feature_disease` (`genomic_feature_id`,`disease_id`,`panel_attrib`),
   KEY `genomic_feature_idx` (`genomic_feature_id`),
   KEY `disease_idx` (`disease_id`)
 ) ENGINE=InnoDB  ;
@@ -134,11 +153,21 @@ CREATE TABLE `genomic_feature_disease_log` (
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
 ) ENGINE=InnoDB ;
 
+CREATE TABLE `genomic_feature_disease_organ` (
+  `GFD_organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `genomic_feature_disease_id` int(10) unsigned NOT NULL,
+  `organ_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`GFD_organ_id`),
+  KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
+) ENGINE=InnoDB  ;
+
 CREATE TABLE `genomic_feature_disease_phenotype` (
+  `GFD_phenotype_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_disease_id` int(10) unsigned NOT NULL,
   `phenotype_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`GFD_phenotype_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `genomic_feature_disease_publication` (
   `GFD_publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -146,7 +175,7 @@ CREATE TABLE `genomic_feature_disease_publication` (
   `publication_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_publication_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `genomic_feature_organ_specificity` (
   `genomic_feature_id` int(10) unsigned NOT NULL,
@@ -165,7 +194,7 @@ CREATE TABLE `organ_specificity` (
   `organ_specificity_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `organ_specificity` varchar(255) NOT NULL,
   PRIMARY KEY (`organ_specificity_id`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `phenotype` (
   `phenotype_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -196,7 +225,7 @@ CREATE TABLE `user` (
   `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `panel` set('36','37','38','39','40','41') DEFAULT NULL,
+  `panel_attrib` set('36','37','38','39','40','41') DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `user_idx` (`username`),
   UNIQUE KEY `email_idx` (`email`)
