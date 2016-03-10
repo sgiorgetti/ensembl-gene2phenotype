@@ -51,7 +51,7 @@ sub _columns {
     'u.user_id',
     'u.username',
     'u.email',
-    'u.panel',
+    'u.panel_attrib',
   );
   return @cols;
 }
@@ -66,8 +66,8 @@ sub _tables {
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
-  my ($user_id, $username, $email, $panel);
-  $sth->bind_columns(\($user_id, $username, $email, $panel));
+  my ($user_id, $username, $email, $panel_attrib);
+  $sth->bind_columns(\($user_id, $username, $email, $panel_attrib));
 
   my @objs;
   while ($sth->fetch()) {
@@ -75,7 +75,7 @@ sub _objs_from_sth {
       -user_id => $user_id,
       -username => $username,
       -email => $email,
-      -panel => $panel,
+      -panel_attrib => $panel_attrib,
       -adaptor => $self,
     );
     push(@objs, $obj); 
