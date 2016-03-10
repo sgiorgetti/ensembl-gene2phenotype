@@ -205,7 +205,7 @@ CREATE TABLE `phenotype` (
   UNIQUE KEY `desc_idx` (`description`),
   KEY `name_idx` (`name`),
   KEY `stable_idx` (`stable_id`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `publication` (
   `publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -214,7 +214,7 @@ CREATE TABLE `publication` (
   `source` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`publication_id`),
   KEY `pmid_idx` (`pmid`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `search` (
   `search_term` varchar(255) NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `user_idx` (`username`),
   UNIQUE KEY `email_idx` (`email`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `variation` (
   `variation_id` int(10) unsigned NOT NULL AUTO_INCREMENT,

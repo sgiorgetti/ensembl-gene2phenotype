@@ -1,0 +1,8 @@
+881	19088120	Recessive osteogenesis imperfecta caused by LEPRE1 mutations: clinical documentation and identification of the splice form responsible for prolyl 3-hydroxylation.	J Med Genet. 46: 233-241, 2009.
+2069	23040496	Whole-exome capture and sequencing identifies HEATR2 mutation as a cause of primary ciliary dyskinesia.	Am J Hum Genet. 91: 685-693, 2012.
+7387	17277775	Prolyl 3-hydroxylase 1 deficiency causes a recessive metabolic bone disorder resembling lethal/severe osteogenesis imperfecta.	Nat Genet. 39: 359-365, 2007.
+7953	15044805	G protein-coupled receptor-dependent development of human frontal cortex.	Science. 303: 2033-2036, 2004.
+9398	22958903	Exome sequencing and functional validation in zebrafish identify GTDC2 mutations as a cause of Walker-Warburg syndrome.	Am J Hum Genet. 91: 541-547, 2012.
+13020	21937992	Deep sequencing reveals 50 novel genes for recessive cognitive disorders.	Nature. 478: 57-63, 2011.
+16168	15883926	Homozygous nonsense mutations in KIAA1279 are associated with malformations of the central and enteric nervous systems.	Am J Hum Genet. 77: 120-126, 2005.
+24643	24056535	Periventricular heterotopia in 6q terminal deletion syndrome: role of the C6orf70 gene.	Brain. 136: 3378-3394, 2013.

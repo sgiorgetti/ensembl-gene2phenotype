@@ -1,0 +1,137 @@
+5	HP:0000006	Autosomal dominant inheritance	\N
+6	HP:0000007	Autosomal recessive inheritance	\N
+21	HP:0000023	Inguinal hernia	\N
+26	HP:0000028	Cryptorchidism	\N
+50	HP:0000054	Micropenis	\N
+70	HP:0000074	Ureteropelvic junction obstruction	\N
+145	HP:0000164	Abnormality of the teeth	\N
+152	HP:0000175	Cleft palate	\N
+186	HP:0000219	Thin upper lip vermilion	\N
+202	HP:0000238	Hydrocephalus	\N
+212	HP:0000252	Microcephaly	\N
+216	HP:0000260	Wide anterior fontanel	\N
+224	HP:0000270	Delayed cranial suture closure	\N
+237	HP:0000286	Epicanthus	\N
+256	HP:0000311	Round face	\N
+258	HP:0000316	Hypertelorism	\N
+263	HP:0000322	Short philtrum	\N
+276	HP:0000343	Long philtrum	\N
+284	HP:0000358	Posteriorly rotated ears	\N
+291	HP:0000365	Hearing impairment	\N
+294	HP:0000369	Low-set ears	\N
+314	HP:0000400	Macrotia	\N
+316	HP:0000403	Recurrent otitis media	\N
+323	HP:0000414	Bulbous nose	\N
+331	HP:0000426	Prominent nasal bridge	\N
+334	HP:0000431	Wide nasal bridge	\N
+338	HP:0000437	Depressed nasal tip	\N
+340	HP:0000445	Wide nose	\N
+359	HP:0000470	Short neck	\N
+373	HP:0000485	Megalocornea	\N
+374	HP:0000486	Strabismus	\N
+382	HP:0000494	Downslanted palpebral fissures	\N
+393	HP:0000506	Telecanthus	\N
+394	HP:0000508	Ptosis	\N
+403	HP:0000520	Proptosis	\N
+409	HP:0000527	Long eyelashes	\N
+416	HP:0000535	Sparse eyebrow	\N
+443	HP:0000565	Esotropia	\N
+445	HP:0000568	Microphthalmos	\N
+450	HP:0000574	Thick eyebrow	\N
+453	HP:0000577	Exotropia	\N
+456	HP:0000581	Blepharophimosis	\N
+466	HP:0000592	Blue sclerae	\N
+505	HP:0000637	Long palpebral fissure	\N
+506	HP:0000639	Nystagmus	\N
+528	HP:0000664	Synophrys	\N
+568	HP:0000718	Aggressive behavior	\N
+596	HP:0000750	Delayed speech and language development	\N
+675	HP:0000851	Congenital hypothyroidism	\N
+700	HP:0000883	Thin ribs	\N
+736	HP:0000926	Platyspondyly	\N
+745	HP:0000938	Osteopenia	\N
+758	HP:0000957	Cafe-au-lait spot	\N
+760	HP:0000960	Sacral dimple	\N
+800	HP:0001007	Hirsutism	\N
+938	HP:0001182	Tapered finger	\N
+950	HP:0001212	Prominent fingertip pads	\N
+971	HP:0001249	Intellectual disability	\N
+972	HP:0001250	Seizures	\N
+974	HP:0001252	Muscular hypotonia	\N
+982	HP:0001263	Global developmental delay	\N
+993	HP:0001276	Hypertonia	\N
+1021	HP:0001321	Cerebellar hypoplasia	\N
+1042	HP:0001347	Hyperreflexia	\N
+1058	HP:0001374	Congenital hip dislocation	\N
+1063	HP:0001382	Joint hypermobility	\N
+1068	HP:0001388	Joint laxity	\N
+1146	HP:0001508	Failure to thrive	\N
+1171	HP:0001552	Barrel-shaped chest	\N
+1219	HP:0001629	Ventricular septal defect	\N
+1220	HP:0001631	Defect in the atrial septum	\N
+1261	HP:0001680	Coarctation of aorta	\N
+1274	HP:0001696	Situs inversus totalis	\N
+1368	HP:0001831	Short toe	\N
+1402	HP:0001878	Hemolytic anemia	\N
+1481	HP:0001973	Autoimmune thrombocytopenia	\N
+1520	HP:0002019	Constipation	\N
+1523	HP:0002023	Anal atresia	\N
+1524	HP:0002024	Malabsorption	\N
+1525	HP:0002025	Anal stenosis	\N
+1570	HP:0002078	Truncal ataxia	\N
+1583	HP:0002093	Respiratory insufficiency	\N
+1588	HP:0002100	Recurrent aspiration pneumonia	\N
+1601	HP:0002119	Ventriculomegaly	\N
+1612	HP:0002136	Broad-based gait	\N
+1706	HP:0002251	Aganglionic megacolon	\N
+1783	HP:0002365	Hypoplasia of the brainstem	\N
+1898	HP:0002553	Highly arched eyebrow	\N
+1906	HP:0002566	Intestinal malrotation	\N
+1971	HP:0002645	Wormian bones	\N
+1974	HP:0002650	Scoliosis	\N
+2053	HP:0002750	Delayed skeletal maturation	\N
+2060	HP:0002757	Recurrent fractures	\N
+2087	HP:0002808	Kyphosis	\N
+2201	HP:0002953	Vertebral compression fractures	\N
+2217	HP:0002980	Femoral bowing	\N
+2219	HP:0002982	Tibial bowing	\N
+2222	HP:0002986	Radial bowing	\N
+2295	HP:0003100	Slender long bone	\N
+2414	HP:0003251	Male infertility	\N
+2573	HP:0003468	Abnormality of the vertebrae	\N
+2583	HP:0003487	Babinski sign	\N
+2647	HP:0003593	Infantile onset	\N
+2748	HP:0003783	Externally rotated/abducted legs	\N
+2749	HP:0003784	Type 1 collagen overmodification	\N
+3029	HP:0004209	Clinodactyly of the 5th finger	\N
+3122	HP:0004322	Short stature	\N
+3131	HP:0004331	Decreased skull ossification	\N
+3245	HP:0004467	Preauricular pit	\N
+3247	HP:0004469	Chronic bronchitis	\N
+3360	HP:0004736	Crossed fused renal ectopia	\N
+3661	HP:0005218	Anoperineal fistula	\N
+4021	HP:0005819	Short middle phalanx of finger	\N
+4040	HP:0005855	Multiple prenatal fractures	\N
+4483	HP:0006610	Wide intermamillary distance	\N
+4606	HP:0006821	Polymicrogyria, anterior to posterior gradient	\N
+4744	HP:0007095	Frontoparietal polymicrogyria	\N
+4814	HP:0007260	Type II lissencephaly	\N
+4818	HP:0007266	Cerebral dysmyelination	\N
+5071	HP:0007655	Eversion of lateral third of lower eyelids	\N
+5271	HP:0007973	Retinal dysplasia	\N
+5792	HP:0008872	Feeding difficulties in infancy	\N
+5793	HP:0008873	Disproportionate short-limb short stature	\N
+5797	HP:0008897	Postnatal growth retardation	\N
+6013	HP:0009237	Short 5th finger	\N
+6759	HP:0010049	Short metacarpal	\N
+7016	HP:0010314	Premature thelarche	\N
+7772	HP:0011108	Recurrent sinusitis	\N
+8109	HP:0011448	Ankle clonus	\N
+8864	HP:0012208	Nonmotile sperm	\N
+8912	HP:0012256	Absent outer dynein arms	\N
+8918	HP:0012262	Abnormal ciliary motility	\N
+11294	HP:0200020	Corneal erosion	\N
+11336	HP:0200073	Respiratory insufficiency due to defective ciliary clearance	\N
+11568	HP:0000218	High palate	\N
+11708	HP:0000219	Thin upper lip vermilion	\N
+11709	HP:0000218	High palate	\N
