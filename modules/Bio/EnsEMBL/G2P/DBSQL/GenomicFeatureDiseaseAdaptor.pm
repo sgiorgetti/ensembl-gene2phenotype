@@ -35,22 +35,43 @@ sub store {
     die('Bio::EnsEMBL::G2P::User arg expected');
   }
 
+  if (! (defined $gfd->{panel} || defined $gfd->{panel_attrib})) {
+    die "panel or panel_attrib is required\n";
+  }
+
+  if (! (defined $gfd->{DDD_category} || defined $gfd->{DDD_category_attrib})) {
+    die "DDD_category or DDD_category_attrib is required\n";
+  }
+
+  my $aa = $self->db->get_AttributeAdaptor;
+  if ( defined $gfd->{panel} ) {
+    my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $gfd->{panel});
+    die "Could not get panel attrib id for value ", $gfd->{panel}, "\n" unless ($panel_attrib);
+    $gfd->{panel_attrib} = $panel_attrib;
+  }
+
+  if ( defined $gfd->{DDD_category} ) {
+    my $DDD_category_attrib = $aa->attrib_id_for_type_value('DDD_Category', $gfd->{DDD_category});
+    die "Could not get DDD category attrib id for value ", $gfd->{DDD_category}, "\n" unless ($DDD_category_attrib);
+    $gfd->{DDD_category_attrib} = $DDD_category_attrib;
+  }
+
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
       disease_id,
       DDD_category_attrib,
       is_visible,
-      panel
+      panel_attrib
     ) VALUES (?, ?, ?, ?, ?)
   });
 
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
-    $gfd->DDD_category_attrib || undef,
+    $gfd->{DDD_category_attrib},
     $gfd->is_visible || 1,
-    $gfd->panel,
+    $gfd->{panel_attrib},
   );
 
   $sth->finish();
@@ -81,10 +102,10 @@ sub update {
   my $sth = $dbh->prepare(q{
     UPDATE genomic_feature_disease
       SET genomic_feature_id = ?,
-          disease_id = ?,
-          DDD_category_attrib = ?,
-          is_visible = ?,
-          panel = ?
+        disease_id = ?,
+        DDD_category_attrib = ?,
+        is_visible = ?,
+        panel_attrib = ?
       WHERE genomic_feature_disease_id = ? 
   });
   $sth->execute(
@@ -149,6 +170,18 @@ sub fetch_by_GenomicFeature_Disease {
   return $result->[0];
 }
 
+sub fetch_by_GenomicFeature_Disease_panel_id {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $disease = shift;
+  my $panel_id = shift;
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $disease_id = $disease->dbID;
+  my $constraint = "gfd.disease_id=$disease_id AND gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id;";
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
+}
+
 sub fetch_all_by_GenomicFeature {
   my $self = shift;
   my $genomic_feature = shift;
@@ -168,7 +201,7 @@ sub fetch_all_by_GenomicFeature_panel {
   my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
 
   my $genomic_feature_id = $genomic_feature->dbID;
-  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel=$panel_id";
+  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id";
   return $self->generic_fetch($constraint);
 }
 
@@ -191,7 +224,7 @@ sub fetch_all_by_Disease_panel {
   my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
 
   my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id AND gfd.panel=$panel_id";
+  my $constraint = "gfd.disease_id=$disease_id AND gfd.panel_attrib=$panel_id";
   return $self->generic_fetch($constraint);
 }
 
@@ -216,7 +249,7 @@ sub _columns {
     'gfd.disease_id',
     'gfd.DDD_category_attrib',
     'gfd.is_visible',
-    'gfd.panel',
+    'gfd.panel_attrib',
   );
   return @cols;
 }
