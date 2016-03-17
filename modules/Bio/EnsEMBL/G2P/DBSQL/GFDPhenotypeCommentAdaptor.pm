@@ -36,7 +36,7 @@ sub store {
  
   my $sth = $dbh->prepare(q{
     INSERT INTO GFD_phenotype_comment (
-      GFD_phenotype_id,
+      genomic_feature_disease_phenotype_id,
       comment_text,
       created,
       user_id
@@ -73,7 +73,7 @@ sub delete {
 
   my $sth = $dbh->prepare(q{
     INSERT INTO GFD_phenotype_comment_deleted (
-      GFD_phenotype_id,
+      genomic_feature_disease_phenotype_id,
       comment_text,
       created,
       user_id,
@@ -112,7 +112,7 @@ sub fetch_all_by_GenomicFeatureDiseasePhenotype {
     die('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype arg expected');
   }
   my $GFD_phenotype_id = $GFD_phenotype->dbID;
-  my $constraint = "gfdpc.GFD_phenotype_id=$GFD_phenotype_id"; 
+  my $constraint = "gfdpc.genomic_feature_disease_phenotype_id=$GFD_phenotype_id"; 
   return $self->generic_fetch($constraint);  
 }
 
@@ -120,7 +120,7 @@ sub _columns {
   my $self = shift;
   my @cols = (
     'gfdpc.GFD_phenotype_comment_id',
-    'gfdpc.GFD_phenotype_id',
+    'gfdpc.genomic_feature_disease_phenotype_id',
     'gfdpc.comment_text',
     'gfdpc.created',
     'gfdpc.user_id',
@@ -147,7 +147,7 @@ sub _objs_from_sth {
   while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::GFDPhenotypeComment->new(
       -GFD_phenotype_comment_id => $GFD_phenotype_comment_id,
-      -GFD_phenotype_id => $GFD_phenotype_id,
+      -genomic_feature_disease_phenotype_id => $GFD_phenotype_id,
       -comment_text => $comment_text,
       -created => $created,
       -user_id => $user_id,
