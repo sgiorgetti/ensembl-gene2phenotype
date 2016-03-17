@@ -38,17 +38,15 @@ sub store {
   $sth->finish();
 
   # get dbID
-  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_organ', 'GFD_organ_id');
-  $GFD_organ->{GFD_organ_id} = $dbID;
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_organ', 'genomic_feature_disease_organ_id');
+  $GFD_organ->{genomic_feature_disease_organ_id} = $dbID;
   return $GFD_organ;
 }
 
 sub fetch_by_dbID {
   my $self = shift;
-  my $GFD_organ_id = shift;
-  my $constraint = "gfdo.GFD_organ_id=$GFD_organ_id"; 
-  my $result = $self->generic_fetch($constraint);
-  return $result->[0];
+  my $dbID = shift;
+  return $self->SUPER::fetch_by_dbID($dbID);
 }
 
 sub fetch_by_GFD_id_organ_id {
@@ -74,7 +72,7 @@ sub fetch_all_by_GenomicFeatureDisease {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'gfdo.GFD_organ_id',
+    'gfdo.genomic_feature_disease_organ_id',
     'gfdo.genomic_feature_disease_id',
     'gfdo.organ_id',
   );
@@ -99,7 +97,7 @@ sub _objs_from_sth {
 
   while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan->new(
-      -GFD_organ_id => $GFD_organ_id,
+      -genomic_feature_disease_organ_id => $GFD_organ_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -organ_id => $organ_id,
       -adaptor => $self,
