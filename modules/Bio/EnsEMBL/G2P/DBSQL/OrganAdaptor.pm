@@ -25,8 +25,8 @@ sub store {
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
-    INSERT INTO organ_specificity (
-      organ_specificity
+    INSERT INTO organ (
+      organ
     ) VALUES (?);
   });
   $sth->execute(
@@ -36,8 +36,8 @@ sub store {
   $sth->finish();
 
   # get dbID
-  my $dbID = $dbh->last_insert_id(undef, undef, 'organ_specificity', 'organ_specificity_id');
-  $organ->{organ_specificity_id} = $dbID;
+  my $dbID = $dbh->last_insert_id(undef, undef, 'organ', 'organ_id');
+  $organ->{organ_id} = $dbID;
   return $organ;
 }
 
@@ -56,7 +56,7 @@ sub fetch_by_dbID {
 sub fetch_by_name {
   my $self = shift;
   my $name = shift;
-  my $constraint = "o.organ_specificity='$name'";
+  my $constraint = "o.organ='$name'";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];
 }
@@ -69,8 +69,8 @@ sub fetch_all {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'o.organ_specificity_id',
-    'o.organ_specificity',
+    'o.organ_id',
+    'o.organ',
   );
   return @cols;
 }
@@ -78,7 +78,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-    ['organ_specificity', 'o'],
+    ['organ', 'o'],
   );
   return @tables;
 }
