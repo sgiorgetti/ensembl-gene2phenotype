@@ -25,10 +25,10 @@ sub new {
   my $class = ref($caller) || $caller;
 
   my ($GFD_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $adaptor) =
-    rearrange(['GFD_phenotype_id', 'genomic_feature_disease_id', 'phenotype_id', 'adaptor'], @_);
+    rearrange(['genomic_feature_disease_phenotype_id', 'genomic_feature_disease_id', 'phenotype_id', 'adaptor'], @_);
 
   my $self = bless {
-    'GFD_phenotype_id' => $GFD_phenotype_id,
+    'genomic_feature_disease_phenotype_id' => $GFD_phenotype_id,
     'genomic_feature_disease_id' => $genomic_feature_disease_id,
     'phenotype_id' => $phenotype_id, 
     'adaptor' => $adaptor,
