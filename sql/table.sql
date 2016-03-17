@@ -174,7 +174,7 @@ CREATE TABLE GFD_publication_comment (
 
 CREATE TABLE GFD_publication_comment_deleted (
   GFD_publication_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  GFD_publication_id int(10) unsigned NOT NULL,
+  genomic_feature_disease_publication_id int(10) unsigned NOT NULL,
   comment_text text DEFAULT NULL,
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL, 
