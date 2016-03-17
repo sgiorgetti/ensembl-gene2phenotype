@@ -121,6 +121,7 @@ CREATE TABLE genomic_feature_disease_phenotype (
   genomic_feature_disease_phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   phenotype_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_phenotyp_id),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
@@ -128,7 +129,7 @@ CREATE TABLE genomic_feature_disease_publication (
   genomic_feature_disease_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   publication_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (GFD_publication_id),
+  PRIMARY KEY (genomic_feature_disease_publication_id),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
