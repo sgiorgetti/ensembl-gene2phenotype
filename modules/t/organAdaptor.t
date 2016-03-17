@@ -47,10 +47,10 @@ $organ = Bio::EnsEMBL::G2P::Organ->new(
   
 ok($oa->store($organ), 'store');
 
-$organ_id = $organ->{organ_specificity_id};
+$organ_id = $organ->{organ_id};
 
 my $dbh = $oa->dbc->db_handle;
-$dbh->do(qq{DELETE FROM organ_specificity WHERE organ_specificity_id=$organ_id;}) or die $dbh->errstr;
+$dbh->do(qq{DELETE FROM organ WHERE organ_id=$organ_id;}) or die $dbh->errstr;
 
 done_testing();
 1;

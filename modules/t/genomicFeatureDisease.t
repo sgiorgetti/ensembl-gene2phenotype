@@ -24,9 +24,9 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 
-my $dbID = 49;
-my $genomic_feature_id = 1252;
-my $disease_id = 216;
+my $dbID = 133;
+my $genomic_feature_id = 59384;
+my $disease_id = 326;
 my $DDD_category_attrib = 32;
 my $is_visible = 1;
 my $panel = '38';
@@ -53,16 +53,16 @@ my $GFDAs = $gfd->get_all_GenomicFeatureDiseaseActions();
 ok(scalar @$GFDAs == 1, 'count genomic_feature_disease_actions');
 
 my $gf = $gfd->get_GenomicFeature();
-ok($gf->gene_symbol eq 'COL2A1', 'get_GenomicFeature');
+ok($gf->gene_symbol eq 'KIF1BP', 'get_GenomicFeature');
 
 my $disease = $gfd->get_Disease();
-ok($disease->name eq 'KNIEST DYSPLASIA (KD)', 'get_Disease');
+ok($disease->name eq 'GOLDBERG-SHPRINTZEN MEGACOLON SYNDROME (GOSHS)', 'get_Disease');
 
 my $GFDPs = $gfd->get_all_GFDPublications();
-ok(scalar @$GFDPs == 3, 'get_all_GFDPublications');
+ok(scalar @$GFDPs == 1, 'get_all_GFDPublications');
 
 $GFDPs = $gfd->get_all_GFDPhenotypes();
-ok(scalar @$GFDPs == 34, 'get_all_GFDPhenotypes');
+ok(scalar @$GFDPs == 20, 'get_all_GFDPhenotypes');
 
 my $GFDOs = $gfd->get_all_GFDOrgans();
 ok(@$GFDOs == 2, 'get_all_GFDOrgans');

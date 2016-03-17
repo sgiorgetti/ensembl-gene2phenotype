@@ -27,13 +27,13 @@ my $ua = $g2pdb->get_UserAdaptor;
 
 ok($gfdaa && $gfdaa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseActionAdaptor'), 'isa GenomicFeatureDiseaseActionAdaptor');
 
-my $GFD_id = 49;
+my $GFD_id = 133;
 my $GFD = $gfda->fetch_by_dbID($GFD_id);
 
 my $GFDAs = $gfdaa->fetch_all_by_GenomicFeatureDisease($GFD);
 ok(scalar @$GFDAs == 1, 'fetch_all_by_GenomicFeatureDisease');
 
-my $GFDA_id = 50;
+my $GFDA_id = 134;
 my $GFDA = $gfdaa->fetch_by_dbID($GFDA_id);
 ok($GFDA->dbID == $GFDA_id, 'fetch_by_dbID');
 

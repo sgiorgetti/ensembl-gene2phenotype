@@ -25,9 +25,9 @@ my $da = $g2pdb->get_DiseaseAdaptor;
 
 ok($da && $da->isa('Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor'), 'isa disease_adaptor');
 
-my $dbID = 85;
-my $name = 'SPONDYLOEPIPHYSEAL DYSPLASIA CONGENITA; SEDC'; 
-my $mim = 183900;
+my $dbID = 35;
+my $name = 'KABUKI SYNDROME (KABS)'; 
+my $mim = 147920;
 
 my $disease = $da->fetch_by_dbID($dbID);
 ok($disease->name eq $name, 'fetch_by_dbID');

@@ -23,13 +23,13 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpca = $g2pdb->get_GFDPublicationCommentAdaptor;
 
-my $GFD_publication_id = 455;
-my $comment_text = 'test';
-my $created = '2015-10-09 17:04:23';
+my $GFD_publication_id = 291;
+my $comment_text = 'comment';
+my $created = '2016-03-17 16:22:47';
 my $user_id = 1;
 
 my $gfdpc = Bio::EnsEMBL::G2P::GFDPublicationComment->new(
-  -GFD_publication_id => $GFD_publication_id,
+  -genomic_feature_disease_publication_id => $GFD_publication_id,
   -comment_text => $comment_text,
   -created => $created,
   -user_id => $user_id,
@@ -45,7 +45,7 @@ ok($user->username eq 'user1', 'username');
 
 my $gfdp = $gfdpc->get_GFD_publication();
 my $publication = $gfdp->get_Publication();
-ok($publication->title eq 'An amino acid substitution (Gly853-->Glu) in the collagen alpha 1(II) chain produces hypochondrogenesis.', 'publication title');
+ok($publication->title eq 'Homozygous nonsense mutations in KIAA1279 are associated with malformations of the central and enteric nervous systems.', 'publication title');
 
 done_testing();
 1;

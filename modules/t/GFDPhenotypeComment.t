@@ -23,13 +23,13 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpca = $g2pdb->get_GFDPhenotypeCommentAdaptor;
 
-my $GFD_phenotype_id = 3184;
-my $comment_text = 'test';
-my $created = '2015-10-09 17:03:57';
+my $GFD_phenotype_id = 2118;
+my $comment_text = 'comment';
+my $created = '2016-03-17 16:21:18';
 my $user_id = 1;
 
 my $gfdpc = Bio::EnsEMBL::G2P::GFDPhenotypeComment->new(
-  -GFD_phenotype_id => $GFD_phenotype_id,
+  -genomic_feature_disease_phenotype_id => $GFD_phenotype_id,
   -comment_text => $comment_text,
   -created => $created,
   -user_id => $user_id,
@@ -45,7 +45,7 @@ ok($user->username eq 'user1', 'username');
 
 my $gfdp = $gfdpc->get_GFD_phenotype();
 my $phenotype = $gfdp->get_Phenotype();
-ok($phenotype->name eq 'Cystic hygroma', 'phenotype name');
+ok($phenotype->name eq 'Bulbous nose', 'phenotype name');
 
 done_testing();
 1;

@@ -38,5 +38,12 @@ ok($gf->gene_symbol eq $gene_symbol, 'gene_symbol');
 ok($gf->mim eq $mim, 'mim');
 ok($gf->ensembl_stable_id eq $ensembl_stable_id, 'ensembl_stable_id');
 
+# genomic_feature_id
+# ensembl_stable_id
+# add_synonym
+# get_all_synonyms
+# get_all_Variations
+# get_organ_specificity_list
+
 done_testing();
 1;

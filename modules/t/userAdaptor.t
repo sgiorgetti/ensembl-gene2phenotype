@@ -27,7 +27,7 @@ ok($ua && $ua->isa('Bio::EnsEMBL::G2P::DBSQL::UserAdaptor'), 'isa user_adaptor')
 
 my $dbID = 1;
 my $username = 'user1';
-my $email = 'user1@ebi.ac.uk';
+my $email = 'user1@email.com';
 
 my $user = $ua->fetch_by_dbID($dbID);
 ok($user->dbID == $dbID, 'fetch_by_dbID');

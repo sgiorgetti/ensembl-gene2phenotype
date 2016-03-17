@@ -28,20 +28,20 @@ my $ua = $g2pdb->get_UserAdaptor;
 
 ok($gfdpca && $gfdpca->isa('Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor'), 'isa GFDPhenotypeCommentAdaptor');
 
-my $gfdpc = $gfdpca->fetch_by_dbID(9);
-ok($gfdpc->comment_text eq 'test', 'comment text');
+my $gfdpc = $gfdpca->fetch_by_dbID(1);
+ok($gfdpc->comment_text eq 'comment', 'comment text');
 
-my $gfdp = $gfdpa->fetch_by_dbID(3184);
+my $gfdp = $gfdpa->fetch_by_dbID(2118);
 my $gfdps = $gfdpca->fetch_all_by_GenomicFeatureDiseasePhenotype($gfdp);
 ok(scalar @$gfdps == 1, 'fetch_all_by_GenomicFeatureDiseasePhenotype');
 
 my $user = $ua->fetch_by_dbID(1);
 
-my $GFD_phenotype_id = 3184;
-my $comment_text = 'test';
+my $GFD_phenotype_id = 2118;
+my $comment_text = 'comment';
 
 $gfdpc = Bio::EnsEMBL::G2P::GFDPhenotypeComment->new(
-  -GFD_phenotype_id => $GFD_phenotype_id,
+  -genomic_feature_disease_phenotype_id => $GFD_phenotype_id,
   -comment_text => $comment_text,    
   -adaptor => $gfdpca,
 );

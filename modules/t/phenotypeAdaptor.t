@@ -43,7 +43,7 @@ $phenotype = $pa->fetch_by_name($name);
 ok($phenotype->name eq $name, 'fetch_by_name');
 
 my $phenotypes = $pa->fetch_all();
-ok(scalar @$phenotypes == 125, 'fetch_all');
+ok(scalar @$phenotypes == 137, 'fetch_all');
 
 $phenotype = Bio::EnsEMBL::G2P::Phenotype->new(
   -name => 'test_phenotype',

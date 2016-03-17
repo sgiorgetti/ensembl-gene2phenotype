@@ -26,9 +26,9 @@ my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 
 ok($gfdoa && $gfdoa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseOrganAdaptor'), 'isa GenomicFeatureDiseaseOrganAdaptor');
 
-my $dbID = 111;
-my $GFD_id = 49;
-my $organ_id = 5;
+my $dbID = 261;
+my $GFD_id = 133;
+my $organ_id = 15;
 
 my $GFDO = $gfdoa->fetch_by_dbID($dbID);
 ok($GFDO->dbID == $dbID, 'fetch_by_dbID');
@@ -41,17 +41,17 @@ my $GFDOs = $gfdoa->fetch_all_by_GenomicFeatureDisease($GFD);
 ok(scalar @$GFDOs == 2, 'fetch_all_by_GenomicFeatureDisease');
 
 $GFDO = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan->new(
-  -genomic_feature_disease_id => 49,
-  -organ_id => 12,
+  -genomic_feature_disease_id => 133,
+  -organ_id => 1,
   -adaptor => $gfdoa
 );
 
 ok($gfdoa->store($GFDO), 'store');
 
-my $GFDO_id = $GFDO->{GFD_organ_id};
+my $GFDO_id = $GFDO->{genomic_feature_disease_organ_id};
 
 my $dbh = $gfda->dbc->db_handle;
-$dbh->do(qq{DELETE FROM genomic_feature_disease_organ WHERE GFD_organ_id=$GFDO_id;}) or die $dbh->errstr;
+$dbh->do(qq{DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id=$GFDO_id;}) or die $dbh->errstr;
 
 done_testing();
 1;

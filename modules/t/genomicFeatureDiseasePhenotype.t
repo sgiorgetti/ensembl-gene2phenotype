@@ -25,12 +25,12 @@ my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePhenotypeAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor'), 'isa GenomicFeatureDiseasePhenotypeAdaptor');
 
-my $GFDP_id = 3184;
-my $GFD_id = 204; 
-my $phenotype_id = 365;
+my $GFDP_id = 2118;
+my $GFD_id = 133; 
+my $phenotype_id = 323;
 
 my $GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
-  -GFD_phenotype_id => $GFDP_id,
+  -genomic_feature_disease_phenotype_id => $GFDP_id,
   -genomic_feature_disease_id => $GFD_id,
   -phenotype_id => $phenotype_id,
   -adaptor => $gfdpa,
@@ -41,7 +41,7 @@ ok($GFD->dbID == $GFD_id, 'get_GenomicFeatureDisease');
 my $phenotype = $GFDP->get_Phenotype();
 ok($phenotype->dbID == $phenotype_id, 'get_Phenotype');
 my $GFDPComments = $GFDP->get_all_GFDPhenotypeComments();
-ok(scalar @$GFDPComments == 1, 'get_all_GFDPhenotypeComments');
+ok(scalar @$GFDPComments == 0, 'get_all_GFDPhenotypeComments');
 
 done_testing();
 1;

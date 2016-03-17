@@ -25,12 +25,12 @@ my $gfdoa = $g2pdb->get_GenomicFeatureDiseaseOrganAdaptor;
 
 ok($gfdoa && $gfdoa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseOrganAdaptor'), 'isa GenomicFeatureDiseaseOrganAdaptor');
 
-my $GFD_organ_id = 111;
-my $genomic_feature_disease_id = 49;
-my $organ_id = 5;
+my $GFD_organ_id = 261;
+my $genomic_feature_disease_id = 133;
+my $organ_id = 15;
 
 my $GFDO = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan->new(
-  -GFD_organ_id => $GFD_organ_id,
+  -genomic_feature_disease_organ_id => $GFD_organ_id,
   -genomic_feature_disease_id => $genomic_feature_disease_id,
   -organ_id => $organ_id,
   -adaptor => $gfdoa,

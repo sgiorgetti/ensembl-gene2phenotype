@@ -25,8 +25,8 @@ my $pa = $g2pdb->get_PublicationAdaptor;
 
 ok($pa && $pa->isa('Bio::EnsEMBL::G2P::DBSQL::PublicationAdaptor'), 'isa publication_adaptor');
 
-my $publication_id = 464;
-my $pmid = 7874117;
+my $publication_id = 881;
+my $pmid = 19088120;
 
 my $publication = $pa->fetch_by_publication_id($publication_id);
 ok($publication->dbID == $publication_id, 'fetch_by_publication_id');

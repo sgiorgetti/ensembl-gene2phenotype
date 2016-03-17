@@ -25,12 +25,12 @@ my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePublicationAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor'), 'isa GenomicFeatureDiseasePublicationAdaptor');
 
-my $GFDP_id = 455;
-my $GFD_id = 204;
-my $publication_id = 1407;
+my $GFDP_id = 291;
+my $GFD_id = 133;
+my $publication_id = 16168;
 
 my $GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication->new(
-  -GFD_publication_id => $GFDP_id,
+  -genomic_feature_disease_publication_id => $GFDP_id,
   -genomic_feature_disease_id => $GFD_id,
   -publication_id => $publication_id,
   -adaptor => $gfdpa,
@@ -41,7 +41,7 @@ ok($GFD->dbID == $GFD_id, 'get_GenomicFeatureDisease');
 my $publication = $GFDP->get_Publication();
 ok($publication->dbID == $publication_id, 'get_Publication');
 my $GFDPComments = $GFDP->get_all_GFDPublicationComments();
-ok(scalar @$GFDPComments == 1, 'get_all_GFDPublicationComments');
+ok(scalar @$GFDPComments == 0, 'get_all_GFDPublicationComments');
 
 done_testing();
 1;
