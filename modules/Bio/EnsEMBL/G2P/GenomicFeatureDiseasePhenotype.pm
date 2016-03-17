@@ -39,7 +39,7 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  return $self->{GFD_phenotype_id};
+  return $self->{genomic_feature_disease_phenotype_id};
 }
 
 sub get_GenomicFeatureDisease {

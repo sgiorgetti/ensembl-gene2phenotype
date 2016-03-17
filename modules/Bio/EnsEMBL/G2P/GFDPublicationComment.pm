@@ -12,11 +12,11 @@ sub new {
   my $class = ref($caller) || $caller;
 
   my ($GFD_publication_comment_id, $GFD_publication_id, $comment_text, $created, $user_id, $adaptor) =
-    rearrange(['GFD_publication_comment_id', 'GFD_publication_id', 'comment_text', 'created', 'user_id', 'adaptor'], @_);
+    rearrange(['GFD_publication_comment_id', 'genomic_feature_disease_publication_id', 'comment_text', 'created', 'user_id', 'adaptor'], @_);
 
   my $self = bless {
     'GFD_publication_comment_id' => $GFD_publication_comment_id,
-    'GFD_publication_id' => $GFD_publication_id,
+    'genomic_feature_disease_publication_id' => $GFD_publication_id,
     'comment_text' => $comment_text,
     'created' => $created,
     'user_id' => $user_id,
@@ -39,8 +39,8 @@ sub comment_text {
 
 sub GFD_publication_id {
   my $self = shift;
-  $self->{'GFD_publication_id'} = shift if ( @_ );
-  return $self->{'GFD_publication_id'};
+  $self->{'genomic_feature_disease_publication_id'} = shift if ( @_ );
+  return $self->{'genomic_feature_disease_publication_id'};
 }
 
 sub created {

@@ -27,6 +27,8 @@ sub new {
   my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category, $DDD_category_attrib, $is_visible, $panel, $panel_attrib, $adaptor) =
     rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'DDD_category', 'DDD_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
 
+
+
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
     'adaptor' => $adaptor,
@@ -64,22 +66,35 @@ sub disease_id {
 sub DDD_category {
   my $self = shift;
   my $DDD_category = shift;
-  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
   if ($DDD_category) {
-    $self->{DDD_category} = $DDD_category;
+    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
     my $DDD_category_attrib = $attribute_adaptor->attrib_id_for_value($DDD_category);
-    $self->DDD_category_attrib($DDD_category_attrib);
+    die "Could not get DDD category attrib id for value $DDD_category\n" unless ($DDD_category_attrib);
+    $self->{DDD_category} = $DDD_category;
+    $self->{DDD_category_attrib} = $DDD_category_attrib;
   } else {
-    if (!$self->{DDD_category} && $self->{DDD_category_attrib}) {
-      $self->{DDD_category} = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
-    }
+    if ($self->{DDD_category_attrib} && !$self->{DDD_category}) {
+      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+      my $DDD_category = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
+      $self->{DDD_category} = $DDD_category;
+    }   
+    die "No DDD_category" unless ($self->{DDD_category} );
   }
   return $self->{DDD_category};
 }
 
 sub DDD_category_attrib {
   my $self = shift;
-  $self->{DDD_category_attrib} = shift if ( @_ );
+  my $DDD_category_attrib = shift;
+  if ($DDD_category_attrib) {
+    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+    my $DDD_category = $attribute_adaptor->attrib_value_for_id($DDD_category_attrib);
+    die "Could not get DDD category for value $DDD_category_attrib\n" unless ($DDD_category);
+    $self->{DDD_category} = $DDD_category;
+    $self->{DDD_category_attrib} = $DDD_category_attrib;
+  } else {
+    die "No DDD_category_attrib" unless ($self->{DDD_category_attrib});
+  }
   return $self->{DDD_category_attrib};
 }
 
@@ -91,13 +106,31 @@ sub is_visible {
 
 sub panel {
   my $self = shift;
-  $self->{panel} = shift if ( @_ );
+  my $panel = shift;
+  if ($panel) {
+    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+    my $panel_attrib = $attribute_adaptor->attrib_id_for_value($panel);
+    die "Could not get panel attrib id for value $panel\n" unless ($panel_attrib);
+    $self->{panel} = $panel;
+    $self->{panel_attrib} = $panel_attrib;
+  } else {
+    die "No panel" unless ($self->{panel});
+  }
   return $self->{panel};
 }
 
 sub panel_attrib {
   my $self = shift;
-  $self->{panel_attrib} = shift if ( @_ );
+  my $panel_attrib = shift;
+  if ($panel_attrib) {
+    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+    my $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
+    die "Could not get panel for value $panel_attrib\n" unless ($panel);
+    $self->{panel} = $panel;
+    $self->{panel_attrib} = $panel_attrib;
+  } else {
+    die "No panel_attrib" unless ($self->{panel_attrib});
+  }
   return $self->{panel_attrib};
 }
 

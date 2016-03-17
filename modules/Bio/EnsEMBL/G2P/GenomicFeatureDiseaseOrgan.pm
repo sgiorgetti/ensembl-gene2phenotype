@@ -25,10 +25,10 @@ sub new {
   my $class = ref($caller) || $caller;
 
   my ($GFD_organ_id, $genomic_feature_disease_id, $organ_id, $adaptor) =
-    rearrange(['GFD_organ_id', 'genomic_feature_disease_id', 'organ_id', 'adaptor'], @_);
+    rearrange(['genomic_feature_disease_organ_id', 'genomic_feature_disease_id', 'organ_id', 'adaptor'], @_);
 
   my $self = bless {
-    'GFD_organ_id' => $GFD_organ_id,
+    'genomic_feature_disease_organ_id' => $GFD_organ_id,
     'genomic_feature_disease_id' => $genomic_feature_disease_id,
     'organ_id' => $organ_id, 
     'adaptor' => $adaptor,
@@ -39,7 +39,7 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  return $self->{GFD_organ_id};
+  return $self->{genomic_feature_disease_organ_id};
 }
 
 sub get_GenomicFeatureDisease {
