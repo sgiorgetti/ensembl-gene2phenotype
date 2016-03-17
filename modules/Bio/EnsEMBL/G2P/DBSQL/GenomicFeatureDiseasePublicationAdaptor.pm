@@ -39,8 +39,8 @@ sub store {
   $sth->finish();
 
   # get dbID
-  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_publication', 'GFD_publication_id');
-  $GFD_publication->{GFD_publication_id} = $dbID;
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_publication', 'genomic_feature_disease_publication_id');
+  $GFD_publication->{genomic_feature_disease_publication_id} = $dbID;
   return $GFD_publication;
 }
 
@@ -59,11 +59,11 @@ sub delete {
   }
 
   my $sth = $dbh->prepare(q{
-    DELETE FROM GFD_publication_comment WHERE GFD_publication_id = ?;
+    DELETE FROM GFD_publication_comment WHERE genomic_feature_disease_publication_id = ?;
   });
   $sth->execute($GFDP->dbID);
   $sth = $dbh->prepare(q{
-    DELETE FROM genomic_feature_disease_publication WHERE GFD_publication_id = ?;
+    DELETE FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id = ?;
   });
   $sth->execute($GFDP->dbID);
   $sth->finish();
@@ -71,10 +71,8 @@ sub delete {
 
 sub fetch_by_dbID {
   my $self = shift;
-  my $GFD_publication_id = shift;
-  my $constraint = "gfdp.GFD_publication_id=$GFD_publication_id"; 
-  my $result = $self->generic_fetch($constraint);
-  return $result->[0];
+  my $dbID = shift;
+  return $self->SUPER::fetch_by_dbID($dbID);
 }
 
 sub fetch_by_GFD_id_publication_id {
@@ -100,7 +98,7 @@ sub fetch_all_by_GenomicFeatureDisease {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'gfdp.GFD_publication_id',
+    'gfdp.genomic_feature_disease_publication_id',
     'gfdp.genomic_feature_disease_id',
     'gfdp.publication_id',
   );
@@ -125,7 +123,7 @@ sub _objs_from_sth {
 
   while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication->new(
-      -GFD_publication_id => $GFD_publication_id,
+      -genomic_feature_disease_publication_id => $GFD_publication_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -publication_id => $publication_id,
       -adaptor => $self,
