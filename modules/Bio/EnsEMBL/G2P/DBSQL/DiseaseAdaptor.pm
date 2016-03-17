@@ -92,6 +92,13 @@ sub fetch_by_mim {
   return $result->[0];
 }
 
+sub fetch_all_by_substring {
+  my $self = shift;
+  my $substring = shift;
+  my $constraint = "d.name LIKE '%$substring%' LIMIT 20";
+  return $self->generic_fetch($constraint);
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
