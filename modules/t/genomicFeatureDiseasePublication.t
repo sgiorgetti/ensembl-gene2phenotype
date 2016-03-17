@@ -41,7 +41,7 @@ ok($GFD->dbID == $GFD_id, 'get_GenomicFeatureDisease');
 my $publication = $GFDP->get_Publication();
 ok($publication->dbID == $publication_id, 'get_Publication');
 my $GFDPComments = $GFDP->get_all_GFDPublicationComments();
-ok(scalar @$GFDPComments == 0, 'get_all_GFDPublicationComments');
+ok(scalar @$GFDPComments == 1, 'get_all_GFDPublicationComments');
 
 done_testing();
 1;

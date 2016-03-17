@@ -41,7 +41,7 @@ ok($GFD->dbID == $GFD_id, 'get_GenomicFeatureDisease');
 my $phenotype = $GFDP->get_Phenotype();
 ok($phenotype->dbID == $phenotype_id, 'get_Phenotype');
 my $GFDPComments = $GFDP->get_all_GFDPhenotypeComments();
-ok(scalar @$GFDPComments == 0, 'get_all_GFDPhenotypeComments');
+ok(scalar @$GFDPComments == 1, 'get_all_GFDPhenotypeComments');
 
 done_testing();
 1;

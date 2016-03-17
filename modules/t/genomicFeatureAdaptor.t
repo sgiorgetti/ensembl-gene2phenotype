@@ -37,7 +37,7 @@ ok($gf->gene_symbol eq $gene_symbol, 'fetch_by_gene_symbol');
 $gf = $gfa->fetch_by_synonym($synonym);
 ok($gf->gene_symbol eq $gene_symbol, 'fetch_by_synonym');
 
-my $gfs = $gfa->fetch_all_by_substring('KM');
+$gfs = $gfa->fetch_all_by_substring('KM');
 ok(scalar @$gfs == 2, 'fetch_all_by_substring');
 
 $gf = Bio::EnsEMBL::G2P::GenomicFeature->new(
