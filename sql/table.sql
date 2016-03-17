@@ -30,6 +30,25 @@ CREATE TABLE disease_name_synonym (
   KEY disease_idx (disease_id)
 );
 
+CREATE TABLE ensembl_variant (
+  variant_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_id int(10) unsigned NOT NULL,
+  seq_region varchar(128) DEFAULT NULL,
+  seq_region_start int(11) NOT NULL,
+  seq_region_end int(11) NOT NULL,
+  seq_region_strand tinyint(4) NOT NULL,
+  name varchar(255) DEFAULT NULL,
+  source varchar(24) NOT NULL,
+  allele_string varchar(50000) DEFAULT NULL,
+  consequence varchar(128) DEFAULT NULL,
+  feature_stable_id varchar(128) DEFAULT NULL,
+  amino_acid_string varchar(255) DEFAULT NULL,
+  polyphen_prediction varchar(128) DEFAULT NULL,
+  sift_prediction varchar(128) DEFAULT NULL,
+  PRIMARY KEY (variant_id),
+  KEY genomic_feature_idx (genomic_feature_id)
+);
+
 CREATE TABLE genomic_feature (
   genomic_feature_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   gene_symbol varchar(128) DEFAULT NULL,
@@ -51,23 +70,11 @@ CREATE TABLE genomic_feature_disease (
   disease_id int(10) unsigned NOT NULL,
   DDD_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
   is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  panel tinyint(1) DEFAULT NULL,
+  panel_attrib tinyint(1) DEFAULT NULL,
   PRIMARY KEY (genomic_feature_disease_id),
-  UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id),
+  UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id, panel_attrib),
   KEY genomic_feature_idx (genomic_feature_id),
   KEY disease_idx (disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_log (
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  genomic_feature_id int(10) unsigned NOT NULL,
-  disease_id int(10) unsigned NOT NULL,
-  DDD_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  user_id int(10) unsigned NOT NULL,
-  action varchar(128) NOT NULL,
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
 CREATE TABLE genomic_feature_disease_action (
@@ -90,25 +97,73 @@ CREATE TABLE genomic_feature_disease_action_log (
   KEY genomic_feature_disease_action_idx (genomic_feature_disease_action_id)
 );
 
+CREATE TABLE genomic_feature_disease_log (
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  genomic_feature_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  DDD_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  action varchar(128) NOT NULL,
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_organ (
+  genomic_feature_disease_organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  organ_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_organ_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
 CREATE TABLE genomic_feature_disease_phenotype (
-  GFD_phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   phenotype_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (GFD_phenotype_id),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
 CREATE TABLE genomic_feature_disease_publication (
-  GFD_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   publication_id int(10) unsigned NOT NULL,
   PRIMARY KEY (GFD_publication_id),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
+CREATE TABLE genomic_feature_synonym (
+  genomic_feature_id int(10) unsigned NOT NULL,
+  name varchar(255) NOT NULL,
+  UNIQUE KEY name (genomic_feature_id, name),
+  KEY genomic_feature_idx (genomic_feature_id)
+);
+
+CREATE TABLE GFD_phenotype_comment (
+  GFD_phenotype_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_phenotype_id int(10) unsigned NOT NULL,
+  comment_text text DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_phenotype_comment_id),
+  KEY GFD_phenotype_idx (GFD_phenotype_id)
+);
+
+CREATE TABLE GFD_phenotype_comment_deleted (
+  GFD_phenotype_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_phenotype_id int(10) unsigned NOT NULL,
+  comment_text text DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  deleted_by_user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_phenotype_comment_id),
+  KEY GFD_phenotype_idx (GFD_phenotype_id)
+);
+
 CREATE TABLE GFD_publication_comment (
   GFD_publication_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  GFD_publication_id int(10) unsigned NOT NULL,
+  genomic_feature_disease_publication_id int(10) unsigned NOT NULL,
   comment_text text DEFAULT NULL,
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL, 
@@ -128,41 +183,10 @@ CREATE TABLE GFD_publication_comment_deleted (
   KEY GFD_publication_idx (GFD_publication_id)
 );
 
-CREATE TABLE GFD_phenotype_comment (
-  GFD_phenotype_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  GFD_phenotype_id int(10) unsigned NOT NULL,
-  comment_text text DEFAULT NULL,
-  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  user_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (GFD_phenotype_comment_id),
-  KEY GFD_phenotype_idx (GFD_phenotype_id)
-);
-
-CREATE TABLE GFD_phenotype_comment_deleted (
-  GFD_phenotype_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  GFD_phenotype_id int(10) unsigned NOT NULL,
-  comment_text text DEFAULT NULL,
-  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  user_id int(10) unsigned NOT NULL,
-  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  deleted_by_user_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (GFD_phenotype_comment_id),
-  KEY GFD_phenotype_idx (GFD_phenotype_id)
-);
-
-CREATE TABLE genomic_feature_disease_organ (
-  GFD_organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  organ_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (GFD_organ_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-
-CREATE TABLE organ_specificity (
-  organ_specificity_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  organ_specificity varchar(255) NOT NULL,
-  PRIMARY KEY (organ_specificity_id)
+CREATE TABLE organ (
+  organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  organ varchar(255) NOT NULL,
+  PRIMARY KEY (organ)
 );
 
 CREATE TABLE phenotype (
@@ -190,6 +214,16 @@ CREATE TABLE search (
   PRIMARY KEY (search_term)
 );
 
+CREATE TABLE user (
+  user_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  username varchar(255) NOT NULL,
+  email varchar(255) NOT NULL,
+  panel_attrib set('36','37','38','39','40','41') DEFAULT NULL,
+  PRIMARY KEY (user_id),
+  UNIQUE KEY user_idx (username),
+  UNIQUE KEY email_idx (email)
+);
+
 CREATE TABLE variation (
   variation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
@@ -209,15 +243,5 @@ CREATE TABLE variation_synonym (
   UNIQUE KEY name (variation_id,name),
   KEY variation_id (variation_id),
   KEY name_idx (name)
-);
-
-CREATE TABLE user (
-  user_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  username varchar(255) NOT NULL,
-  email varchar(255) NOT NULL,
-  panel set('36','37','38','39','40','41') DEFAULT NULL,
-  PRIMARY KEY (user_id),
-  UNIQUE KEY user_idx (username),
-  UNIQUE KEY email_idx (email)
 );
 
