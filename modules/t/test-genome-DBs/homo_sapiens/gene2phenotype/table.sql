@@ -1,45 +1,45 @@
 CREATE TABLE `GFD_phenotype_comment` (
   `GFD_phenotype_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `GFD_phenotype_id` int(10) unsigned NOT NULL,
+  `genomic_feature_disease_phenotype_id` int(10) unsigned NOT NULL,
   `comment_text` text,
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_phenotype_comment_id`),
-  KEY `GFD_phenotype_idx` (`GFD_phenotype_id`)
+  KEY `GFD_phenotype_idx` (`genomic_feature_disease_phenotype_id`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `GFD_phenotype_comment_deleted` (
   `GFD_phenotype_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `GFD_phenotype_id` int(10) unsigned NOT NULL,
+  `genomic_feature_disease_phenotype_id` int(10) unsigned NOT NULL,
   `comment_text` text,
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `user_id` int(10) unsigned NOT NULL,
   `deleted` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_by_user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_phenotype_comment_id`),
-  KEY `GFD_phenotype_idx` (`GFD_phenotype_id`)
+  KEY `GFD_phenotype_idx` (`genomic_feature_disease_phenotype_id`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `GFD_publication_comment` (
   `GFD_publication_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `GFD_publication_id` int(10) unsigned NOT NULL,
+  `genomic_feature_disease_publication_id` int(10) unsigned NOT NULL,
   `comment_text` text,
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_publication_comment_id`),
-  KEY `GFD_publication_idx` (`GFD_publication_id`)
+  KEY `GFD_publication_idx` (`genomic_feature_disease_publication_id`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `GFD_publication_comment_deleted` (
   `GFD_publication_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `GFD_publication_id` int(10) unsigned NOT NULL,
+  `genomic_feature_disease_publication_id` int(10) unsigned NOT NULL,
   `comment_text` text,
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `user_id` int(10) unsigned NOT NULL,
   `deleted` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_by_user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_publication_comment_id`),
-  KEY `GFD_publication_idx` (`GFD_publication_id`)
+  KEY `GFD_publication_idx` (`genomic_feature_disease_publication_id`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `attrib` (
@@ -154,34 +154,28 @@ CREATE TABLE `genomic_feature_disease_log` (
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `genomic_feature_disease_organ` (
-  `GFD_organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `genomic_feature_disease_organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_disease_id` int(10) unsigned NOT NULL,
   `organ_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`GFD_organ_id`),
+  PRIMARY KEY (`genomic_feature_disease_organ_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
 ) ENGINE=InnoDB  ;
 
 CREATE TABLE `genomic_feature_disease_phenotype` (
-  `GFD_phenotype_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `genomic_feature_disease_phenotype_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_disease_id` int(10) unsigned NOT NULL,
   `phenotype_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`GFD_phenotype_id`),
+  PRIMARY KEY (`genomic_feature_disease_phenotype_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
 ) ENGINE=InnoDB  ;
 
 CREATE TABLE `genomic_feature_disease_publication` (
-  `GFD_publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `genomic_feature_disease_publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_disease_id` int(10) unsigned NOT NULL,
   `publication_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`GFD_publication_id`),
+  PRIMARY KEY (`genomic_feature_disease_publication_id`),
   KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
 ) ENGINE=InnoDB  ;
-
-CREATE TABLE `genomic_feature_organ_specificity` (
-  `genomic_feature_id` int(10) unsigned NOT NULL,
-  `organ_specificity_id` int(10) unsigned NOT NULL,
-  KEY `genomic_feature_idx` (`genomic_feature_id`)
-) ENGINE=InnoDB ;
 
 CREATE TABLE `genomic_feature_synonym` (
   `genomic_feature_id` int(10) unsigned NOT NULL,
@@ -190,10 +184,10 @@ CREATE TABLE `genomic_feature_synonym` (
   KEY `genomic_feature_idx` (`genomic_feature_id`)
 ) ENGINE=InnoDB ;
 
-CREATE TABLE `organ_specificity` (
-  `organ_specificity_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `organ_specificity` varchar(255) NOT NULL,
-  PRIMARY KEY (`organ_specificity_id`)
+CREATE TABLE `organ` (
+  `organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `organ` varchar(255) NOT NULL,
+  PRIMARY KEY (`organ_id`)
 ) ENGINE=InnoDB  ;
 
 CREATE TABLE `phenotype` (
