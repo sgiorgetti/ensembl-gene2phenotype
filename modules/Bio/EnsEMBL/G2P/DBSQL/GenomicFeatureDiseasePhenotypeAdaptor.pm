@@ -39,8 +39,8 @@ sub store {
   $sth->finish();
 
   # get dbID
-  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_phenotype', 'GFD_phenotype_id');
-  $GFD_phenotype->{GFD_phenotype_id} = $dbID;
+  my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_phenotype', 'genomic_feature_disease_phenotype_id');
+  $GFD_phenotype->{genomic_feature_disease_phenotype_id} = $dbID;
   return $GFD_phenotype;
 }
 
@@ -59,7 +59,7 @@ sub delete {
   }
 
   my $sth = $dbh->prepare(q{
-    DELETE FROM genomic_feature_disease_phenotype WHERE GFD_phenotype_id = ?;
+    DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id = ?;
   });
   
   $sth->execute($GFDP->dbID);
@@ -68,10 +68,8 @@ sub delete {
 
 sub fetch_by_dbID {
   my $self = shift;
-  my $GFD_phenotype_id = shift;
-  my $constraint = "gfdp.GFD_phenotype_id=$GFD_phenotype_id";
-  my $result = $self->generic_fetch($constraint);
-  return $result->[0]; 
+  my $dbID = shift;
+  return $self->SUPER::fetch_by_dbID($dbID);
 }
 
 sub fetch_by_GFD_id_phenotype_id {
@@ -97,7 +95,7 @@ sub fetch_all_by_GenomicFeatureDisease {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'gfdp.GFD_phenotype_id',
+    'gfdp.genomic_feature_disease_phenotype_id',
     'gfdp.genomic_feature_disease_id',
     'gfdp.phenotype_id',
   );
@@ -122,7 +120,7 @@ sub _objs_from_sth {
 
   while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
-      -GFD_phenotype_id => $GFD_phenotype_id,
+      -genomic_feature_disease_phenotype_id => $GFD_phenotype_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -phenotype_id => $phenotype_id,
       -adaptor => $self,
