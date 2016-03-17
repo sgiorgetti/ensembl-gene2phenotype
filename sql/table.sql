@@ -113,7 +113,7 @@ CREATE TABLE genomic_feature_disease_organ (
   genomic_feature_disease_organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   organ_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (GFD_organ_id),
+  PRIMARY KEY (genomic_feature_disease_organ_id),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
@@ -146,7 +146,7 @@ CREATE TABLE GFD_phenotype_comment (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (GFD_phenotype_comment_id),
-  KEY GFD_phenotype_idx (GFD_phenotype_id)
+  KEY GFD_phenotype_idx (genomic_feature_disease_phenotype_id)
 );
 
 CREATE TABLE GFD_phenotype_comment_deleted (
@@ -158,7 +158,7 @@ CREATE TABLE GFD_phenotype_comment_deleted (
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   deleted_by_user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (GFD_phenotype_comment_id),
-  KEY GFD_phenotype_idx (GFD_phenotype_id)
+  KEY GFD_phenotype_idx (genomic_feature_disease_phenotype_id)
 );
 
 CREATE TABLE GFD_publication_comment (
@@ -168,7 +168,7 @@ CREATE TABLE GFD_publication_comment (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL, 
   PRIMARY KEY (GFD_publication_comment_id),
-  KEY GFD_publication_idx (GFD_publication_id)
+  KEY GFD_publication_idx (genomic_feature_disease_publication_id)
 );
 
 CREATE TABLE GFD_publication_comment_deleted (
@@ -180,7 +180,7 @@ CREATE TABLE GFD_publication_comment_deleted (
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   deleted_by_user_id int(10) unsigned NOT NULL, 
   PRIMARY KEY (GFD_publication_comment_id),
-  KEY GFD_publication_idx (GFD_publication_id)
+  KEY GFD_publication_idx (genomic_feature_disease_publication_id)
 );
 
 CREATE TABLE organ (
