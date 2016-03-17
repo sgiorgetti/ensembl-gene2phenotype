@@ -6,7 +6,7 @@ CREATE TABLE `GFD_phenotype_comment` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_phenotype_comment_id`),
   KEY `GFD_phenotype_idx` (`genomic_feature_disease_phenotype_id`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `GFD_phenotype_comment_deleted` (
   `GFD_phenotype_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -28,7 +28,7 @@ CREATE TABLE `GFD_publication_comment` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`GFD_publication_comment_id`),
   KEY `GFD_publication_idx` (`genomic_feature_disease_publication_id`)
-) ENGINE=InnoDB ;
+) ENGINE=InnoDB  ;
 
 CREATE TABLE `GFD_publication_comment_deleted` (
   `GFD_publication_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
