@@ -187,7 +187,7 @@ CREATE TABLE GFD_publication_comment_deleted (
 CREATE TABLE organ (
   organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   organ varchar(255) NOT NULL,
-  PRIMARY KEY (organ)
+  PRIMARY KEY (organ_id)
 );
 
 CREATE TABLE phenotype (
