@@ -26,7 +26,7 @@ sub store {
 
   my $sth = $dbh->prepare(q{
     INSERT INTO organ (
-      organ
+      name
     ) VALUES (?);
   });
   $sth->execute(
@@ -56,7 +56,7 @@ sub fetch_by_dbID {
 sub fetch_by_name {
   my $self = shift;
   my $name = shift;
-  my $constraint = "o.organ='$name'";
+  my $constraint = "o.name='$name'";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];
 }
@@ -70,7 +70,7 @@ sub _columns {
   my $self = shift;
   my @cols = (
     'o.organ_id',
-    'o.organ',
+    'o.name',
   );
   return @cols;
 }
