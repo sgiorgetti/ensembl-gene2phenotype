@@ -43,6 +43,31 @@ sub store {
   return $GFD_organ;
 }
 
+sub update {
+  my $self = shift;
+  my $GFD_organ = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFD_organ) || !$GFD_organ->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    UPDATE genomic_feature_disease_organ
+    SET genomic_feature_disease_id = ?,
+        organ_id = ?
+    WHERE genomic_feature_disease_organ_id = ? 
+  });
+  $sth->execute(
+    $GFD_organ->{genomic_feature_disease_id},
+    $GFD_organ->organ_id,
+    $GFD_organ->dbID
+  );
+  $sth->finish();
+
+  return $GFD_organ;
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $dbID = shift;
@@ -58,6 +83,11 @@ sub fetch_by_GFD_id_organ_id {
   return $result->[0];
 }
 
+sub fetch_all {
+  my $self = shift;
+  return $self->generic_fetch();
+}
+
 sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
   my $GFD = shift;
@@ -67,6 +97,26 @@ sub fetch_all_by_GenomicFeatureDisease {
   my $GFD_id = $GFD->dbID;
   my $constraint = "gfdo.genomic_feature_disease_id=$GFD_id"; 
   return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_Organ {
+  my $self = shift;
+  my $organ = shift;
+  if (!ref($organ) || !$organ->isa('Bio::EnsEMBL::G2P::Organ')) {
+    die('Bio::EnsEMBL::G2P::Organ arg expected');
+  }
+  my $organ_id = $organ->dbID;
+  my $constraint = "gfdo.organ_id=$organ_id"; 
+  return $self->generic_fetch($constraint);
+}
+
+sub delete_all_by_GFD_id {
+  my $self = shift;
+  my $GFD_id = shift;
+  my $dbh = $self->dbc->db_handle;
+  my $sth = $dbh->prepare("DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_id=$GFD_id");
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  $sth->finish();
 }
 
 sub _columns {

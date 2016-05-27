@@ -194,6 +194,7 @@ sub fetch_all_by_GenomicFeature_panel {
   my $self = shift;
   my $genomic_feature = shift;
   my $panel = shift;
+
   if ($panel eq 'ALL') {
     return $self->fetch_all_by_GenomicFeature($genomic_feature);
   }

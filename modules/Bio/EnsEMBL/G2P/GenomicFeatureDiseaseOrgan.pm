@@ -42,6 +42,12 @@ sub dbID {
   return $self->{genomic_feature_disease_organ_id};
 }
 
+sub organ_id {
+  my $self = shift;
+  $self->{organ_id} = shift if ( @_ );
+  return $self->{organ_id};
+}
+
 sub get_GenomicFeatureDisease {
   my $self = shift;
   my $genomic_feature_disease_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseAdaptor;
