@@ -24,6 +24,7 @@ sub get_available_adaptors {
   my %pairs = (
     'Attribute'                        => 'Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor',
     'Disease'                          => 'Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor',
+    'EnsemblVariation'                 => 'Bio::EnsEMBL::G2P::DBSQL::EnsemblVariationAdaptor',
     'GFDPhenotypeComment'              => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor',
     'GFDPublicationComment'            => 'Bio::EnsEMBL::G2P::DBSQL::GFDPublicationCommentAdaptor',
     'GenomicFeature'                   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureAdaptor',
