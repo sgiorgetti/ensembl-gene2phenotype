@@ -30,8 +30,8 @@ CREATE TABLE disease_name_synonym (
   KEY disease_idx (disease_id)
 );
 
-CREATE TABLE ensembl_variant (
-  variant_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE ensembl_variation (
+  ensembl_variation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
   seq_region varchar(128) DEFAULT NULL,
   seq_region_start int(11) NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE ensembl_variant (
   amino_acid_string varchar(255) DEFAULT NULL,
   polyphen_prediction varchar(128) DEFAULT NULL,
   sift_prediction varchar(128) DEFAULT NULL,
-  PRIMARY KEY (variant_id),
+  PRIMARY KEY (ensembl_variation_id),
   KEY genomic_feature_idx (genomic_feature_id)
 );
 
