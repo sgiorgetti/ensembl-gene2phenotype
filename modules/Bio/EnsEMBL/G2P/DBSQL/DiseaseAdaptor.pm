@@ -42,6 +42,7 @@ sub store {
   # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'disease', 'disease_id');
   $disease->{disease_id} = $dbID;
+  $disease->{dbID} = $dbID;
   return $disease;
 }
 
