@@ -24,14 +24,15 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($user_id, $username, $email, $panel, $adaptor) = 
-    rearrange(['user_id', 'username', 'email', 'panel', 'adaptor'], @_);
+  my ($user_id, $username, $email, $panel, $panel_attrib, $adaptor) = 
+    rearrange(['user_id', 'username', 'email', 'panel', 'panel_attrib', 'adaptor'], @_);
 
   my $self = bless {
     'user_id' => $user_id,
     'username' => $username,
     'email' => $email,
     'panel' => $panel,
+    'panel_attrib' => $panel_attrib,
     'adaptor' => $adaptor,
   }, $class;
   return $self;
@@ -62,8 +63,35 @@ sub email {
 
 sub panel {
   my $self = shift;
-  $self->{panel} = shift if ( @_ );
+  my $panel = shift;
+  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+  if ($panel) {
+    my @values = split(',', $panel);
+    my @ids = ();
+    foreach my $value (@values) {
+      push @ids, $attribute_adaptor->attrib_id_for_value($value);
+    }
+    $self->{panel_attrib} = join(',', @ids);
+    $self->{panel} = $panel;
+  } else {
+    if (!$self->{panel} && $self->{panel_attrib}) {
+      my @ids = split(',', $self->{panel_attrib});
+      my @values = ();
+      foreach my $id (@ids) {
+        push @values, $attribute_adaptor->attrib_value_for_id($id);
+      }
+      $self->{panel} = join(',', @values);
+    }
+  }
   return $self->{panel};
 }
+
+sub panel_attrib {
+  my $self = shift;
+  $self->{panel_attrib} = shift if ( @_ );
+  return $self->{panel_attrib};
+}
+
+
 
 1;
