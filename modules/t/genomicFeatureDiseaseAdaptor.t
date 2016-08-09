@@ -140,6 +140,9 @@ ok(scalar @$gfds == 1, 'fetch_all_by_Disease');
 $gfds = $gfda->fetch_all_by_Disease_panel($disease, 'DD'); 
 ok(scalar @$gfds == 1, 'fetch_all_by_Disease_panel');
 
+$gfd = $gfds->[0];
+$gfda->delete($gfd, $user);
+
 #fetch_all_by_disease_id
 
 #fetch_all

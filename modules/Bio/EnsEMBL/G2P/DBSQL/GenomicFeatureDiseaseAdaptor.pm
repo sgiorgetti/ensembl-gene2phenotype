@@ -85,6 +85,74 @@ sub store {
   return $gfd;
 }
 
+sub delete {
+ my $self = shift;
+  my $GFD = shift;
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFD) || !$GFD->isa('Bio::EnsEMBL::G2P::GenomicFeatureDisease')) {
+    die ('Bio::EnsEMBL::G2P::GenomicFeatureDisease arg expected');
+  }
+
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $GFD_id = $GFD->dbID; 
+
+  my $GFDPublicationAdaptor = $self->db->get_GenomicFeatureDiseasePublicationAdaptor;
+  foreach my $GFDPublication (@{$GFD->get_all_GFDPublications}) {
+    $GFDPublicationAdaptor->delete($GFDPublication, $user);
+  }
+
+  my $GFDPhenotypeAdaptor = $self->db->get_GenomicFeatureDiseasePhenotypeAdaptor;
+  foreach my $GFDPhenotype (@{$GFD->get_all_GFDPhenotypes}) {
+    $GFDPhenotypeAdaptor->delete($GFDPhenotype, $user);
+  }     
+  
+  my $GFDOrganAdaptor = $self->db->get_GenomicFeatureDiseaseOrganAdaptor;
+  foreach my $GFDOrgan (@{$GFD->get_all_GFDOrgans}) {
+    $GFDOrganAdaptor->delete($GFDOrgan, $user);
+  }   
+    
+  my $GenomicFeatureDiseaseActionAdaptor = $self->db->get_GenomicFeatureDiseaseActionAdaptor; 
+  foreach my $GFDAction (@{$GFD->get_all_GenomicFeatureDiseaseActions}) {
+    $GenomicFeatureDiseaseActionAdaptor->delete($GFDAction, $user);
+  }
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_deleted (
+      genomic_feature_disease_id,
+      genomic_feature_id,
+      disease_id,
+      DDD_category_attrib,
+      is_visible,
+      panel_attrib,
+      deleted,
+      deleted_by_user_id
+    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+  });
+
+  $sth->execute(
+    $GFD->dbID,
+    $GFD->genomic_feature_id,
+    $GFD->disease_id,
+    $GFD->DDD_category_attrib,
+    $GFD->is_visible,
+    $GFD->panel_attrib,
+    $user->user_id
+  );
+  $sth->finish();
+
+  $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id = ?;
+  });
+
+  $sth->execute($GFD->dbID);
+  $sth->finish();
+}
+
 sub update {
   my $self = shift;
   my $gfd = shift;
@@ -128,29 +196,20 @@ sub update_log {
   my $gfd = shift;
   my $user = shift;
   my $action = shift;
-  my $dbh = $self->dbc->db_handle;
 
-  my $sth = $dbh->prepare(q{
-    INSERT INTO genomic_feature_disease_log(
-      genomic_feature_disease_id,
-      genomic_feature_id,
-      disease_id,
-      DDD_category_attrib,
-      is_visible,
-      created,
-      user_id,
-      action
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
-  }); 
-  $sth->execute(
-    $gfd->dbID,
-    $gfd->genomic_feature_id,
-    $gfd->disease_id,
-    $gfd->DDD_category_attrib || undef,
-    $gfd->is_visible || 1,
-    $user->user_id,
-    $action
+  my $GFD_log_adaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor;
+  my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
+    -genomic_feature_disease_id => $gfd->dbID,
+    -is_visible => $gfd->is_visible,
+    -panel_attrib => $gfd->panel_attrib,
+    -disease_id => $gfd->disease_id,
+    -genomic_feature_id => $gfd->genomic_feature_id,
+    -DDD_category_attrib => $gfd->DDD_category_attrib,
+    -user_id => $user->dbID,
+    -action => $action, 
+    -adaptor => $GFD_log_adaptor,
   );
+  $GFD_log_adaptor->store($gfdl);
 }
 
 sub fetch_by_dbID {

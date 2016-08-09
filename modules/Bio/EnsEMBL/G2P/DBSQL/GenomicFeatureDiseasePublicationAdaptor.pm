@@ -58,13 +58,20 @@ sub delete {
     die ('Bio::EnsEMBL::G2P::User arg expected');
   }
 
+  my $GFDPublicationCommentAdaptor = $self->db->get_GFDPublicationCommentAdaptor;
+  foreach my $GFDPublicationComment (@{$GFDP->get_all_GFDPublicationComments}) {
+    $GFDPublicationCommentAdaptor->delete($GFDPublicationComment, $user);
+  }
+
   my $sth = $dbh->prepare(q{
-    DELETE FROM GFD_publication_comment WHERE genomic_feature_disease_publication_id = ?;
-  });
+    INSERT INTO genomic_feature_disease_publication_deleted SELECT * FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id = ?;
+  }); 
   $sth->execute($GFDP->dbID);
+
   $sth = $dbh->prepare(q{
     DELETE FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id = ?;
   });
+
   $sth->execute($GFDP->dbID);
   $sth->finish();
 }

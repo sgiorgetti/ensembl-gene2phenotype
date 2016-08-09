@@ -58,10 +58,20 @@ sub delete {
     die ('Bio::EnsEMBL::G2P::User arg expected');
   }
 
+  my $GFDPhenotypeCommentAdaptor = $self->db->get_GFDPhenotypeCommentAdaptor;
+  foreach my $GFDPhenotypeComment (@{$GFDP->get_all_GFDPhenotypeComments}) {
+    $GFDPhenotypeCommentAdaptor->delete($GFDPhenotypeComment, $user);
+  }
+
   my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_phenotype_deleted SELECT * FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id = ?;
+  });
+  $sth->execute($GFDP->dbID);
+
+  $sth = $dbh->prepare(q{
     DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id = ?;
   });
-  
+
   $sth->execute($GFDP->dbID);
   $sth->finish();
 }

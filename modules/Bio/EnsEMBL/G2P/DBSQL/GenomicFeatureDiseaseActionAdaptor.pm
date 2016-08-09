@@ -108,6 +108,11 @@ sub delete {
   $self->update_log($GFDA, $user, 'delete');
 
   my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_action_deleted SELECT * FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id = ?;
+  });
+  $sth->execute($GFDA->dbID);
+
+  $sth = $dbh->prepare(q{
     DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id = ?;
   });
   

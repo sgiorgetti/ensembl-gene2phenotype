@@ -68,6 +68,34 @@ sub update {
   return $GFD_organ;
 }
 
+sub delete {
+  my $self = shift;
+  my $GFDO = shift;
+  my $user = shift;
+  my $dbh = $self->dbc->db_handle;
+
+  if (!ref($GFDO) || !$GFDO->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan')) {
+    die ('Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan arg expected');
+  }
+
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die ('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
+  my $sth = $dbh->prepare(q{
+    INSERT INTO genomic_feature_disease_organ_deleted SELECT * FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id = ?;
+  });
+  $sth->execute($GFDO->dbID);
+
+  $sth = $dbh->prepare(q{
+    DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id = ?;
+  });
+
+  $sth->execute($GFDO->dbID);
+
+  $sth->finish();
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $dbID = shift;

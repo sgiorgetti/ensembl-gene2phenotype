@@ -23,11 +23,8 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-
   my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category, $DDD_category_attrib, $is_visible, $panel, $panel_attrib, $adaptor) =
     rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'DDD_category', 'DDD_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
-
-
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
@@ -41,7 +38,6 @@ sub new {
     'panel' => $panel,
     'panel_attrib' => $panel_attrib,
   }, $class;
-
   return $self;
 }
 
