@@ -48,6 +48,10 @@ my $report_file = $config->{report_file};
 
 die "ERROR: File doesn't exist." if (!-f $report_file);
 
+
+my @frequencies_header = qw/AFR AMR EAS EUR SAS AA EA ExAC ExAC_AFR ExAC_AMR ExAC_Adj ExAC_EAS ExAC_FIN ExAC_NFE ExAC_OTH ExAC_SAS/;
+
+
 my $html_output_file = "$report_file.html";
 
 my $fh = FileHandle->new($report_file, 'r');
@@ -59,7 +63,11 @@ my $complete_genes = {};
 while (<$fh>) {
   chomp;
   my ($flag, $gene_symbol, $tr_stable_id, $individual, $vf_name, $data) = split/\t/;
-  if ($flag eq 'G2P_complete') {
+  if ($flag eq 'G2P_list') {
+
+  } elsif ($flag eq 'G2P_in_vcf') {
+
+  } elsif ($flag eq 'G2P_complete') {
     $complete_genes->{$gene_symbol}->{$individual} = 1;
   } else { # collect information
 
@@ -81,14 +89,20 @@ foreach my $individual (keys %$individuals) {
           my $hash = {};
           foreach my $pair (split/;/, $data) {
             my ($key, $value) = split('=', $pair, 2);
-            $value ||= 'Not available';
+            $value ||= '';
             $hash->{$key} = $value;
           }
           my $allelic_requirement = $hash->{allele_requirement};
           my $consequence_types = $hash->{consequence_types};
-          my $frequencies = $hash->{frequencies};
           my $zygosity = $hash->{zyg};
-          push @{$chart_data->{$individual}}, "['$gene_symbol', '$tr_stable_ids_sorted', '$vf_name', '$consequence_types', '$allelic_requirement', '$zygosity', '$frequencies']";
+          my %frequencies_hash = split /[,=]/, $hash->{frequencies};
+          my @frequencies = ();
+          foreach my $population (@frequencies_header) {
+            my $frequency = $frequencies_hash{$population};
+            push @frequencies, "'$frequency'";
+          }         
+          my $frequencies = join(', ', @frequencies);
+          push @{$chart_data->{$individual}}, "['$gene_symbol', '$tr_stable_ids_sorted', '$vf_name', '$consequence_types', '$allelic_requirement', '$zygosity', $frequencies]";
         } 
       }    
     }
@@ -98,11 +112,12 @@ foreach my $individual (keys %$individuals) {
 my @charts = ();
 my $count = 1;
 foreach my $individual (sort keys %$chart_data) {
+  my $header = "['Gene symbol','Transcript stable IDs', 'Variant name', 'Consequence types', 'Allelic requirement', 'Zygosity'," . join(', ', map {"'$_'"} @frequencies_header) . " ]";
   push @charts, {
     type => 'Table',
-    id => $individual,
+    id => "ind_$count",
     title => $individual,
-    header => "['Gene symbol','Transcript stable IDs', 'Variant name', 'Consequence types', 'Allelic requirement', 'Zygosity', 'Frequencies' ]",
+    header => $header,
     data => $chart_data->{$individual},
     sort => 'value',
   };
@@ -112,9 +127,33 @@ foreach my $individual (sort keys %$chart_data) {
 my $fh_out = FileHandle->new($html_output_file, 'w');
 print $fh_out stats_html_head(\@charts);
 print $fh_out "<div class='main_content'>";
+print $fh_out h1("Summary for G2P complete genes per Individual");
+
+my $maf_key_2_population_name = {
+  AFR => '1000GENOMES:phase_3:AFR',
+  AMR => '1000GENOMES:phase_3:AMR',
+  EAS => '1000GENOMES:phase_3:EAS',
+  EUR => '1000GENOMES:phase_3:EUR',
+  SAS => '1000GENOMES:phase_3:SAS',
+  AA => 'Exome Sequencing Project 6500:African_American',
+  EA => 'Exome Sequencing Project 6500:European_American',
+  ExAC => 'Exome Aggregation Consortium:Total',
+  ExAC_AFR => 'Exome Aggregation Consortium:African/African American',
+  ExAC_AMR => 'Exome Aggregation Consortium:Latino',
+  ExAC_Adj => 'Exome Aggregation Consortium',
+  ExAC_EAS => 'Exome Aggregation Consortium:East Asian',
+  ExAC_FIN => 'Exome Aggregation Consortium:Finnish',
+  ExAC_NFE => 'Exome Aggregation Consortium:Non-Finnish European',
+  ExAC_OTH => 'Exome Aggregation Consortium:Other',
+  ExAC_SAS => 'Exome Aggregation Consortium:South Asian',
+};
+
+foreach my $population (@frequencies_header) {
+  my $description = $maf_key_2_population_name->{$population};
+  print $fh_out p("<b>$population</b> $description");
+}
 
 # genes not found in input VCF file
-print $fh_out h1("Summary for G2P complete genes per Individual");
 foreach my $chart(@charts) {
   print $fh_out hr();
   print $fh_out h3({id => $chart->{id}}, $chart->{title});
