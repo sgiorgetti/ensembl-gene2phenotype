@@ -59,23 +59,33 @@ my $fh = FileHandle->new($report_file, 'r');
 my $genes = {};
 my $individuals = {};
 my $complete_genes = {};
+my $g2p_list = {};
+my $in_vcf_file = {};
 
 while (<$fh>) {
   chomp;
-  my ($flag, $gene_symbol, $tr_stable_id, $individual, $vf_name, $data) = split/\t/;
-  if ($flag eq 'G2P_list') {
-
-  } elsif ($flag eq 'G2P_in_vcf') {
-
-  } elsif ($flag eq 'G2P_complete') {
+  if (/^G2P_list/) {
+    my ($flag, $gene_symbol, $DDD_category) = split/\t/;
+    $g2p_list->{$gene_symbol} = 1;
+  } elsif (/^G2P_in_vcf/) {
+    my ($flag, $gene_symbol) = split/\t/;
+    $in_vcf_file->{$gene_symbol} = 1;
+  } elsif (/^G2P_complete/) {
+    my ($flag, $gene_symbol, $individual) = split/\t/;
     $complete_genes->{$gene_symbol}->{$individual} = 1;
-  } else { # collect information
+  } elsif (/^G2P_flag/) {
+    my ($flag, $gene_symbol, $tr_stable_id, $individual, $vf_name, $g2p_data) = split/\t/;
+    $genes->{$gene_symbol}->{"$individual\t$vf_name"}->{$tr_stable_id} = $g2p_data;
+    $individuals->{$individual}->{$gene_symbol}->{$vf_name}->{$tr_stable_id} = $g2p_data;
+  } else {
 
-    $genes->{$gene_symbol}->{"$individual\t$vf_name"}->{$tr_stable_id} = $data;
-    $individuals->{$individual}->{$gene_symbol}->{$vf_name}->{$data}->{$tr_stable_id} = 1;
   }
 }
 $fh->close();
+
+my $count_g2p_genes = keys %$g2p_list;
+my $count_in_vcf_file = keys %$in_vcf_file;
+my $count_complete_genes = keys %$complete_genes;
 
 my $chart_data = {};
 
@@ -83,26 +93,34 @@ foreach my $individual (keys %$individuals) {
   foreach my $gene_symbol (keys %{$individuals->{$individual}}) {
     if ($complete_genes->{$gene_symbol}->{$individual}) {
       foreach my $vf_name (keys %{$individuals->{$individual}->{$gene_symbol}}) {
-        foreach my $data (keys %{$individuals->{$individual}->{$gene_symbol}->{$vf_name}}) {
-          my @tr_stable_ids = keys %{$individuals->{$individual}->{$gene_symbol}->{$vf_name}->{$data}};
-          my $tr_stable_ids_sorted = join(',', sort @tr_stable_ids);
+        foreach my $tr_stable_id (keys %{$individuals->{$individual}->{$gene_symbol}->{$vf_name}}) {
+          my $data = $individuals->{$individual}->{$gene_symbol}->{$vf_name}->{$tr_stable_id};
           my $hash = {};
           foreach my $pair (split/;/, $data) {
             my ($key, $value) = split('=', $pair, 2);
             $value ||= '';
             $hash->{$key} = $value;
           }
+          my $refseq = $hash->{refseq};
+          my $failed = $hash->{failed};
+          my $clin_sign = $hash->{clin_sig};
+          my $novel = $hash->{novel};
+          my $hgvs_t = $hash->{hgvs_t};
+          my $hgvs_p = $hash->{hgvs_p}; 
           my $allelic_requirement = $hash->{allele_requirement};
           my $consequence_types = $hash->{consequence_types};
           my $zygosity = $hash->{zyg};
-          my %frequencies_hash = split /[,=]/, $hash->{frequencies};
+          my %frequencies_hash = ();
+          if ($hash->{frequencies} ne 'NA') {
+            %frequencies_hash = split /[,=]/, $hash->{frequencies};
+          }
           my @frequencies = ();
           foreach my $population (@frequencies_header) {
             my $frequency = $frequencies_hash{$population};
             push @frequencies, "'$frequency'";
           }         
           my $frequencies = join(', ', @frequencies);
-          push @{$chart_data->{$individual}}, "['$gene_symbol', '$tr_stable_ids_sorted', '$vf_name', '$consequence_types', '$allelic_requirement', '$zygosity', $frequencies]";
+          push @{$chart_data->{$individual}}, "['$gene_symbol', '$tr_stable_id', '$hgvs_t', '$hgvs_p', '$refseq', '$vf_name', '$novel', '$failed', '$clin_sign', '$consequence_types', '$allelic_requirement', '$zygosity', $frequencies]";
         } 
       }    
     }
@@ -112,7 +130,7 @@ foreach my $individual (keys %$individuals) {
 my @charts = ();
 my $count = 1;
 foreach my $individual (sort keys %$chart_data) {
-  my $header = "['Gene symbol','Transcript stable IDs', 'Variant name', 'Consequence types', 'Allelic requirement', 'Zygosity'," . join(', ', map {"'$_'"} @frequencies_header) . " ]";
+  my $header = "['Gene symbol','Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement', 'Zygosity'," . join(', ', map {"'$_'"} @frequencies_header) . " ]";
   push @charts, {
     type => 'Table',
     id => "ind_$count",
@@ -127,6 +145,13 @@ foreach my $individual (sort keys %$chart_data) {
 my $fh_out = FileHandle->new($html_output_file, 'w');
 print $fh_out stats_html_head(\@charts);
 print $fh_out "<div class='main_content'>";
+
+print $fh_out p("G2P genes: $count_g2p_genes");
+print $fh_out p("G2P genes in input VCF file: $count_in_vcf_file");
+print $fh_out p("G2P complete genes in input VCF file: $count_complete_genes");
+
+
+
 print $fh_out h1("Summary for G2P complete genes per Individual");
 
 my $maf_key_2_population_name = {
@@ -139,8 +164,8 @@ my $maf_key_2_population_name = {
   EA => 'Exome Sequencing Project 6500:European_American',
   ExAC => 'Exome Aggregation Consortium:Total',
   ExAC_AFR => 'Exome Aggregation Consortium:African/African American',
-  ExAC_AMR => 'Exome Aggregation Consortium:Latino',
-  ExAC_Adj => 'Exome Aggregation Consortium',
+  ExAC_AMR => 'Exome Aggregation Consortium:American',
+  ExAC_Adj => 'Exome Aggregation Consortium:Adjusted',
   ExAC_EAS => 'Exome Aggregation Consortium:East Asian',
   ExAC_FIN => 'Exome Aggregation Consortium:Finnish',
   ExAC_NFE => 'Exome Aggregation Consortium:Non-Finnish European',
