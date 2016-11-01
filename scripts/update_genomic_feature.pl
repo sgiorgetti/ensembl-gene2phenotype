@@ -290,7 +290,7 @@ sub store_synonyms {
 }
 
 sub update_prev_gene_symbols {
-  my $hgnc_mapping_file = $config->{};
+  my $hgnc_mapping_file = $config->{hgnc_mapping_file};
   my $fh_hgnc = FileHandle->new($hgnc_mapping_file, 'r');
   my $hgnc_mappings = {};
   while (<$fh_hgnc>) {
