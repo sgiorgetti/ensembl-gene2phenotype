@@ -92,7 +92,7 @@ sub download_data {
     } else {
       push @annotations, (undef, undef, undef);
     }
-    $prev_symbols = ''; 
+    $prev_symbols = undef; 
     if ($gfid2synonyms->{$gfid})  {
       $prev_symbols = join(';', keys %{$gfid2synonyms->{$gfid}});
     }  
