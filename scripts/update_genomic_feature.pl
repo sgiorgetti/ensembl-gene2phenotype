@@ -48,6 +48,7 @@ delete_old_features();
 insert_new_features();
 store_synonyms();
 update_prev_gene_symbols();
+update_search();
 
 sub backup {
   foreach my $table (qw/genomic_feature genomic_feature_disease genomic_feature_synonym/) {
@@ -348,5 +349,11 @@ sub get_ensembl_synonyms {
   return $ensembl_synonyms;
 }
 
+sub update_search {
+  $dbh->do(qq{TRUNCATE search;}) or die $dbh->errstr unless ($config->{test});
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT gene_symbol from genomic_feature;}) or die $dbh->errstr unless ($config->{test}); 
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from disease;}) or die $dbh->errstr unless ($config->{test}); 
+  $dbh->do(qq{INSERT IGNORE INTO search SELECT name from genomic_feature_synonym;}) or die $dbh->errstr unless ($config->{test}); 
+}
 
 
