@@ -59,6 +59,8 @@ my $complete_genes = {};
 my $g2p_list = {};
 my $in_vcf_file = {};
 
+my $cache = {};
+
 my @files = <$log_dir/*>;
 
 foreach my $file (@files) {
@@ -72,8 +74,29 @@ foreach my $file (@files) {
       my ($flag, $gene_symbol) = split/\t/;
       $in_vcf_file->{$gene_symbol} = 1;
     } elsif (/^G2P_complete/) {
-      my ($flag, $gene_symbol, $individual) = split/\t/;
-      $complete_genes->{$gene_symbol}->{$individual} = 1;
+      my ($flag, $gene_symbol, $tr_stable_id, $individual, $vf_name, $ars, $zyg) = split/\t/;
+      foreach my $ar (split(',', $ars)) {
+        if ($ar eq 'biallelic') {
+          # homozygous, report complete
+          if (uc($zyg) eq 'HOM') {
+            $complete_genes->{$gene_symbol}->{$individual} = 1;
+          }
+          # heterozygous
+          # we need to cache that we've observed one
+          elsif (uc($zyg) eq 'HET') {
+            if (scalar keys %{$cache->{$individual}->{$tr_stable_id}} > 0) {
+              $complete_genes->{$gene_symbol}->{$individual} = 1;
+            }
+            $cache->{$individual}->{$tr_stable_id}->{$vf_name}++;
+          }
+        }
+        # monoallelic genes require only one allele
+        elsif ($ar eq 'monoallelic') {
+          $complete_genes->{$gene_symbol}->{$individual} = 1;
+        }
+      }
+
+
     } elsif (/^G2P_flag/) {
       my ($flag, $gene_symbol, $tr_stable_id, $individual, $vf_name, $g2p_data) = split/\t/;
       $genes->{$gene_symbol}->{"$individual\t$vf_name"}->{$tr_stable_id} = $g2p_data;
