@@ -60,6 +60,7 @@ my $g2p_list = {};
 my $in_vcf_file = {};
 
 my $cache = {};
+my $acting_ars = {};
 
 my @files = <$log_dir/*>;
 
@@ -80,12 +81,14 @@ foreach my $file (@files) {
           # homozygous, report complete
           if (uc($zyg) eq 'HOM') {
             $complete_genes->{$gene_symbol}->{$individual} = 1;
+            $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
           }
           # heterozygous
           # we need to cache that we've observed one
           elsif (uc($zyg) eq 'HET') {
             if (scalar keys %{$cache->{$individual}->{$tr_stable_id}} > 0) {
               $complete_genes->{$gene_symbol}->{$individual} = 1;
+              $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
             }
             $cache->{$individual}->{$tr_stable_id}->{$vf_name}++;
           }
@@ -93,10 +96,9 @@ foreach my $file (@files) {
         # monoallelic genes require only one allele
         elsif ($ar eq 'monoallelic') {
           $complete_genes->{$gene_symbol}->{$individual} = 1;
+          $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
         }
       }
-
-
     } elsif (/^G2P_flag/) {
       my ($flag, $gene_symbol, $tr_stable_id, $individual, $vf_name, $g2p_data) = split/\t/;
       $genes->{$gene_symbol}->{"$individual\t$vf_name"}->{$tr_stable_id} = $g2p_data;
@@ -147,7 +149,8 @@ foreach my $individual (keys %$individuals) {
             push @frequencies, "'$frequency'";
           }         
           my $frequencies = join(', ', @frequencies);
-          push @{$chart_data->{$individual}}, "['$vf_location', '$gene_symbol', '$tr_stable_id', '$hgvs_t', '$hgvs_p', '$refseq', '$vf_name', '$existing_name', '$novel', '$failed', '$clin_sign', '$consequence_types', '$allelic_requirement', '$zygosity', $frequencies]";
+          my $acting_ar = join(',', sort keys (%{$acting_ars->{$gene_symbol}->{$individual}}));
+          push @{$chart_data->{$individual}}, "['$vf_location', '$gene_symbol', '$tr_stable_id', '$hgvs_t', '$hgvs_p', '$refseq', '$vf_name', '$existing_name', '$novel', '$failed', '$clin_sign', '$consequence_types', '$allelic_requirement', '$acting_ar', '$zygosity', $frequencies]";
         } 
       }    
     }
@@ -157,7 +160,7 @@ foreach my $individual (keys %$individuals) {
 my @charts = ();
 my $count = 1;
 foreach my $individual (sort keys %$chart_data) {
-  my $header = "['Variant location and alleles (REF/ALT)', 'Gene symbol', 'Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Existing name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement', 'Zygosity'," . join(', ', map {"'$_'"} @frequencies_header) . " ]";
+  my $header = "['Variant location and alleles (REF/ALT)', 'Gene symbol', 'Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Existing name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement (all observed in G2P DB)', 'GENE REQ', 'Zygosity'," . join(', ', map {"'$_'"} @frequencies_header) . " ]";
   push @charts, {
     type => 'Table',
     id => "ind_$count",
