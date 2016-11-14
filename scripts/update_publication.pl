@@ -10,6 +10,7 @@ use Getopt::Long;
 use HTTP::Tiny;
 use JSON;
 use Bio::EnsEMBL::Registry;
+use Encode qw(decode encode);
 
 # perl update_publication.pl -registry_file registry
 
@@ -25,7 +26,7 @@ my $config = {};
 #my $registry = G2P::Registry->new($config->{registry_file});
 
 my $registry = 'Bio::EnsEMBL::Registry';
-$registry->load_all('/Users/anjathormann/Documents/G2P/scripts/ensembl.registry');
+$registry->load_all('/Users/anja/Documents/G2P/ensembl.registry');
 
 my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle; 
 
@@ -44,6 +45,7 @@ sub main {
       my $hash = decode_json($response->{content});
       my $result = $hash->{resultList}->{result}[0];
       my $title = $result->{title};
+      next if (!$title);
       $title =~ s/'/\\'/g;
       my $journalTitle = $result->{journalTitle};
       my $journalVolume = $result->{journalVolume};
@@ -54,10 +56,21 @@ sub main {
       $source .= "$journalVolume: " if ($journalVolume);
       $source .= "$pageInfo, " if ($pageInfo);
       $source .= "$pubYear." if ($pubYear);
-
+      $source =~ s/'/\\'/g;
+      my $title_length = length($title);
       my $old_title = $pmids->{$pmid}->{title};
+      $old_title =~ s/'/\\'/g;
+
+#      $old_title = decode('utf8', $old_title);
       my $old_source = $pmids->{$pmid}->{source};
-      if ($old_source ne $source) {
+      $old_source =~ s/'/\\'/g;
+
+#      $old_source = decode('utf8', $old_source);
+      $title = encode('utf8', $title);
+      $source = encode('utf8', $source);
+      if (!$old_source || $old_source ne $source || !$old_title || $old_title ne $title) {
+        print STDERR "OLD $pmid $old_title $old_source\n";
+        print STDERR "NEW $pmid $title $source\n\n";
         $dbh->do(qq{UPDATE publication SET title='$title' WHERE pmid=$pmid;}) or die $dbh->errstr;  
         $dbh->do(qq{UPDATE publication SET source='$source' WHERE pmid=$pmid;}) or die $dbh->errstr;  
       }
