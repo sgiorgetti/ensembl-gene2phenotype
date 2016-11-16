@@ -256,11 +256,11 @@ CREATE TABLE phenotype (
 CREATE TABLE publication (
   publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   pmid int(10) DEFAULT NULL,
-  title varchar(255) DEFAULT NULL,
+  title text DEFAULT NULL,
   source varchar(255) DEFAULT NULL,
   PRIMARY KEY (publication_id),
   KEY pmid_idx (pmid)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE search (
   search_term varchar(255) NOT NULL,
