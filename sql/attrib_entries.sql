@@ -33,9 +33,9 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (28, 2, 'inc
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (29, 2, 'part of contiguous gene duplication');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (30, 2, 'part of contiguous genomic interval deletion');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (31, 3, 'both DD and IF');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (32, 3, 'confirmed DD gene');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (33, 3, 'possible DD gene');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (34, 3, 'probable DD gene');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (32, 3, 'confirmed');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (33, 3, 'possible');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (34, 3, 'probable');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (35, 3, 'child IF');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (36, 4, 'ALL');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (37, 4, 'Cardiac');
@@ -43,3 +43,4 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (38, 4, 'DD'
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (39, 4, 'Ear');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (40, 4, 'Eye');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (41, 4, 'Skin');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (42, 4, 'Cancer');
