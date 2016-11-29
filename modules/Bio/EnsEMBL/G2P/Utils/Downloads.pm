@@ -15,7 +15,10 @@ sub download_data {
   $registry->load_all($registry_file);
 
   my $file = "$downloads_dir/$file_name";
-  my $panel_name = 'DD';
+  my $panel_name = $file_name;
+  $panel_name =~ s/G2P\.csv//;
+  print STDERR $panel_name, "\n";
+  
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $dbh = $GFD_adaptor->dbc->db_handle;
 
