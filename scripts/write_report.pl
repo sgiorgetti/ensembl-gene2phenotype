@@ -30,7 +30,6 @@ use Getopt::Long;
 use FileHandle;
 use CGI qw/:standard/;
 
-
 my $args = scalar @ARGV;
 my $config = {};
 GetOptions(
@@ -146,11 +145,12 @@ foreach my $individual (keys %$individuals) {
           my @frequencies = ();
           foreach my $population (@frequencies_header) {
             my $frequency = $frequencies_hash{$population};
-            push @frequencies, "'$frequency'";
+            push @frequencies, "$frequency";
           }         
-          my $frequencies = join(', ', @frequencies);
           my $acting_ar = join(',', sort keys (%{$acting_ars->{$gene_symbol}->{$individual}}));
-          push @{$chart_data->{$individual}}, "['$vf_location', '$gene_symbol', '$tr_stable_id', '$hgvs_t', '$hgvs_p', '$refseq', '$vf_name', '$existing_name', '$novel', '$failed', '$clin_sign', '$consequence_types', '$allelic_requirement', '$acting_ar', '$zygosity', $frequencies]";
+          my $is_canonical = 0;
+          push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $allelic_requirement, $acting_ar, $zygosity, @frequencies], $is_canonical];
+
         } 
       }    
     }
@@ -159,13 +159,12 @@ foreach my $individual (keys %$individuals) {
 
 my @charts = ();
 my $count = 1;
+  my @header = ('Variant location and alleles (REF/ALT)', 'Gene symbol', 'Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Existing name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement (all observed in G2P DB)', 'GENE REQ', 'Zygosity', @frequencies_header);
+
 foreach my $individual (sort keys %$chart_data) {
-  my $header = "['Variant location and alleles (REF/ALT)', 'Gene symbol', 'Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Existing name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement (all observed in G2P DB)', 'GENE REQ', 'Zygosity'," . join(', ', map {"'$_'"} @frequencies_header) . " ]";
   push @charts, {
     type => 'Table',
-    id => "ind_$count",
     title => $individual,
-    header => $header,
     data => $chart_data->{$individual},
     sort => 'value',
   };
@@ -179,8 +178,6 @@ print $fh_out "<div class='main_content'>";
 print $fh_out p("G2P genes: $count_g2p_genes");
 print $fh_out p("G2P genes in input VCF file: $count_in_vcf_file");
 print $fh_out p("G2P complete genes in input VCF file: $count_complete_genes");
-
-
 
 print $fh_out h1("Summary for G2P complete genes per Individual");
 
@@ -208,179 +205,67 @@ foreach my $population (@frequencies_header) {
   print $fh_out p("<b>$population</b> $description");
 }
 
-# genes not found in input VCF file
+my $switch =<<SHTML;
+<form>
+<div class="checkbox">
+  <label>
+    <input class="target" type="checkbox"> Show only canonical transcript
+  </label>
+</div>
+</form>
+SHTML
+
+print $fh_out $switch;
+
 foreach my $chart(@charts) {
   print $fh_out hr();
   print $fh_out h3({id => $chart->{id}}, $chart->{title});
-  print $fh_out div({id => $chart->{id}."_".$chart->{type}, style => 'width: 100%'}, '&nbsp;');
+  print $fh_out "<TABLE  class=\"table table-bordered\">";
+  print $fh_out Tr(th(\@header) );
+  foreach my $data (@{$chart->{data}}) {
+    my $data_row = $data->[0];
+    my $is_canonical = $data->[1];
+    my $class = (!$is_canonical) ? 'not_canonical' : 'is_canonical'; 
+    print $fh_out Tr( {-class => $class},  td( $data_row ) );
+  }
+  print $fh_out "</TABLE>\n";
 }
 
 print $fh_out '</div>';
 
+print $fh_out hr();
 
 print $fh_out stats_html_tail();
 
 sub stats_html_head {
     my $charts = shift;
     
-    my ($js);
-    foreach my $chart(@$charts) {
-#      my @keys = @{sort_keys($chart->{data}, $chart->{sort})};
-      
-      my $type = ucfirst($chart->{type});
-      
-      
-      # code to draw chart
-      $js .= sprintf(
-        "var %s = draw$type('%s', '%s', google.visualization.arrayToDataTable([%s,%s]), %s);\n",
-        $chart->{id}.'_'.$chart->{type},
-        $chart->{id}.'_'.$chart->{type},
-        $chart->{title},
-        $chart->{header},
-        join(",", @{$chart->{data}}),
-        $chart->{options} || 'null',
-      );
-      
-    }
-    
     my $html =<<SHTML;
 <html>
 <head>
   <title>VEP summary</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-  <script type="text/javascript">
-    google.load('visualization', '1', {packages: ['corechart','table']});
-  </script>
-  <script type="text/javascript">
-    
-    function init() {
-      // charts
-      $js
-    }
-    
-    function drawPie(id, title, data, options) {    
-      var pie = new google.visualization.PieChart(document.getElementById(id));
-      pie.draw(data, options);
-      return pie;
-    }
-    function drawBar(id, title, data, options) {
-      var bar = new google.visualization.ColumnChart(document.getElementById(id));
-      bar.draw(data, options);
-      return bar;
-    }
-    function drawTable(id, title, data) {
-      var table = new google.visualization.Table(document.getElementById(id));
-      table.draw(data, null);
-      return table;
-    }
-    function drawLine(id, title, data, options) {
-      var line = new google.visualization.LineChart(document.getElementById(id));
-      line.draw(data, options);
-      return line;
-    }
-    function drawArea(id, title, data, options) {
-      var area = new google.visualization.AreaChart(document.getElementById(id));
-      area.draw(data, options);
-      return area;
-    }
-    google.setOnLoadCallback(init);
-  </script>
-  
-  
-  <style type="text/css">
-    body {
-      font-family: arial, sans-serif;
-      margin: 0px;
-      padding: 0px;
-    }
-    
-    a {color: #36b;}
-    a.visited {color: #006;}
-    
-    .stats_table {
-      margin: 5px;
-    }
-    
-    tr:nth-child(odd) {
-      background-color: rgb(238, 238, 238);
-    }
-    
-    th {
-      text-align: left;
-    }   
- 
-    td {
-      padding: 5px;
-    }
-    
-    td:nth-child(odd) {
-      font-weight: bold;
-    }
-    
-    h3 {
-      color: #666;
-    }
-    
-    .masthead {
-      background-color: rgb(51, 51, 102);
-      color: rgb(204, 221, 255);
-      height: 80px;
-      width: 100%;
-      padding: 0px;
-    }
-    
-    .main {
-      padding: 10px;
-    }
-    
-    .gradient {
-      background: #333366; /* Old browsers */
-      background: -moz-linear-gradient(left,  #333366 0%, #ffffff 100%); /* FF3.6+ */
-      background: -webkit-gradient(linear, left top, right top, color-stop(0%,#333366), color-stop(100%,#ffffff)); /* Chrome,Safari4+ */
-      background: -webkit-linear-gradient(left,  #333366 0%,#ffffff 100%); /* Chrome10+,Safari5.1+ */
-      background: -o-linear-gradient(left,  #333366 0%,#ffffff 100%); /* Opera 11.10+ */
-      background: -ms-linear-gradient(left,  #333366 0%,#ffffff 100%); /* IE10+ */
-      background: linear-gradient(to right,  #333366 0%,#ffffff 100%); /* W3C */
-      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#333366', endColorstr='#ffffff',GradientType=1 ); /* IE6-9 */
-      
-      padding: 0px;
-      height: 80px;
-      width: 500px;
-    }
-    
-    .main_content {
-    }
-    
-    .sidemenu {
-      width: 260px;
-      position: fixed;
-      border-style: solid;
-      border-width: 2px;
-      border-color: rgb(51, 51, 102);
-    }
-    
-    .sidemenu_head {
-      width: 250px;
-      background-color: rgb(51, 51, 102);
-      color: rgb(204, 221, 255);
-      padding: 5px;
-    }
-    
-    .sidemenu_body {
-      width: 250px;
-      padding: 5px;
-    }
-  </style>
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
-<div class="main">
 SHTML
-
-    return $html;
+  return $html;
 }
 
 sub stats_html_tail {
-  return "\n</div></body>\n</html>\n";
+  my $script =<<SHTML;
+  <script>
+    \$( "input[type=checkbox]" ).on( "click", function(){
+      if (\$('.target').is(':checked')) {
+        \$( ".not_canonical" ).hide();
+      } else {
+        \$( ".not_canonical" ).show();
+      }
+    } );
+  </script>
+SHTML
+  return "\n</div>\n$script\n</body>\n</html>\n";
 }
 
 sub sort_keys {
