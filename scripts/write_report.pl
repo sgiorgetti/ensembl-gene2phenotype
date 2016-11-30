@@ -161,14 +161,19 @@ foreach my $individual (keys %$individuals) {
             push @frequencies, "$frequency";
           }         
           my $acting_ar = join(',', sort keys (%{$acting_ars->{$gene_symbol}->{$individual}}));
-          my $is_canonical = 0;
-          if ($transcripts->{$tr_stable_id}) {
-            $is_canonical = 1 if ($canonical_transcripts->{$tr_stable_id});
+      
+          my $is_canonical = 0; 
+          if ($hash->{is_canonical}) {
+            $is_canonical = ($hash->{is_canonical} eq 'yes') ? 1 : 0;
           } else {
-            my $transcript = $transcript_adaptor->fetch_by_stable_id($tr_stable_id);
-            $is_canonical = $transcript->is_canonical();
-            $transcripts->{$tr_stable_id} = 1;
-            $canonical_transcripts->{$tr_stable_id} if ($is_canonical);
+            if ($transcripts->{$tr_stable_id}) {
+              $is_canonical = 1 if ($canonical_transcripts->{$tr_stable_id});
+            } else {
+              my $transcript = $transcript_adaptor->fetch_by_stable_id($tr_stable_id);
+              $is_canonical = $transcript->is_canonical();
+              $transcripts->{$tr_stable_id} = 1;
+              $canonical_transcripts->{$tr_stable_id} if ($is_canonical);
+            }
           }
           push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $allelic_requirement, $acting_ar, $zygosity, @frequencies], $is_canonical];
 
