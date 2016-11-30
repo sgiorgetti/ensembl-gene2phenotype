@@ -28,6 +28,7 @@
 use strict;
 use Getopt::Long;
 use FileHandle;
+use Bio::EnsEMBL::Registry;
 use CGI qw/:standard/;
 
 my $args = scalar @ARGV;
@@ -52,11 +53,23 @@ my $html_output_file = $config->{html_report} || 'g2p_report_file.html';
 
 my @frequencies_header = qw/AFR AMR EAS EUR SAS AA EA ExAC ExAC_AFR ExAC_AMR ExAC_Adj ExAC_EAS ExAC_FIN ExAC_NFE ExAC_OTH ExAC_SAS/;
 
+my $registry = 'Bio::EnsEMBL::Registry';
+
+$registry->load_registry_from_db(
+  -host => 'ensembldb.ensembl.org',
+  -user => 'anonymous',
+  -port => 3337,
+);
+
+my $transcript_adaptor = $registry->get_adaptor('human', 'core', 'transcript');
+
 my $genes = {};
 my $individuals = {};
 my $complete_genes = {};
 my $g2p_list = {};
 my $in_vcf_file = {};
+my $transcripts = {};
+my $canonical_transcripts = {};
 
 my $cache = {};
 my $acting_ars = {};
@@ -149,6 +162,14 @@ foreach my $individual (keys %$individuals) {
           }         
           my $acting_ar = join(',', sort keys (%{$acting_ars->{$gene_symbol}->{$individual}}));
           my $is_canonical = 0;
+          if ($transcripts->{$tr_stable_id}) {
+            $is_canonical = 1 if ($canonical_transcripts->{$tr_stable_id});
+          } else {
+            my $transcript = $transcript_adaptor->fetch_by_stable_id($tr_stable_id);
+            $is_canonical = $transcript->is_canonical();
+            $transcripts->{$tr_stable_id} = 1;
+            $canonical_transcripts->{$tr_stable_id} if ($is_canonical);
+          }
           push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $allelic_requirement, $acting_ar, $zygosity, @frequencies], $is_canonical];
 
         } 
