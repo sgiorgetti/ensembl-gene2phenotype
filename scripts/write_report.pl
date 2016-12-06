@@ -38,6 +38,7 @@ GetOptions(
     'help|h',            # displays help message
     'log_dir=s',
     'html_report=s',
+    'txt_report=s',
 ) or die "ERROR: Failed to parse command-line flags\n";
 
 if (defined($config->{help}) || !$args ) {
@@ -50,6 +51,8 @@ my $log_dir = $config->{log_dir};
 die "Not a directory $config->{log_dir}" if (!-d $config->{log_dir});
 
 my $html_output_file = $config->{html_report} || 'g2p_report_file.html';
+
+my $txt_output_file = $config->{txt_report} || 'g2p_report_file.txt';
 
 my @frequencies_header = qw/AFR AMR EAS EUR SAS AA EA ExAC ExAC_AFR ExAC_AMR ExAC_Adj ExAC_EAS ExAC_FIN ExAC_NFE ExAC_OTH ExAC_SAS/;
 
@@ -92,14 +95,14 @@ foreach my $file (@files) {
         if ($ar eq 'biallelic') {
           # homozygous, report complete
           if (uc($zyg) eq 'HOM') {
-            $complete_genes->{$gene_symbol}->{$individual} = 1;
+            $complete_genes->{$gene_symbol}->{$individual}->{$tr_stable_id} = 1;
             $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
           }
           # heterozygous
           # we need to cache that we've observed one
           elsif (uc($zyg) eq 'HET') {
             if (scalar keys %{$cache->{$individual}->{$tr_stable_id}} > 0) {
-              $complete_genes->{$gene_symbol}->{$individual} = 1;
+              $complete_genes->{$gene_symbol}->{$individual}->{$tr_stable_id} = 1;
               $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
             }
             $cache->{$individual}->{$tr_stable_id}->{$vf_name}++;
@@ -107,7 +110,7 @@ foreach my $file (@files) {
         }
         # monoallelic genes require only one allele
         elsif ($ar eq 'monoallelic') {
-          $complete_genes->{$gene_symbol}->{$individual} = 1;
+          $complete_genes->{$gene_symbol}->{$individual}->{$tr_stable_id} = 1;
           $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
         }
       }
@@ -127,12 +130,12 @@ my $count_in_vcf_file = keys %$in_vcf_file;
 my $count_complete_genes = keys %$complete_genes;
 
 my $chart_data = {};
-
+my $txt_output_data = {};
 foreach my $individual (keys %$individuals) {
   foreach my $gene_symbol (keys %{$individuals->{$individual}}) {
-    if ($complete_genes->{$gene_symbol}->{$individual}) {
-      foreach my $vf_name (keys %{$individuals->{$individual}->{$gene_symbol}}) {
-        foreach my $tr_stable_id (keys %{$individuals->{$individual}->{$gene_symbol}->{$vf_name}}) {
+    foreach my $vf_name (keys %{$individuals->{$individual}->{$gene_symbol}}) {
+      foreach my $tr_stable_id (keys %{$individuals->{$individual}->{$gene_symbol}->{$vf_name}}) {
+        if ($complete_genes->{$gene_symbol}->{$individual}->{$tr_stable_id}) {
           my $data = $individuals->{$individual}->{$gene_symbol}->{$vf_name}->{$tr_stable_id};
           my $hash = {};
           foreach my $pair (split/;/, $data) {
@@ -156,9 +159,13 @@ foreach my $individual (keys %$individuals) {
             %frequencies_hash = split /[,=]/, $hash->{frequencies};
           }
           my @frequencies = ();
+          my @txt_output_frequencies = ();
           foreach my $population (@frequencies_header) {
             my $frequency = $frequencies_hash{$population};
             push @frequencies, "$frequency";
+            if ($frequency) {
+              push @txt_output_frequencies, "$population=$frequency";
+            }
           }         
           my $acting_ar = join(',', sort keys (%{$acting_ars->{$gene_symbol}->{$individual}}));
       
@@ -175,6 +182,17 @@ foreach my $individual (keys %$individuals) {
               $canonical_transcripts->{$tr_stable_id} if ($is_canonical);
             }
           }
+          my ($location, $alleles) = split(' ', $vf_location);
+          $location =~ s/\-/:/;
+          $alleles =~ s/\//:/;
+          my $txt_output_variant = "$location:$alleles:$zygosity";
+          if (@txt_output_frequencies) {
+            $txt_output_variant .= ':' . join(',', @txt_output_frequencies);
+          }
+          $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{is_canonical} = $is_canonical;
+          $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{acting_ar} = $acting_ar;
+          push @{$txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{variants}}, $txt_output_variant;
+
           push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $allelic_requirement, $acting_ar, $zygosity, @frequencies], $is_canonical];
 
         } 
@@ -182,6 +200,21 @@ foreach my $individual (keys %$individuals) {
     }
   }
 }
+
+# write txt output
+my $fh_txt = FileHandle->new($txt_output_file, 'w');
+foreach my $individual (keys %$txt_output_data) {
+  foreach my $gene_symbol (keys %{$txt_output_data->{$individual}}) {
+    foreach my $tr_stable_id (keys %{$txt_output_data->{$individual}->{$gene_symbol}}) { 
+      my $is_canonical = $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{is_canonical};
+      my $canonical_tag = ($is_canonical) ? 'is_canonical' : 'not_canonical'; 
+      my $acting_ar = $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{acting_ar};
+      my $variants = join(';', @{$txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{variants}});
+      print $fh_txt "$individual $gene_symbol $tr_stable_id $canonical_tag $acting_ar $variants\n";  
+    }
+  }
+}
+$fh_txt->close();
 
 my @charts = ();
 my $count = 1;
@@ -323,6 +356,8 @@ sub usage {
   print qq{
 Usage:
 perl write_report.pl --log_dir log_dir
-report_file: The file generated by the G2P plugin
+More options
+--html_report html_file
+--txt_report txt_file
 };
 }
