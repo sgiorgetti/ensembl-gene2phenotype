@@ -296,6 +296,18 @@ sub fetch_all_by_disease_id {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_all_by_panel {
+  my $self = shift;
+  my $panel = shift;
+  if ($panel eq 'ALL') {
+    return $self->fetch_all();
+  } 
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $constraint = "gfd.panel_attrib=$panel_id";
+  return $self->generic_fetch($constraint);
+}
+
 sub fetch_all {
   my $self = shift;
   return $self->generic_fetch();
