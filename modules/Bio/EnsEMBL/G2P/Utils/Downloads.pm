@@ -5,12 +5,16 @@ use Bio::EnsEMBL::Registry;
 use base qw(Exporter);
 our @EXPORT_OK = qw( download_data );
 
+my $gfd_attributes = {};
+my $gfid2synonyms = {};
+my $attribs = {};
 
 sub download_data {
   my $downloads_dir = shift;
   my $file_name = shift;
   my $registry_file = shift;
-
+  my $is_logged_in = shift;
+  my $user_panels = shift;
   my $registry = 'Bio::EnsEMBL::Registry';
   $registry->load_all($registry_file);
 
@@ -19,6 +23,9 @@ sub download_data {
   $panel_name =~ s/G2P\.csv//;
   
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
+  my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
+  my $panels = $attribute_adaptor->get_attribs_by_type_value('g2p_panel');
+
   my $dbh = $GFD_adaptor->dbc->db_handle;
 
   my $csv = Text::CSV->new ( { binary => 1, eol => "\r\n" } ) or die "Cannot use CSV: ".Text::CSV->error_diag ();
@@ -33,7 +40,6 @@ sub download_data {
     publication => {sql => 'SELECT gfdp.genomic_feature_disease_id, p.pmid FROM genomic_feature_disease_publication gfdp, publication p WHERE gfdp.publication_id = p.publication_id;'},
   };
 
-  my $gfd_attributes = {};
   foreach my $table (keys %$gfd_attribute_tables) {
     my $sql = $gfd_attribute_tables->{$table}->{sql};
     my $sth = $dbh->prepare($sql);
@@ -44,7 +50,6 @@ sub download_data {
     }
   }
 
-  my $gfid2synonyms = {};
   my $sth = $dbh->prepare('SELECT genomic_feature_id, name FROM genomic_feature_synonym;');
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
@@ -52,16 +57,50 @@ sub download_data {
     $gfid2synonyms->{$id}->{$value} = 1;
   }
 
-  my $attribs = {};
   $sth = $dbh->prepare(q{SELECT attrib_id, value FROM attrib;});
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
     my ($id, $value) = @$row;
     $attribs->{$id} = $value;
   }
-  my $where = ($panel_name eq 'ALL') ? '' : "WHERE a.value = '$panel_name'";
+  $sth->finish();
 
-  $sth = $dbh->prepare(qq{
+  my $where = ($panel_name eq 'ALL') ? 'WHERE gfd.is_visible = 1' : "WHERE a.value = '$panel_name' AND gfd.is_visible = 1";
+
+  if (!$is_logged_in) {
+    write_data($dbh, $csv, $fh, $where);
+  } else {
+    if ($panel_name eq 'ALL') {
+      foreach my $panel (keys %$panels) {
+        next if ($panel eq 'ALL');
+        if (grep {$panel eq $_} @$user_panels) {
+          $where =  "WHERE a.value = '$panel'";
+        } else {
+          $where =  "WHERE a.value = '$panel' AND gfd.is_visible = 1";
+        }
+        write_data($dbh, $csv, $fh, $where);
+      }
+    } else {
+      if (grep {$panel_name eq $_} @$user_panels) {
+        $where =  "WHERE a.value = '$panel_name'";
+      } else {
+        $where =  "WHERE a.value = '$panel_name' AND gfd.is_visible = 1";
+      }
+      write_data($dbh, $csv, $fh, $where);
+    }
+  } 
+
+  close $fh or die "$csv: $!";
+  system("/usr/bin/gzip $file");
+  return 1;
+}
+
+sub write_data {
+  my $dbh = shift;
+  my $csv = shift;
+  my $fh = shift;
+  my $where = shift;
+  my $sth = $dbh->prepare(qq{
     SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.mim, d.name, d.mim, gfd.DDD_category_attrib, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, a.value, gf.genomic_feature_id
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_action gfda ON gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
@@ -71,6 +110,8 @@ sub download_data {
     $where;
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+
+
   my ($gfd_id, $gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols);
   $sth->bind_columns(\($gfd_id, $gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
   while ( $sth->fetch ) {
@@ -103,9 +144,13 @@ sub download_data {
 
     $csv->print ($fh, \@row);
   }
-  close $fh or die "$csv: $!";
-  system("/usr/bin/gzip $file");
-  return 1;
+  $sth->finish;
+
 }
+
+
+
+
+
 
 1;
