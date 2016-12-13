@@ -308,6 +308,40 @@ sub fetch_all_by_panel {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_all_by_panel_restricted {
+  my $self = shift;
+  my $panel = shift;
+  if ($panel eq 'ALL') {
+    return $self->fetch_all();
+  } 
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $constraint = "gfd.panel_attrib=$panel_id AND gfd.is_visible = 0";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_panel_without_publications {
+  my $self = shift;
+  my $panel = shift;
+  my $constraint = '';
+  if ($panel ne 'ALL') {
+    my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+    $constraint = "AND gfd.panel_attrib=$panel_id";
+  } 
+  my $cols = join ",", $self->_columns();
+  my $sth = $self->prepare(qq{
+    SELECT $cols FROM genomic_feature_disease gfd
+    LEFT JOIN genomic_feature_disease_publication gfdp
+    ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
+    WHERE gfdp.genomic_feature_disease_id IS NULL
+    $constraint;
+  });
+
+  $sth->execute;
+  return $self->_objs_from_sth($sth);
+}
+
 sub fetch_all {
   my $self = shift;
   return $self->generic_fetch();
