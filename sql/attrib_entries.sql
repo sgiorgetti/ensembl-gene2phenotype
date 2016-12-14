@@ -44,3 +44,4 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (39, 4, 'Ear
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (40, 4, 'Eye');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (41, 4, 'Skin');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (42, 4, 'Cancer');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (43, 4, 'Prenatal');
