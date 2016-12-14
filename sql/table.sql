@@ -87,7 +87,6 @@ CREATE TABLE genomic_feature_disease_deleted (
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   deleted_by_user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_id),
-  UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id, panel_attrib),
   KEY genomic_feature_idx (genomic_feature_id),
   KEY disease_idx (disease_id)
 );
@@ -271,7 +270,7 @@ CREATE TABLE user (
   user_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   username varchar(255) NOT NULL,
   email varchar(255) NOT NULL,
-  panel_attrib set('36','37','38','39','40','41','42') DEFAULT NULL,
+  panel_attrib set('36','37','38','39','40','41','42','43') DEFAULT NULL,
   PRIMARY KEY (user_id),
   UNIQUE KEY user_idx (username),
   UNIQUE KEY email_idx (email)
