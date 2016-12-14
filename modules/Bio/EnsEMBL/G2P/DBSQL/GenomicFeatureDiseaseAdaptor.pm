@@ -241,6 +241,16 @@ sub fetch_by_GenomicFeature_Disease_panel_id {
   return $result->[0];
 }
 
+sub fetch_by_GenomicFeature_Disease_panel {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $disease = shift;
+  my $panel = shift;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  return $self->fetch_by_GenomicFeature_Disease_panel_id($genomic_feature, $disease, $panel_id);
+}
+
 sub fetch_all_by_GenomicFeature {
   my $self = shift;
   my $genomic_feature = shift;
