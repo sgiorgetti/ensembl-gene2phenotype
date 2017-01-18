@@ -179,7 +179,7 @@ foreach my $individual (keys %$individuals) {
               my $transcript = $transcript_adaptor->fetch_by_stable_id($tr_stable_id);
               $is_canonical = $transcript->is_canonical();
               $transcripts->{$tr_stable_id} = 1;
-              $canonical_transcripts->{$tr_stable_id} if ($is_canonical);
+              $canonical_transcripts->{$tr_stable_id} = 1 if ($is_canonical);
             }
           }
           my ($location, $alleles) = split(' ', $vf_location);
@@ -192,7 +192,6 @@ foreach my $individual (keys %$individuals) {
           $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{is_canonical} = $is_canonical;
           $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{acting_ar} = $acting_ar;
           push @{$txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{variants}}, $txt_output_variant;
-
           push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $allelic_requirement, $acting_ar, $zygosity, @frequencies], $is_canonical];
 
         } 
