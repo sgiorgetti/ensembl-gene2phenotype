@@ -185,7 +185,7 @@ foreach my $individual (keys %$individuals) {
           my ($location, $alleles) = split(' ', $vf_location);
           $location =~ s/\-/:/;
           $alleles =~ s/\//:/;
-          my $txt_output_variant = "$location:$alleles:$zygosity";
+          my $txt_output_variant = "$location:$alleles:$zygosity:$consequence_types";
           if (@txt_output_frequencies) {
             $txt_output_variant .= ':' . join(',', @txt_output_frequencies);
           }
