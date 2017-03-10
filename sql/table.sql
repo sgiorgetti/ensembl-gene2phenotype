@@ -52,6 +52,7 @@ CREATE TABLE ensembl_variation (
 CREATE TABLE genomic_feature (
   genomic_feature_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   gene_symbol varchar(128) DEFAULT NULL,
+  hgnc_id int(10) unsigned DEFAULT NULL,
   mim int(10) unsigned DEFAULT NULL,
   ensembl_stable_id varchar(128) DEFAULT NULL,
   seq_region_id int(10) unsigned DEFAULT NULL,
