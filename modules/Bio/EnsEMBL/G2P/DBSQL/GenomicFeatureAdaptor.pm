@@ -36,7 +36,7 @@ sub store {
       seq_region_start,
       seq_region_end,
       seq_region_strand
-    ) VALUES (?,?,?,?,?,?,?)
+    ) VALUES (?,?,?,?,?,?,?,?)
   });
 
   $sth->execute(
