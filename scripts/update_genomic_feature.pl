@@ -294,27 +294,33 @@ sub update_prev_gene_symbols {
   my $hgnc_mapping_file = $config->{hgnc_mapping_file};
   my $fh_hgnc = FileHandle->new($hgnc_mapping_file, 'r');
   my $hgnc_mappings = {};
+  my $symbol2id_mappings = {};
   while (<$fh_hgnc>) {
     chomp;
-    my ($symbol, $prev_symbol) = split/\t/;
+    my ($hgnc_id, $symbol, $prev_symbol) = split/\t/;
     if ($prev_symbol) {
       $hgnc_mappings->{$symbol}->{$prev_symbol} = 1;
     }
+    $hgnc_id =~ s/HGNC://;
+    $symbol2id_mappings->{$symbol} = $hgnc_id;
   }
-  print scalar keys %$hgnc_mappings, "\n";
   $fh_hgnc->close();
-  my $GFDs = $gfda->fetch_all;
+  my $GFs = $gfa->fetch_all;
 
   my $gene_symbols = {};
 
-  foreach my $GFD (@$GFDs) {
-    my $gf = $GFD->get_GenomicFeature;
+  foreach my $gf (@$GFs) {
     my $genomic_feature_id = $gf->dbID;
     my @gf_synonyms = @{$gf->get_all_synonyms};
     my $gene_symbol = $gf->gene_symbol;
     if (!$gene_symbol) {
       print 'No gene_symbol for ', $gf->dbID, "\n";
     } else {
+      my $hgnc_id = $symbol2id_mappings->{$gene_symbol};
+      if ($hgnc_id && (!$gf->hgnc_id || ($gf->hgnc_id && $gf->hgnc_id != $hgnc_id)) ) {
+        print STDERR "UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;\n";
+        $dbh->do(qq{UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr unless ($config->{test});        
+      }
       if ($hgnc_mappings->{$gene_symbol}) {
         foreach my $prev_gene_symbol (keys %{$hgnc_mappings->{$gene_symbol}}) {
           if (! grep( /^$prev_gene_symbol$/, @gf_synonyms ) ) {
