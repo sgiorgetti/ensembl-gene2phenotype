@@ -30,7 +30,7 @@ sub download_data {
 
   my $csv = Text::CSV->new ( { binary => 1, eol => "\r\n" } ) or die "Cannot use CSV: ".Text::CSV->error_diag ();
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'DDD category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'DDD category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id']);
 
   $csv->eol ("\r\n");
 
@@ -101,7 +101,7 @@ sub write_data {
   my $fh = shift;
   my $where = shift;
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.mim, d.name, d.mim, gfd.DDD_category_attrib, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, a.value, gf.genomic_feature_id
+    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfd.DDD_category_attrib, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, a.value, gf.genomic_feature_id
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_action gfda ON gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
@@ -112,10 +112,11 @@ sub write_data {
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
 
-  my ($gfd_id, $gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols);
-  $sth->bind_columns(\($gfd_id, $gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
+  my ($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols);
+  $sth->bind_columns(\($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
+    $hgnc_id ||= 'No hgnc id';
     $gene_mim ||= 'No gene mim';
     $disease_name ||= 'No disease name';
     $disease_mim ||= 'No disease mim';
@@ -140,17 +141,12 @@ sub write_data {
       $prev_symbols = join(';', keys %{$gfid2synonyms->{$gfid}});
     }  
   
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols);
+    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id);
 
     $csv->print ($fh, \@row);
   }
   $sth->finish;
 
 }
-
-
-
-
-
 
 1;
