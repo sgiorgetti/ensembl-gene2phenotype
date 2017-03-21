@@ -13,25 +13,24 @@ limitations under the License.
 use strict;
 use warnings;
 
-package Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog;
+package Bio::EnsEMBL::G2P::GenomicFeatureDiseaseActionLog;
 
 use Bio::EnsEMBL::Storable;
 use Bio::EnsEMBL::Utils::Argument qw(rearrange);
 
-use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDisease);
+use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDiseaseAction);
 
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($created, $user_id, $action, $adaptor, $DDD_category) =
-    rearrange(['created', 'user_id', 'action', 'adaptor', 'DDD_category'], @_);
+  my ($created, $user_id, $action, $adaptor) =
+    rearrange(['created', 'user_id', 'action', 'adaptor'], @_);
   my $self = $class->SUPER::new(@_);
   
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
   $self->{'adaptor'} = $adaptor;
-  $self->{'DDD_category'} = $DDD_category;
 
   return $self;
 }
@@ -54,24 +53,5 @@ sub action {
   return $self->{action};
 }
 
-sub disease_confidence {
-  my $self = shift;
-  my $DDD_category = shift;
-  if ($DDD_category) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $DDD_category_attrib = $attribute_adaptor->attrib_id_for_value($DDD_category);
-    die "Could not get DDD category attrib id for value $DDD_category\n" unless ($DDD_category_attrib);
-    $self->{DDD_category} = $DDD_category;
-    $self->{DDD_category_attrib} = $DDD_category_attrib;
-  } else {
-    if ($self->{DDD_category_attrib} && !$self->{DDD_category}) {
-      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-      my $DDD_category = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
-      $self->{DDD_category} = $DDD_category;
-    }
-    die "No DDD_category" unless ($self->{DDD_category} );
-  }
-  return $self->{DDD_category};
-}
 
 1;

@@ -122,6 +122,14 @@ sub fetch_by_dbID {
   return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
 }
 
+sub fetch_all_by_GenomicFeatureDisease {
+  my $self = shift;
+  my $gfd = shift;
+  my $gfd_id = $gfd->dbID;
+  my $constraint = "gfdl.genomic_feature_disease_id=$gfd_id";
+  return $self->generic_fetch($constraint);
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
@@ -134,7 +142,7 @@ sub _columns {
     'gfdl.panel_attrib',
     'gfdl.created',
     'gfdl.user_id',
-    'gfdl_action'
+    'gfdl.action'
   );
   return @cols;
 }
@@ -179,6 +187,7 @@ sub _objs_from_sth {
       -panel_attrib => $panel_attrib,
       -created => $created,
       -user_id => $user_id,
+      -action => $action,
       -adaptor => $self,
     );
     push(@objs, $obj);
