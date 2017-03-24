@@ -109,7 +109,7 @@ foreach my $file (@files) {
           }
         }
         # monoallelic genes require only one allele
-        elsif ($ar eq 'monoallelic') {
+        elsif ($ar eq 'monoallelic' || $ar eq 'x-linked dominant' || $ar eq 'monoallelic (X; hemizygous)' || $ar eq 'x-linked over-dominance') {
           $complete_genes->{$gene_symbol}->{$individual}->{$tr_stable_id} = 1;
           $acting_ars->{$gene_symbol}->{$individual}->{$ar} = 1;
         }
@@ -152,8 +152,21 @@ foreach my $individual (keys %$individuals) {
           my $hgvs_t = $hash->{hgvs_t};
           my $hgvs_p = $hash->{hgvs_p}; 
           my $allelic_requirement = $hash->{allele_requirement};
+          my $observed_allelic_requirement = $hash->{ar_in_g2pdb};
           my $consequence_types = $hash->{consequence_types};
           my $zygosity = $hash->{zyg};
+          my $sift_score = $hash->{sift_score} || '0.0';
+          my $sift_prediction = $hash->{sift_prediction};
+          my $sift = 'NA';
+          if ($sift_prediction ne 'NA') {
+            $sift = "$sift_prediction(" . "$sift_score)";
+          }
+          my $polyphen_score = $hash->{polyphen_score} || '0.0';
+          my $polyphen_prediction = $hash->{polyphen_prediction};
+          my $polyphen = 'NA';
+          if ($polyphen_prediction ne 'NA') {
+            $polyphen = "$polyphen_prediction($polyphen_score)";
+          }
           my %frequencies_hash = ();
           if ($hash->{frequencies} ne 'NA') {
             %frequencies_hash = split /[,=]/, $hash->{frequencies};
@@ -192,7 +205,7 @@ foreach my $individual (keys %$individuals) {
           $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{is_canonical} = $is_canonical;
           $txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{acting_ar} = $acting_ar;
           push @{$txt_output_data->{$individual}->{$gene_symbol}->{$tr_stable_id}->{variants}}, $txt_output_variant;
-          push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $allelic_requirement, $acting_ar, $zygosity, @frequencies], $is_canonical];
+          push @{$chart_data->{$individual}}, [[$vf_location, $gene_symbol, $tr_stable_id, $hgvs_t, $hgvs_p, $refseq, $vf_name, $existing_name, $novel, $failed, $clin_sign, $consequence_types, $observed_allelic_requirement, $acting_ar, $zygosity, $sift, $polyphen, @frequencies], $is_canonical];
 
         } 
       }    
@@ -217,7 +230,7 @@ $fh_txt->close();
 
 my @charts = ();
 my $count = 1;
-  my @header = ('Variant location and alleles (REF/ALT)', 'Gene symbol', 'Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Existing name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement (all observed in G2P DB)', 'GENE REQ', 'Zygosity', @frequencies_header);
+  my @header = ('Variant location and alleles (REF/ALT)', 'Gene symbol', 'Transcript stable ID', 'HGVS transcript', 'HGVS protein', 'RefSeq IDs', 'Variant name', 'Existing name', 'Novel variant', 'Has been failed by Ensembl', 'ClinVar annotation', 'Consequence types', 'Allelic requirement (all observed in G2P DB)', 'GENE REQ', 'Zygosity', 'SIFT', 'PolyPhen', @frequencies_header);
 
 foreach my $individual (sort keys %$chart_data) {
   push @charts, {
