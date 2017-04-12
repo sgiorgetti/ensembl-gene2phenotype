@@ -244,6 +244,13 @@ CREATE TABLE organ (
   PRIMARY KEY (organ_id)
 );
 
+CREATE TABLE panel (
+  panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  name varchar(255) NOT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (panel_id)
+);
+
 CREATE TABLE phenotype (
   phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   stable_id varchar(255) DEFAULT NULL,
