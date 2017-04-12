@@ -36,6 +36,7 @@ sub get_available_adaptors {
     'GenomicFeatureDiseasePhenotype'   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor',
     'GenomicFeatureDiseasePublication' => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor',   
     'Organ'                            => 'Bio::EnsEMBL::G2P::DBSQL::OrganAdaptor',
+    'Panel'                            => 'Bio::EnsEMBL::G2P::DBSQL::PanelAdaptor',
     'Phenotype'                        => 'Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor',
     'Publication'                      => 'Bio::EnsEMBL::G2P::DBSQL::PublicationAdaptor',
     'User'                             => 'Bio::EnsEMBL::G2P::DBSQL::UserAdaptor',

@@ -299,3 +299,9 @@ CREATE TABLE variation_synonym (
   KEY name_idx (name)
 );
 
+CREATE TABLE panel (
+  panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  name varchar(255) NOT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (panel_id)
+);

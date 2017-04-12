@@ -275,6 +275,22 @@ sub fetch_all_by_GenomicFeature_panel {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_all_by_GenomicFeature_panels {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $panels = shift;
+
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my @panel_ids = ();
+  foreach my $panel (@$panels) {
+    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+    push @panel_ids, $panel_id;
+  } 
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib IN (" . join(',', @panel_ids) . ")";
+  return $self->generic_fetch($constraint);
+}
+
 sub fetch_all_by_Disease {
   my $self = shift;
   my $disease = shift;
@@ -295,6 +311,23 @@ sub fetch_all_by_Disease_panel {
 
   my $disease_id = $disease->dbID;
   my $constraint = "gfd.disease_id=$disease_id AND gfd.panel_attrib=$panel_id";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_Disease_panels {
+  my $self = shift;
+  my $disease = shift;
+  my $panels = shift;
+
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my @panel_ids = ();
+  foreach my $panel (@$panels) {
+    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+    push @panel_ids, $panel_id;
+  } 
+
+  my $disease_id = $disease->dbID;
+  my $constraint = "gfd.disease_id=$disease_id AND gfd.panel_attrib IN (" . join(',', @panel_ids) . ")";
   return $self->generic_fetch($constraint);
 }
 
