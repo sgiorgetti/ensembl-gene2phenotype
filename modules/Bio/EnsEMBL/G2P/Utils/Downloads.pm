@@ -15,12 +15,11 @@ sub download_data {
   my $registry_file = shift;
   my $is_logged_in = shift;
   my $user_panels = shift;
+  my $panel_name = shift;
   my $registry = 'Bio::EnsEMBL::Registry';
   $registry->load_all($registry_file);
 
   my $file = "$downloads_dir/$file_name";
-  my $panel_name = $file_name;
-  $panel_name =~ s/G2P\.csv//;
   
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
