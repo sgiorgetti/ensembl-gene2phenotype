@@ -24,12 +24,13 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($organ_id, $name, $adaptor) =
-    rearrange(['organ_id', 'name', 'adaptor'], @_);
+  my ($organ_id, $name, $panel_id, $adaptor) =
+    rearrange(['organ_id', 'name', 'panel_id', 'adaptor'], @_);
 
   my $self = bless {
     'organ_id' => $organ_id,
     'name' => $name,
+    'panel_id' => $panel_id,
     'adaptor' => $adaptor,
   }, $class;
 
@@ -45,6 +46,12 @@ sub name {
   my $self = shift;
   $self->{name} = shift if @_;
   return $self->{name};
+}
+
+sub panel_id {
+  my $self = shift;
+  $self->{panel_id} = shift if @_;
+  return $self->{panel_id};
 }
 
 1;
