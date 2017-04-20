@@ -40,6 +40,9 @@ ok($organ->name eq $name, 'fetch_by_name');
 my $organs = $oa->fetch_all();
 ok(scalar @$organs == 23, 'fetch_all');
 
+$organs = $oa->fetch_all_by_panel_id(1);
+ok(scalar @$organs == 4, 'fetch_all_by_panel_id');
+
 $organ = Bio::EnsEMBL::G2P::Organ->new(
   -name => 'test_organ',
   -adaptor => $oa,
