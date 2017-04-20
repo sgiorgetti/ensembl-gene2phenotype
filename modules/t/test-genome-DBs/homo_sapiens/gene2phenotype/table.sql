@@ -305,3 +305,10 @@ CREATE TABLE panel (
   is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (panel_id)
 );
+
+CREATE TABLE organ_panel (
+  organ_id int(10) unsigned NOT NULL,
+  panel_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (organ_id, panel_id),
+  KEY organ_panel_idx (organ_id, panel_id)
+);
