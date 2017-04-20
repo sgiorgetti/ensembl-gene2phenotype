@@ -30,7 +30,7 @@ sub store {
     ) VALUES (?);
   });
   $sth->execute(
-    $organ->name || undef,
+    $organ->name || undef
   );
 
   $sth->finish();
@@ -66,11 +66,19 @@ sub fetch_all {
   return $self->generic_fetch();
 }
 
+sub fetch_all_by_panel_id {
+  my $self = shift;
+  my $panel_id = shift;
+  my $constraint = "op.panel_id=$panel_id";
+  return $self->generic_fetch($constraint);
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
     'o.organ_id',
     'o.name',
+    'op.panel_id'
   );
   return @cols;
 }
@@ -79,15 +87,25 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['organ', 'o'],
+    ['organ_panel', 'op']
   );
   return @tables;
+}
+
+sub _left_join {
+  my $self = shift;
+
+  my @left_join = (
+    ['organ_panel', 'o.organ_id = op.organ_id'],
+  );
+  return @left_join;
 }
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($organ_id, $name);
-  $sth->bind_columns(\($organ_id, $name));
+  my ($organ_id, $name, $panel_id);
+  $sth->bind_columns(\($organ_id, $name, $panel_id));
 
   my @objs;
 
@@ -95,6 +113,7 @@ sub _objs_from_sth {
     my $obj = Bio::EnsEMBL::G2P::Organ->new(
       -organ_id => $organ_id,
       -name => $name,
+      -panel_id => $panel_id,
       -adaptor => $self,
     );
     push(@objs, $obj);
