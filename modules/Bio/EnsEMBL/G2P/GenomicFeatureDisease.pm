@@ -170,4 +170,10 @@ sub get_all_GFDOrgans {
   return $GFD_organ_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
+sub get_all_GFDComments {
+  my $self = shift;
+  my $GFD_comment_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseCommentAdaptor;
+  return $GFD_comment_adaptor->fetch_all_by_GenomicFeatureDisease($self);
+}
+
 1;
