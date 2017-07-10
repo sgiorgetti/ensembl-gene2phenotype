@@ -78,6 +78,28 @@ CREATE TABLE genomic_feature_disease (
   KEY disease_idx (disease_id)
 );
 
+CREATE TABLE genomic_feature_disease_comment (
+  genomic_feature_disease_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  comment_text text DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_comment_id),
+  KEY GFD_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE GFD_comment_deleted (
+  GFD_comment_deleted_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  comment_text text DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  deleted_by_user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_comment_deleted_id),
+  KEY GFD_idx (genomic_feature_disease_id)
+);
+
 CREATE TABLE genomic_feature_disease_deleted (
   genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
