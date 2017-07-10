@@ -23,16 +23,23 @@ use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDiseaseAction);
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($created, $user_id, $action, $adaptor) =
-    rearrange(['created', 'user_id', 'action', 'adaptor'], @_);
+  my ($created, $user_id, $action, $adaptor, $genomic_feature_disease_action_log_id) =
+    rearrange(['created', 'user_id', 'action', 'adaptor', 'genomic_feature_disease_action_log_id'], @_);
   my $self = $class->SUPER::new(@_);
   
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
   $self->{'adaptor'} = $adaptor;
+  $self->{'genomic_feature_disease_action_log_id'} = $genomic_feature_disease_action_log_id;
 
   return $self;
+}
+
+sub dbID {
+  my $self = shift;
+  $self->{genomic_feature_disease_action_log_id} = shift if @_;
+  return $self->{genomic_feature_disease_action_log_id};
 }
 
 sub created {
