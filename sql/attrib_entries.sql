@@ -3,6 +3,7 @@ INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES 
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (3, 'DDD_Category', 'DDD category', 'DDD category');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (4, 'g2p_panel', 'G2P panel', 'G2P panel');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (5, 'retired', 'retired attrib type', 'retired attrib type');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (6, 'ontology_mapping', 'Ontology Mapping', 'Method used to link a description to an ontology term');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (1, 5, 'monoallelic (autosome)');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (2, 5, 'monoallelic (autosome; obligate mosaic)');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (3, 1, 'biallelic');
@@ -46,3 +47,13 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (40, 4, 'Eye
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (41, 4, 'Skin');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (42, 4, 'Cancer');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (43, 4, 'Prenatal');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (437, 6, 'Data source');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (438, 6, 'OLS exact');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (439, 6, 'OLS partial');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (440, 6, 'Zooma exact');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (441, 6, 'Zooma partial');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (442, 6, 'Manual');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (443, 6, 'HPO');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (444, 6, 'Orphanet');
+
+
