@@ -37,6 +37,12 @@ sub new {
   return $self;
 }
 
+sub new_fast {
+  my $class = shift;
+  my $hashref = shift;
+  return bless $hashref, $class;
+}
+
 sub dbID {
   my $self = shift;
   $self->{dbID} = shift if ( @_ );
@@ -66,5 +72,40 @@ sub get_all_Variations {
   my $variation_adaptor = $self->{adaptor}->db->get_VariationAdaptor;
   return $variation_adaptor->fetch_all_by_disease_id($self->dbID);
 }
+
+sub ontology_accessions_with_source {
+  my $self = shift;
+  my $type = shift;
+
+  return $self->{'_ontology_accessions'} unless $type;
+
+  ## else filter ontology mappings by is/involves type
+  my @accessions;
+  foreach my $mapping (@{$self->{'_ontology_accessions'}}){
+    next if defined $type && $mapping->{mapping_type} eq $type;
+    push @accessions, $mapping;
+  }
+  return \@accessions;
+}
+
+sub ontology_accessions {
+  my $self = shift;
+  my $type = shift;
+
+  my @accessions;
+  foreach my $h (@{$self->{'_ontology_accessions'}}){
+    next if defined $type && $type ne $h->{mapping_type};
+    push @accessions, $h->{accession};
+  }
+  return \@accessions;
+}
+
+sub add_ontology_accession {
+  my $self  = shift;
+  my $data  = shift;
+  throw('An accession must be supplied when updating')  unless $data->{accession};
+  push @{$self->{'_ontology_accessions'}}, $data;
+}
+
 
 1;
