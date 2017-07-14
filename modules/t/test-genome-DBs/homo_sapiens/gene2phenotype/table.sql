@@ -30,6 +30,15 @@ CREATE TABLE disease_name_synonym (
   KEY disease_idx (disease_id)
 );
 
+CREATE TABLE disease_ontology_accession (
+  disease_id int(11) unsigned NOT NULL,
+  accession varchar(255) NOT NULL,
+  mapped_by_attrib set('437','438','439','440','441','442','443','444') DEFAULT NULL,
+  mapping_type enum('is','involves') DEFAULT NULL,
+  PRIMARY KEY (disease_id, accession),
+  KEY accession_idx (accession)
+);
+
 CREATE TABLE ensembl_variation (
   ensembl_variation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
@@ -78,6 +87,28 @@ CREATE TABLE genomic_feature_disease (
   KEY disease_idx (disease_id)
 );
 
+CREATE TABLE genomic_feature_disease_comment (
+  genomic_feature_disease_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  comment_text text DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_comment_id),
+  KEY GFD_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE GFD_comment_deleted (
+  GFD_comment_deleted_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  comment_text text DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  deleted_by_user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_comment_deleted_id),
+  KEY GFD_idx (genomic_feature_disease_id)
+);
+
 CREATE TABLE genomic_feature_disease_deleted (
   genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
@@ -88,7 +119,6 @@ CREATE TABLE genomic_feature_disease_deleted (
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   deleted_by_user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_id),
-  UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id, panel_attrib),
   KEY genomic_feature_idx (genomic_feature_id),
   KEY disease_idx (disease_id)
 );
@@ -113,6 +143,7 @@ CREATE TABLE genomic_feature_disease_action_deleted (
 
 
 CREATE TABLE genomic_feature_disease_action_log (
+  genomic_feature_disease_action_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_action_id int(10) unsigned NOT NULL,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
@@ -120,6 +151,7 @@ CREATE TABLE genomic_feature_disease_action_log (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL, 
   action varchar(128) NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_action_log_id),
   KEY genomic_feature_disease_action_idx (genomic_feature_disease_action_id)
 );
 
@@ -243,6 +275,20 @@ CREATE TABLE organ (
   PRIMARY KEY (organ_id)
 );
 
+CREATE TABLE panel (
+  panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  name varchar(255) NOT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (panel_id)
+);
+
+CREATE TABLE organ_panel (
+  organ_id int(10) unsigned NOT NULL,
+  panel_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (organ_id, panel_id),
+  KEY organ_panel_idx (organ_id, panel_id)
+);
+
 CREATE TABLE phenotype (
   phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   stable_id varchar(255) DEFAULT NULL,
@@ -257,11 +303,11 @@ CREATE TABLE phenotype (
 CREATE TABLE publication (
   publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   pmid int(10) DEFAULT NULL,
-  title varchar(255) DEFAULT NULL,
+  title text DEFAULT NULL,
   source varchar(255) DEFAULT NULL,
   PRIMARY KEY (publication_id),
   KEY pmid_idx (pmid)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE search (
   search_term varchar(255) NOT NULL,
@@ -272,7 +318,7 @@ CREATE TABLE user (
   user_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   username varchar(255) NOT NULL,
   email varchar(255) NOT NULL,
-  panel_attrib set('36','37','38','39','40','41') DEFAULT NULL,
+  panel_attrib set('36','37','38','39','40','41','42','43') DEFAULT NULL,
   PRIMARY KEY (user_id),
   UNIQUE KEY user_idx (username),
   UNIQUE KEY email_idx (email)
@@ -299,16 +345,3 @@ CREATE TABLE variation_synonym (
   KEY name_idx (name)
 );
 
-CREATE TABLE panel (
-  panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  name varchar(255) NOT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  PRIMARY KEY (panel_id)
-);
-
-CREATE TABLE organ_panel (
-  organ_id int(10) unsigned NOT NULL,
-  panel_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (organ_id, panel_id),
-  KEY organ_panel_idx (organ_id, panel_id)
-);
