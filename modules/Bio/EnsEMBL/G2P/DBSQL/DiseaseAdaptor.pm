@@ -100,24 +100,64 @@ sub fetch_all_by_substring {
   return $self->generic_fetch($constraint);
 }
 
+sub store_ontology_accessions{
+  my ($self, $pheno) = @_;
+
+  my $dbh = $self->dbc->db_handle;
+
+  my $sth = $dbh->prepare(qq{
+    INSERT IGNORE INTO disease_ontology_accession (
+      disease_id,
+      accession,
+      mapped_by_attrib,
+      mapping_type
+    ) VALUES (?,?,?,?)
+  });
+
+  foreach my $link_info (@{$pheno->{_ontology_accessions}} ){
+    ## get attrib id for source of link - can this be mandatory?
+    my $attrib_id;
+    if ($link_info->{mapping_source}){
+      $attrib_id = $self->db->get_AttributeAdaptor->attrib_id_for_type_value( 'ontology_mapping', $link_info->{mapping_source});
+      warn "Source type " . $link_info->{mapping_source} . " not supported for linking ontology descriptions to accessions\n" unless $attrib_id;
+    }
+
+    $sth->execute(
+      $pheno->{dbID},
+      $link_info->{accession},
+      $attrib_id,
+      $link_info->{mapping_type}
+    );
+  }
+  $sth->finish;
+}
+
+sub _left_join {
+  my $self = shift;
+
+  my @lj = ();
+
+  push @lj, (
+    [ 'disease_ontology_accession', 'd.disease_id = doa.disease_id' ]
+  ) ;
+
+  return @lj;
+}
+
 sub _columns {
   my $self = shift;
-  my @cols = (
-    'd.disease_id',
-    'd.name',
-    'd.mim',
-  );
-  return @cols;
+  return qw(d.disease_id d.name d.mim doa.accession doa.mapped_by_attrib doa.mapping_type);
 }
 
 sub _tables {
   my $self = shift;
   my @tables = (
-    ['disease', 'd'],
+    ['disease', 'd'], ['disease_ontology_accession', 'doa']
   );
   return @tables;
 }
 
+=begin
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
@@ -137,4 +177,54 @@ sub _objs_from_sth {
   }
   return \@objs;
 }
+=end
+=cut
+
+sub _objs_from_sth {
+  my ($self, $sth) = @_;
+
+  my %row;
+
+  $sth->bind_columns( \( @row{ @{$sth->{NAME_lc} } } ));
+
+  ## deal with multiple rows due to multiple phenotype ontology terms
+  while ($sth->fetch) {
+    $self->_obj_from_row(\%row);
+  }
+
+  # Get the created objects from the temporary hash
+  my @objs = values %{ $self->{_temp_objs} };
+  delete $self->{_temp_objs};
+  return \@objs;
+}
+
+sub _obj_from_row {
+  my ($self, $row) = @_;
+
+  # If the object for this phenotype_id hasn't already been created, do that
+  my $obj = $self->{_temp_objs}{$row->{disease_id}};
+
+  unless (defined($obj)) {
+
+    $obj = Bio::EnsEMBL::G2P::Disease->new_fast({
+      dbID    => $row->{disease_id},
+      
+      name           => $row->{name},
+      mim    => $row->{description},
+      adaptor        => $self,
+    });
+
+    $self->{_temp_objs}{$row->{disease_id}} = $obj;
+  }
+
+  # Add a ontology accession if available
+  my $link_source = $self->db->get_AttributeAdaptor->attrib_value_for_id($row->{mapped_by_attrib})
+  if $row->{mapped_by_attrib};
+
+  $obj->add_ontology_accession({
+    accession      => $row->{accession},
+    mapping_source => $link_source,
+    mapping_type   => $row->{mapping_type} }) if defined $row->{accession};
+}
+
 1;
