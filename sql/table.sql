@@ -30,6 +30,15 @@ CREATE TABLE disease_name_synonym (
   KEY disease_idx (disease_id)
 );
 
+CREATE TABLE disease_ontology_accession (
+  disease_id int(11) unsigned NOT NULL,
+  accession varchar(255) NOT NULL,
+  mapped_by_attrib set('437','438','439','440','441','442','443','444') DEFAULT NULL,
+  mapping_type enum('is','involves') DEFAULT NULL,
+  PRIMARY KEY (disease_id, accession),
+  KEY accession_idx (accession)
+);
+
 CREATE TABLE ensembl_variation (
   ensembl_variation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
