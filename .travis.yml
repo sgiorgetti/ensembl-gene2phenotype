@@ -6,6 +6,7 @@ perl:
 env:
   - COVERALLS=true  DB=mysql
 
+dist: trusty
 sudo: false
 
 addons:
