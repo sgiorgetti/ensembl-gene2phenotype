@@ -162,7 +162,7 @@ sub load_genomic_feature_from_db {
 sub delete_from_genomic_feature {
   my $delete_gfs = shift;
   foreach my $gf_id (keys %$delete_gfs) {
-    print STDERR "DELETE FROM genomic_feature where genomic_feature_id=$gf_id;\n";
+#    print STDERR "DELETE FROM genomic_feature where genomic_feature_id=$gf_id;\n";
     $dbh->do(qq{DELETE FROM genomic_feature where genomic_feature_id = $gf_id;}) or die $dbh->errstr unless ($config->{test});
   }
 }
@@ -244,10 +244,12 @@ sub store_synonyms {
 
   # Sort out genomic_features that are part of a GFD but not part of the most recent GTF file. Try and find synonyms:
   foreach my $old_gene_symbol (keys %$old_gfs) {
+    print "old gene symbol $old_gene_symbol\n";
     my $core_gene_names = {};
     my $old_genomic_feature = $gfa->fetch_by_gene_symbol($old_gene_symbol);
     my $old_genomic_feature_id = $old_genomic_feature->dbID();
     $delete_old_GF_ids->{$old_genomic_feature_id} = 1;
+    print STDERR "Old gene symbol ", $old_gene_symbol, "\n";
     my $genes = $gene_adaptor->fetch_all_by_external_name($old_gene_symbol);
     foreach my $gene (@$genes) {
       my $external_name = $gene->external_name;
@@ -268,16 +270,21 @@ sub store_synonyms {
         print STDERR "UPDATE genomic_feature_disease SET genomic_feature_id=$genomic_feature_id WHERE genomic_feature_disease_id=$GFD_id;\n";
         $dbh->do(qq{UPDATE genomic_feature_disease SET genomic_feature_id=$genomic_feature_id WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr unless ($config->{test});
       }
+
+      # store synoyms
+      foreach my $new_gene_symbol (@keys_core_gene_names) {
+        print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');\n";
+        $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');}) or die $dbh->errstr unless ($config->{test});
+      }
+      print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');\n";
+      $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$old_gene_symbol');}) or die $dbh->errstr unless ($config->{test});
+
+
+
     } else {
       print STDERR "No genomic_feature for $new_gene_symbol\n";
     }
-    # store synoyms
-    foreach my $new_gene_symbol (@keys_core_gene_names) {
-      print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');\n";
-      $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');}) or die $dbh->errstr unless ($config->{test});
-    }
-    print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$new_gene_symbol');\n";
-    $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$old_gene_symbol');}) or die $dbh->errstr unless ($config->{test});
+
   }
 
   foreach my $old_GF_id (keys %$delete_old_GF_ids) {
@@ -286,7 +293,8 @@ sub store_synonyms {
 
   # Delete old synonyms:
   while ( my($old_synonym, $genomic_feature_id) = each %$old_synonyms) {
-    $dbh->do(qq{DELETE FROM genomic_feature_synonym WHERE genomic_feature_id=$genomic_feature_id AND genomic_feature_synonym='$old_synonym';}) or die $dbh->errstr unless ($config->{test});
+#    print STDERR "DELETE FROM genomic_feature_synonym WHERE genomic_feature_id=$genomic_feature_id AND name='$old_synonym';\n";
+    $dbh->do(qq{DELETE FROM genomic_feature_synonym WHERE genomic_feature_id=$genomic_feature_id AND name='$old_synonym';}) or die $dbh->errstr unless ($config->{test});
   }
 }
 
@@ -324,14 +332,13 @@ sub update_prev_gene_symbols {
       if ($hgnc_mappings->{$gene_symbol}) {
         foreach my $prev_gene_symbol (keys %{$hgnc_mappings->{$gene_symbol}}) {
           if (! grep( /^$prev_gene_symbol$/, @gf_synonyms ) ) {
-            print STDERR "INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');\n";
+#            print STDERR "Update prev gene symbols: INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');\n";
             $dbh->do(qq{INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');}) or die $dbh->errstr unless ($config->{test});        
           }
         }
       }
     }
   }
-
 }
 
 sub get_ensembl_synonyms {
