@@ -6,6 +6,7 @@ use base qw(Exporter);
 our @EXPORT_OK = qw( download_data );
 
 my $gfd_attributes = {};
+my $gfd_create_dates = {};
 my $gfid2synonyms = {};
 my $attribs = {};
 
@@ -29,7 +30,7 @@ sub download_data {
 
   my $csv = Text::CSV->new ( { binary => 1, eol => "\r\n" } ) or die "Cannot use CSV: ".Text::CSV->error_diag ();
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'DDD category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'DDD category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date']);
 
   $csv->eol ("\r\n");
 
@@ -61,6 +62,14 @@ sub download_data {
   while (my $row = $sth->fetchrow_arrayref()) {
     my ($id, $value) = @$row;
     $attribs->{$id} = $value;
+  }
+  $sth->finish();
+
+  $sth = $dbh->prepare(q{SELECT genomic_feature_disease_id, created FROM genomic_feature_disease_log WHERE action='create';});
+  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my ($gfd_id, $created) = @$row;
+    $gfd_create_dates->{$gfd_id} = $created;
   }
   $sth->finish();
 
@@ -111,7 +120,7 @@ sub write_data {
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
 
-  my ($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols);
+  my ($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created);
   $sth->bind_columns(\($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -139,8 +148,10 @@ sub write_data {
     if ($gfid2synonyms->{$gfid})  {
       $prev_symbols = join(';', keys %{$gfid2synonyms->{$gfid}});
     }  
-  
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id);
+
+    $created = $gfd_create_dates->{$gfd_id} || 'No date';
+ 
+    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created);
 
     $csv->print ($fh, \@row);
   }
