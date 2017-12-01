@@ -41,6 +41,7 @@ sub get_available_adaptors {
     'Phenotype'                        => 'Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor',
     'Publication'                      => 'Bio::EnsEMBL::G2P::DBSQL::PublicationAdaptor',
     'User'                             => 'Bio::EnsEMBL::G2P::DBSQL::UserAdaptor',
+    'TextMiningVariation'              => 'Bio::EnsEMBL::G2P::DBSQL::TextMiningVariationAdaptor',
     'Variation'                        => 'Bio::EnsEMBL::G2P::DBSQL::VariationAdaptor',
   );
 
