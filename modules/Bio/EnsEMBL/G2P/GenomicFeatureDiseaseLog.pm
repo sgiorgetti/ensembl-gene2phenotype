@@ -69,7 +69,7 @@ sub disease_confidence {
       my $DDD_category = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
       $self->{DDD_category} = $DDD_category;
     }
-    die "No DDD_category" unless ($self->{DDD_category} );
+#    die "No DDD_category" unless ($self->{DDD_category} );
   }
   return $self->{DDD_category};
 }
