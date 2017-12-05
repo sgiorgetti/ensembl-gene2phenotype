@@ -63,8 +63,8 @@ $sth->finish;
 print scalar keys %$g2p_pmid_2_gene_symbol, "\n";
 
 
-my $fh_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/gene_hgvs_pmid2', 'w');
-my $fh_rsid_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/gene_rsid_pmid', 'w');
+my $fh_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/gene_hgvs_pmid_20171205', 'w');
+my $fh_rsid_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/gene_rsid_pmid_20171205', 'w');
 
 my $fh = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/mutation2pubtator', 'r');
 
@@ -95,11 +95,6 @@ while (<$fh>) {
   #   p|SUB|F|256|S
     $hgvs =  parse_hgvs($components);
   }
-
-#  my @split_components = split('\|', $components);
-#  if (scalar @split_components != 5) {
-#    print $_, "\n";
-#  }
 
   if ($hgvs) {
     if ($g2p_pmid_2_gene_symbol->{$pmid}) {
