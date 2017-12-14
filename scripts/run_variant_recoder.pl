@@ -6,7 +6,6 @@ use JSON;
 use Data::Dumper;
 use FileHandle;
 
-
 my $http = HTTP::Tiny->new();
 
 my $servers = {
@@ -16,9 +15,10 @@ my $servers = {
  
 my $ext = '/variant_recoder/human/';
 
-my $fh = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/gene_hgvs_pmid2', 'r');
-my $fh_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/ensembl_hgvs2', 'w');
+my $working_dir = '/hps/nobackup/production/ensembl/anja/G2P/text_mining/';
 
+my $fh = FileHandle->new("$working_dir/results/gene_hgvs_pmid_20171206", 'r');
+my $fh_out = FileHandle->new("$working_dir/results/ensembl_hgvs_20171206", 'w');
 
 while (<$fh>) {
   chomp;

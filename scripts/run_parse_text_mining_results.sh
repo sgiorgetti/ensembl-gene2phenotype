@@ -1,0 +1,1 @@
+bsub -J parse -o /hps/nobackup/production/ensembl/anja/G2P/text_mining/populate_text_mining_pmid_gene.out -e /hps/nobackup/production/ensembl/anja/G2P/text_mining/populate_text_mining_pmid_gene.err perl parse_text_mining_results.pl

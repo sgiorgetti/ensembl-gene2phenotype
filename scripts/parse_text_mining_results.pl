@@ -5,7 +5,8 @@ use FileHandle;
 use Bio::EnsEMBL::Registry;
 
 
-my $registry_file = '/Users/anja/Documents/G2P/ensembl.registry.nov2017';
+my $working_dir = '/hps/nobackup/production/ensembl/anja/G2P/text_mining/';
+my $registry_file = "$working_dir/registry_file_live";
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_all($registry_file);
 
@@ -27,7 +28,7 @@ while ($sth->fetch) {
 # get all publications
 
 
-my $fh = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/gene2pubtator', 'r');
+my $fh = FileHandle->new("$working_dir/data/gene2pubtator", 'r');
 
 while (<$fh>) {
   chomp;

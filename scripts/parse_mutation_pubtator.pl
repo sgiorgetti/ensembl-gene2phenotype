@@ -3,7 +3,7 @@ use warnings;
 
 use FileHandle;
 use Bio::EnsEMBL::Registry;
-
+use Array::Utils qw(:all);
 my $working_dir = '/hps/nobackup/production/ensembl/anja/G2P/text_mining/';
 my $registry_file = "$working_dir/registry_file_live";
 my $registry = 'Bio::EnsEMBL::Registry';
@@ -64,74 +64,90 @@ $sth->finish;
 print scalar keys %$g2p_pmid_2_gene_symbol, "\n";
 
 
-my $fh_out = FileHandle->new("$working_dir/results/gene_hgvs_pmid_20171212", 'w');
-my $fh_rsid_out = FileHandle->new("$working_dir/results/gene_rsid_pmid_20171212", 'w');
+my $fh_out = FileHandle->new("$working_dir/results/production_gene_hgvs_pmid_20171213", 'w');
 
 my $fh = FileHandle->new("$working_dir/data/mutation2pubtator", 'r');
 
 my $coord_types = {};
 my $mutation_types = {};
 
+my $dbsnp = 0;
+my $dbsnp_tmvar = 0;
+my $tmvar = 0;
+
 #PMID  Components  Mentions  Resource
+my $variant_results = {};
+my $hgvs_results = {};
 while (<$fh>) {
   chomp;
   next if (/^PMID/);
   my ($pmid, $components, $mentions, $resources) = split/\t/;
-
   next if (!$g2p_pmids->{$pmid});
-
-  my ($hgvs, $rsids) = parse_components($components);
-
-  next if (!$g2p_pmids->{$pmid});
-
-  if ($mentions =~ /^(rs|Rs|RS|SS|ss)/) {
-    my $lc_mentions = lc $mentions;
-    print $fh_rsid_out "rs\t$lc_mentions\t$pmid\n";
-    next;
+  $resources = cleanup_resources($resources);
+  my $hgvs_components = hgvs_components($components);
+  if ($hgvs_components) {
+    $hgvs_results->{$pmid}->{$hgvs_components}->{$resources} = 1;
   }
-
-  my $hgvs = undef;
-  my $tmvar_rsid = undef;
-  if ($components =~ /;/) {
-    my @values = split(';', $components);
-    if (scalar @values != 2) {
-      print scalar @values, "\n";
-    }
-    $hgvs = parse_hgvs($values[0]);
-    my @tm_rs_values = split(':', $values[1]);
-    $tmvar_rsid = "rs" . $tm_rs_values[1];
-  } else {
-  #   p|SUB|F|256|S
-    $hgvs =  parse_hgvs($components);
+  my $variant_identifiers = variant_identifiers($components);
+  foreach my $variant (@$variant_identifiers) {
+    $variant_results->{$pmid}->{$variant}->{$resources} = 1;
   }
-
-  if ($hgvs) {
-    if ($g2p_pmid_2_gene_symbol->{$pmid}) {
-      my @gene_symbols = keys %{$g2p_pmid_2_gene_symbol->{$pmid}};
-      foreach my $gene_symbol (@gene_symbols) {
-        if ($tmvar_rsid) {
-          print $fh_rsid_out "hgvs\t$gene_symbol:$hgvs\t$pmid\t$tmvar_rsid\n";
-        } else {
-          print $fh_out "hgvs\t$gene_symbol:$hgvs\t$pmid\n";
-        }
-      }
-    }
-  }  else {
-    if ($tmvar_rsid) {
-      print $fh_rsid_out "rs\t$tmvar_rsid\t$pmid\n";
-    } else {
-      print STDERR "No HGVS for $_\n";
-    }
-  }   
 }
 
-print join(', ', keys %$coord_types), "\n";
-print join(', ', keys %$mutation_types), "\n";
+my @hgvs_pmids = keys %$hgvs_results;
+my @variant_pmids = keys %$variant_results;
+
+my @union = intersect(@hgvs_pmids, @variant_pmids);
+
+print STDERR 'HGVS results ', scalar keys %$hgvs_results, "\n";
+print STDERR 'Variant results ', scalar keys %$variant_results, "\n";
+print STDERR 'Union ', scalar @union, "\n";
+
+
+
+foreach my $pmid (keys %$hgvs_results) {
+  if ($g2p_pmid_2_gene_symbol->{$pmid}) {
+    my $variants = join(',', keys %{$variant_results->{$pmid}}) || 'NA';
+    my @gene_symbols = keys %{$g2p_pmid_2_gene_symbol->{$pmid}};
+    my @passed_hgvs = ();
+    my @failed_hgvs = ();
+    foreach my $hgvs_components (keys %{$hgvs_results->{$pmid}}) {
+      my $hgvs = parse_hgvs($hgvs_components);
+      if ($hgvs) {
+        push @passed_hgvs, $hgvs;
+      } else {
+        push @failed_hgvs, $hgvs_components;
+      }
+    }
+    if ($variants eq 'NA') {
+      print $fh_out "$pmid\t$variants\t" . join(',', @gene_symbols) . "\t" . join(',', @passed_hgvs) . "\t" . join(',', @failed_hgvs) .  "\n";
+    }
+  }
+}
 
 
 $fh->close;
 $fh_out->close;
-$fh_rsid_out->close; 
+
+
+=begin
+my $reordered_results = {};
+foreach my $pmid (keys %$results) {
+  foreach my $source (keys %{$results->{$pmid}}) {
+    my $variant = $results->{$pmid}->{$source};
+    $reordered_results->{$variant}->{$source} = 1;
+  }
+}
+my $sources_counts = {};
+foreach my $pmid (keys %$results) {
+  my $sources = join(',', sort keys %{$results->{$pmid}});
+  $sources_counts->{$sources}++;
+}
+foreach my $source (sort { $sources_counts->{$a} <=> $sources_counts->{$b} } keys %$sources_counts) {
+  print STDERR $source, ' ', $sources_counts->{$source}, "\n";
+}
+=end
+=cut
 
 sub parse_hgvs {
   my $components = shift;
@@ -157,7 +173,7 @@ sub parse_hgvs {
           return "$coord_type.$location$ref_sequence>$alt_sequence";
         } 
       } else {
-        print $components, "\n";
+        return undef;
       }
     }
   } elsif (scalar @split_components == 4) {
@@ -190,8 +206,55 @@ sub parse_hgvs {
     return "$coord_type.$location$mutation_type";
   }
   else {
+    return undef;
   }
   return undef;
+}
+
+sub hgvs_components {
+  my $components = shift;
+  if ($components =~ /;/) {
+    my @values = split(';', $components);
+    if (scalar @values != 2) {
+      warn "Got more than 2 components after splitting $components\n";
+      return undef;
+    }
+    return $values[0];
+  } elsif ($components =~ /^(rs|Rs|RS|SS|ss)(\d+)$/) {
+    return undef;
+  } else {
+    return $components;
+  }
+}
+
+sub variant_identifiers {
+  my $components = shift;
+ 
+  my @results = ();
+
+  if ($components =~ /;/) {
+    my @values = split(';', $components);
+    if (scalar @values != 2) {
+      warn "Got more than 2 components after splitting $components\n";
+      return undef;
+    }
+    my $var_ids = $values[1];
+    $var_ids =~ s/RS#://;
+    foreach my $number (split('\|', $var_ids)) {
+      push @results, "rs$number";
+    }
+    return \@results;
+  } 
+
+  elsif ($components =~ /^(rs|Rs|RS|SS|ss)(\d+)$/) {
+    my $lc_mentions = lc $components;
+    push @results, $lc_mentions;
+    return \@results;
+  }
+
+  else {
+    return undef;
+  }
 }
 
 sub is_number {
@@ -216,7 +279,6 @@ sub to_3_letter_code {
   foreach my $letter (@letters) {
     my $aa = $amino_acid_code->{$letter};
     if (!$aa) {
-      warn "No 3 letter code for $letter\n";
       return undef;
     }
     push @new_sequence, $aa;
@@ -224,4 +286,8 @@ sub to_3_letter_code {
   return join('', @new_sequence);
 }
 
-
+sub cleanup_resources {
+  my $source = shift;
+  my @sources = split('\|', $source);
+  return join('|', sort @sources); 
+}

@@ -1,0 +1,1 @@
+bsub -J parse_mutations -o /hps/nobackup/production/ensembl/anja/G2P/text_mining/parse_mutation_text_mining_1212.out -e /hps/nobackup/production/ensembl/anja/G2P/text_mining/parse_mutation_text_mining_1212.err perl parse_mutation_pubtator.pl

@@ -21,8 +21,10 @@ my $servers = {
 my $ext = '/lookup/id/';
 
 
+my $working_dir = '/hps/nobackup/production/ensembl/anja/G2P/text_mining/';
+
 my $registry = 'Bio::EnsEMBL::Registry';
-my $registry_file = '/Users/anja/Documents/G2P/ensembl.registry.nov2017';
+my $registry_file = "$working_dir/registry_file_live";
 $registry->load_all($registry_file);
 
 my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
@@ -34,8 +36,8 @@ my $results = {};
 my $canonical_transcripts = {};
 my $transcripts = {};
 
-my $fh = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/vep_results_ensembl_hgvs2', 'r');
-my $fh_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/filtered_vep_results_ensembl_hgvs5', 'w');
+my $fh = FileHandle->new("$working_dir/results/vep_results_ensembl_hgvs_20171206", 'r');
+my $fh_out = FileHandle->new("$working_dir/results/filtered_vep_results_ensembl_hgvs_20171206", 'w');
 
 my $pmid_2_publication_id = {};
 my $gene_symbol_2_gf_id = {};
@@ -78,11 +80,11 @@ foreach my $id (keys %$results) {
   }
 }
 
-$fh = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20171128/results/vep_results_ensembl_hgvs3', 'r');
+$fh = FileHandle->new("$working_dir/results/vep_results_ensembl_hgvs_20171206", 'r');
 
 while (<$fh>) {
   chomp;
-  my ($pmid, $pmid_hgvs, $assembly, $seq_region_name, $start, $end, $strand, $allele_string, $most_severe_consequence, $colocated_variants, $gene_symbol, $transcript_id, $biotype, $consequence_terms, $sift_prediction, $polyphen_prediction) = split/\t/;
+  my ($pmid, $pmid_hgvs, $hgvs_type, $ensembl_hgvs, $assembly, $seq_region_name, $start, $end, $strand, $allele_string, $most_severe_consequence, $colocated_variants, $gene_symbol, $transcript_id, $biotype, $consequence_terms, $sift_prediction, $polyphen_prediction) = split/\t/;
   if ($filtered_results->{$pmid_hgvs}->{$assembly}->{$gene_symbol}->{$transcript_id}) {
     print $fh_out $_, "\n";
   }
