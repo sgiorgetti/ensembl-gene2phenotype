@@ -269,6 +269,17 @@ CREATE TABLE GFD_publication_comment_deleted (
   KEY GFD_publication_idx (genomic_feature_disease_publication_id)
 );
 
+CREATE TABLE mesh (
+  mesh_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  stable_id varchar(255) DEFAULT NULL,
+  name varchar(255) DEFAULT NULL,
+  description varchar(255) DEFAULT NULL,
+  PRIMARY KEY (mesh_id),
+  UNIQUE KEY desc_idx (description),
+  KEY name_idx (name),
+  KEY stable_idx (stable_id)
+);
+
 CREATE TABLE organ (
   organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
@@ -300,6 +311,14 @@ CREATE TABLE phenotype (
   KEY stable_idx (stable_id)
 );
 
+CREATE TABLE phenotype_mapping (
+  mesh_id int(10) unsigned NOT NULL,
+  phenotype_id int(10) unsigned NOT NULL,
+  source varchar(255) DEFAULT NULL,
+  PRIMARY KEY (mesh_id, phenotype_id),
+  KEY phenotype_mapping_idx (mesh_id, phenotype_id)
+);
+
 CREATE TABLE publication (
   publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   pmid int(10) DEFAULT NULL,
@@ -312,6 +331,51 @@ CREATE TABLE publication (
 CREATE TABLE search (
   search_term varchar(255) NOT NULL,
   PRIMARY KEY (search_term)
+);
+
+CREATE TABLE text_mining_disease (
+  text_mining_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  publication_id int(10) unsigned NOT NULL,
+  mesh_id int(10) unsigned NOT NULL,
+  annotated_text varchar(255) NOT NULL,
+  source varchar(128) NOT NULL,
+  PRIMARY KEY (text_mining_disease_id),
+  KEY mesh_idx (mesh_id),
+  KEY publication_idx (publication_id)
+);
+
+CREATE TABLE text_mining_pmid_gene (
+  text_mining_pmid_gene_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  publication_id int(10) DEFAULT NULL,
+  pmid int(10) DEFAULT NULL,
+  genomic_feature_id int(10) DEFAULT NULL,
+  PRIMARY KEY (text_mining_pmid_gene_id),
+  KEY pmid_idx (pmid),
+  KEY genomic_feature_idx (genomic_feature_id),
+  KEY publication_idx (publication_id)
+);
+
+CREATE TABLE text_mining_variation (
+  text_mining_variation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  publication_id int(10) unsigned NOT NULL,
+  genomic_feature_id int(10) unsigned NOT NULL,
+  text_mining_hgvs varchar(128) NOT NULL,
+  ensembl_hgvs varchar(128) NOT NULL,
+  assembly varchar(128) NOT NULL,
+  seq_region varchar(128) NOT NULL,
+  seq_region_start int(11) NOT NULL,
+  seq_region_end int(11) NOT NULL,
+  seq_region_strand tinyint(4) NOT NULL,
+  allele_string varchar(128) DEFAULT NULL,
+  consequence varchar(128) DEFAULT NULL,
+  feature_stable_id varchar(128) DEFAULT NULL,
+  biotype varchar(128) DEFAULT NULL,
+  polyphen_prediction varchar(128) DEFAULT NULL,
+  sift_prediction varchar(128) DEFAULT NULL,
+  colocated_variants varchar(500) DEFAULT NULL,
+  PRIMARY KEY (text_mining_variation_id),
+  KEY genomic_feature_idx (genomic_feature_id),
+  KEY publication_idx (publication_id)
 );
 
 CREATE TABLE user (
