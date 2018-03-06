@@ -29,7 +29,7 @@ die ('A registry_file file is required (--registry_file)') unless (defined($conf
 # file_oxo_mappings_processed ebi_oxo_mappings
 # file_all_mesh_terms
 # file_c_mesh_terms file_d_mesh_terms
-
+# ftp://nlmpubs.nlm.nih.gov/online/mesh/MESH_FILES/asciimesh/
 my $registry_file = $config->{registry_file};
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_all($registry_file);
@@ -258,8 +258,8 @@ sub populate_phenotype_mapping_table {
     my $mesh_id = $mesh_ids->{$stable_id};
     foreach my $hpo_id (split(',', $hpo)) {
       my $phenotype_id = $hpo_ids->{$hpo_id};
-      if (!$phenotype_id) {
-        print $hpo_id, "\n";
+      if (!$phenotype_id || !$mesh_id) {
+        print STDERR $hpo_id, "\n";
       } else {
         $dbh->do(qq{INSERT INTO phenotype_mapping(mesh_id, phenotype_id) VALUES($mesh_id, $phenotype_id);}) or die $dbh->errstr;
       }
@@ -295,14 +295,12 @@ sub populate_text_mining_disease_table {
   while (<$fh>) {
     chomp;
     next if (/^PMID/);
-  #PMID    MeshID  Mentions        Resource
     my ($pmid, $meshID, $mentions, $resource) = split/\t/;
     next if (!$g2p_pmids->{$pmid});
     next if ($meshID !~ /^MESH/);
     my $publication_id = $g2p_pmids->{$pmid};
     my $mesh_id = $mesh_ids->{$meshID};
     $mentions =~ s/"//g;
-    print $_, "\n";
    $dbh->do(qq{INSERT INTO text_mining_disease(publication_id, mesh_id, annotated_text, source) VALUES($publication_id, $mesh_id, "$mentions", "$resource");}) or die $dbh->errstr;
   }
   $fh->close;
