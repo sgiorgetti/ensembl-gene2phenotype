@@ -131,6 +131,21 @@ sub fetch_all_by_GenomicFeatureDisease {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_latest_updates {
+  my $self = shift;
+  my $panel = shift;
+  my $limit = shift; # 10
+  my $is_visible_only = shift;
+  my $aa = $self->db->get_AttributeAdaptor;
+  my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $panel);
+  my $constraint = "gfdl.panel_attrib='$panel_attrib' AND gfdl.action='create'";
+  if ($is_visible_only) {
+    $constraint .= " AND gfd.is_visible = 1";
+  }
+  $constraint .= " ORDER BY created DESC limit $limit";
+  return $self->generic_fetch($constraint);
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
@@ -143,7 +158,9 @@ sub _columns {
     'gfdl.panel_attrib',
     'gfdl.created',
     'gfdl.user_id',
-    'gfdl.action'
+    'gfdl.action',
+    'gf.gene_symbol',
+    'd.name as disease_name'
   );
   return @cols;
 }
@@ -152,15 +169,27 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['genomic_feature_disease_log', 'gfdl'],
+    ['genomic_feature', 'gf'],
+    ['disease', 'd']
   );
   return @tables;
+}
+
+sub _left_join {
+  my $self = shift;
+
+  my @left_join = (
+    ['genomic_feature', 'gfdl.genomic_feature_id = gf.genomic_feature_id'],
+    ['disease', 'gfdl.disease_id = d.disease_id'],
+  );
+  return @left_join;
 }
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action);
-  $sth->bind_columns(\($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action));
+  my ($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action, $gene_symbol, $disease_name);
+  $sth->bind_columns(\($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action, $gene_symbol, $disease_name));
 
   my @objs;
 
@@ -175,7 +204,6 @@ sub _objs_from_sth {
     if ($panel_attrib) {
       $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
     }
-
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
       -genomic_feature_disease_log_id => $genomic_feature_disease_log_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
@@ -189,6 +217,8 @@ sub _objs_from_sth {
       -created => $created,
       -user_id => $user_id,
       -action => $action,
+      -gene_symbol => $gene_symbol,
+      -disease_name => $disease_name,
       -adaptor => $self,
     );
     push(@objs, $obj);
