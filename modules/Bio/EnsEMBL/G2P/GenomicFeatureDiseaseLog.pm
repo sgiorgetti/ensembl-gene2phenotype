@@ -24,17 +24,26 @@ use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDisease);
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($created, $user_id, $action, $adaptor, $DDD_category) =
-    rearrange(['created', 'user_id', 'action', 'adaptor', 'DDD_category'], @_);
+  my ($created, $user_id, $action, $adaptor, $DDD_category, $gene_symbol, $disease_name, $genomic_feature_disease_id) =
+    rearrange(['created', 'user_id', 'action', 'adaptor', 'DDD_category', 'gene_symbol', 'disease_name', 'genomic_feature_disease_id'], @_);
   my $self = $class->SUPER::new(@_);
-  
+ 
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
   $self->{'adaptor'} = $adaptor;
   $self->{'DDD_category'} = $DDD_category;
+  $self->{'gene_symbol'} = $gene_symbol;
+  $self->{'disease_name'} = $disease_name;
+  $self->{'genomic_feature_disease_id'} = $genomic_feature_disease_id;
 
   return $self;
+}
+
+sub genomic_feature_disease_id {
+  my $self = shift;
+  $self->{'genomic_feature_disease_id'} = shift if ( @_);
+  return $self->{'genomic_feature_disease_id'};
 }
 
 sub created {
@@ -53,6 +62,18 @@ sub action {
   my $self = shift;
   $self->{action} = shift if ( @_ );
   return $self->{action};
+}
+
+sub gene_symbol {
+  my $self = shift;
+  $self->{gene_symbol} = shift if ( @_ );
+  return $self->{gene_symbol};
+}
+
+sub disease_name {
+  my $self = shift;
+  $self->{disease_name} = shift if ( @_ );
+  return $self->{disease_name};
 }
 
 sub disease_confidence {
