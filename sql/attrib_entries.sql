@@ -34,6 +34,7 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (27, 2, 'act
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (28, 2, 'increased gene dosage');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (29, 2, 'part of contiguous gene duplication');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (30, 2, 'part of contiguous genomic interval deletion');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (44, 2, 'gain of function');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (31, 3, 'both DD and IF');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (32, 3, 'confirmed');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (33, 3, 'possible');
