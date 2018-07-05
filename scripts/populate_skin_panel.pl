@@ -49,21 +49,25 @@ my $ar_values = $attrib_adaptor->get_attribs_by_type_value('allelic_requirement'
 my $mc_values = $attrib_adaptor->get_attribs_by_type_value('mutation_consequence'); 
 
 my $file = $config->{import_file};
-my $fh = FileHandle->new($file, 'r');
-while (<$fh>) {
-  chomp;
-  next if /^gene/;
-  my ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, $phenotypes,  $organs,  $pmids,  $panel,  $prev_symbols, $hgnc_id) = split/\t/;
-
+my $book  = ReadData($file);
+my $sheet = $book->[1];
+my @rows = Spreadsheet::Read::rows($sheet);
+foreach my $row (@rows) {
+  my ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, $phenotypes,  $organs,  $pmids,  $panel,  $prev_symbols, $hgnc_id) = @$row;
+  next if ($gene_symbol =~ /^gene/);
   my $gf = $gfa->fetch_by_gene_symbol($gene_symbol);
   if (!$gf) {
-    print $gene_symbol, "\n";
+    $gf = $gfa->fetch_by_synonym($gene_symbol);
+    if (!$gf) {
+      print "No genomic_feature for $gene_symbol \n";
+      next;
+    }
   }
 
   $disease_name =~ s/"//g;
   my $disease = $da->fetch_by_name($disease_name);
   if (!$disease) {
-    print $disease_name, "\n";
+    print "Added new disease name $disease_name\n";
     $disease = Bio::EnsEMBL::G2P::Disease->new(
       -name => $disease_name,
       -adaptor => $da,
@@ -71,27 +75,37 @@ while (<$fh>) {
     $da->store($disease);
   }
 
-  my $disease_confidence = $DDD_category;
+  my $disease_confidence = lc $DDD_category;
   my $disease_confidence_attrib = $confidence_values->{$disease_confidence};
   if (!$disease_confidence_attrib) {
-    print $disease_confidence, "\n";
+    die "No disease confidence attrib for $disease_confidence \n";
   }
   my $ar = lc $allelic_requirement;
+
+  if ($ar eq 'hemizygous (males); monoallelic (females)' || $ar eq 'monoallelic, bilallelic ansd mosaic reported') {
+    warn "$ar\n";
+    next;
+  }
+
+  $ar =~ s/^\s+|\s+$//g;
+  if ($ar eq 'monoalellelic') {
+    $ar = 'monoallelic';
+  }
   my $ar_attrib = $ar_values->{$ar} || undef;
-  if (!$ar_attrib) {
-    print $gene_symbol, ' ', $allelic_requirement, "\n";
+  if (!$ar_attrib && $ar) {
+    die "no allelic requirement for $gene_symbol $allelic_requirement\n";
   }
 #  my $mc =~ s/-/ /g;
   my $mc = lc $mutation_consequence;
   my $mc_attrib = $mc_values->{$mc} || undef;
-  if (!$mc_attrib) {
-    print "$gene_symbol $mutation_consequence\n";
+  if (!$mc_attrib && $mc) {
+    die "no mutation consquence for $gene_symbol $mutation_consequence\n";
   }
   
   my $gfd = $gfda->fetch_by_GenomicFeature_Disease_panel_id($gf, $disease, $panel_attrib_id);
 
   if (!$gfd) {
-    print "$gene_symbol $disease_name ", $disease->dbID, "\n";
+    print "Add new GFD $gene_symbol $disease_name ", $disease->dbID, "\n";
     $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
@@ -126,8 +140,11 @@ while (<$fh>) {
   }
 
   if ($pmids) {
-    my @pubmed_ids = split(';', $pmids);
+    my @pubmed_ids = split(/;|,/, $pmids);
     foreach my $pmid (@pubmed_ids) {
+      $pmid =~ s/^\s+|\s+$//g;
+      next unless($pmid);
+      print "PMID $pmid\n";
       my $publication = $pa->fetch_by_PMID($pmid);
       if (!$publication) {
         $publication = Bio::EnsEMBL::G2P::Publication->new(
@@ -157,6 +174,7 @@ while (<$fh>) {
 
   my @hpo_ids = split(';', $phenotypes);
   foreach my $hpo_id (@hpo_ids) {
+    $hpo_id =~ s/^\s+|\s+$//g;
     my $phenotype = $phenotype_a->fetch_by_stable_id($hpo_id);
     if (!$phenotype) {
       print $hpo_id, "\n";
@@ -180,14 +198,68 @@ while (<$fh>) {
     $new_GFD_organs_lookup->{"$GFD_id\t$organ_id"} = 1;
   }
 
+  my $organ_mappings = {
+    'hair' => 'Hair/Nails',
+    'Cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
+    'Cardiovascular' => 'Heart/Cardiovasculature/Lymphatic',
+    'Teeth and Dentitian' => 'Teeth & Dentitian',
+    'teeth and dentitian' => 'Teeth & Dentitian',
+    'Teeth/Dentition' => 'Teeth & Dentitian',
+    'teeth' => 'Teeth & Dentitian',
+    'Hair/Nail' => 'Hair/Nails',
+    'Heart/Cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
+    'Heart/Cardiovascular/Lymphatic' => 'Heart/Cardiovasculature/Lymphatic',
+    'Hair/nail' => 'Hair/Nails',
+    'Hair' => 'Hair/Nails',
+    'Kidney/renal tract' => 'Kidney Renal Tract',
+    'Kidney/Renal tract' => 'Kidney Renal Tract',
+    'Renal tract' => 'Kidney Renal Tract',
+    'Metabolic/endocrine' => 'Endocrine/Metabolic', 
+    'Respiratory' => 'Respiratory tract',
+    'Heart' => 'Heart/Cardiovasculature/Lymphatic',
+    'Heart/cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
+    'heart' => 'Heart/Cardiovasculature/Lymphatic',
+    'Nails/hair' => 'Hair/Nails',
+    'Ears' => 'Ear',
+    'Eyes' => 'Eye',
+    'Skeletal' => 'Skeleton',
+    'Spinal cord/peripheral nerves/musculature' => 'Peripheral nerves',
+    'Nails' => 'Hair/Nails',
+    'Gasrtointestinal' => 'GI tract',
+    'Gasttrointestinal' => 'GI tract',
+    'Gastrointestinal' => 'GI tract',
+    'Metobolic/endocrine' => 'Endocrine/Metabolic',
+    'Central Nervous system' => 'Brain/Cognition', 
+    'Immunological' => 'Bone Marrow/Immune',
+    'Immune' => 'Bone Marrow/Immune',
+    'Immune/bone marrow' => 'Bone Marrow/Immune',
+    'Haematological' => 'Bone Marrow/Immune',
+    'Genitourinary' => 'Genitalia',
+    'Central Nervous System' => 'Brain/Cognition',
+    'Musculoskeletal' => 'Skeleton',
+    'Spinal cord/perihperal nerves' => 'Spinal cord/Peripheral nerves',
+    'Spinal cord' => 'Spinal cord/Peripheral nerves',
+    'Brain/congition' => 'Brain/Cognition',
+    'Nose' => 'Face',
+    'Mouth' => 'Face',
+    'Lung' => 'Lungs',
+  };
+
   my @organ_names = split(';', $organs);
   foreach my $name (@organ_names) {
-    if ($name eq 'Heart/Cardiovasculature') {
-      $name = 'Heart/Cardiovasculature/Lymphatic';
+    $name =~ s/^\s+|\s+$//g;
+    next unless($name);
+    if ($organ_mappings->{$name}) {
+      $name = $organ_mappings->{$name};
+    }
+    if ($name =~ /teeth|Teeth|Dentitian/) {
+      $name = 'Teeth & Dentitian';
+    } elsif ($name =~ /Renal|renal/) {
+      $name = 'Kidney Renal Tract';
     }
     my $organ = $oa->fetch_by_name($name);
     if (!$organ) {
-      print $name, "\n";
+      die "No Organ for $name\n";
     } else {
       my $organ_id = $organ->dbID;
       if (!$new_GFD_organs_lookup->{"$GFD_id\t$organ_id"}) {
@@ -202,7 +274,7 @@ while (<$fh>) {
     }
   }
 }
-$fh->close;
+#$fh->close;
 
 
 
