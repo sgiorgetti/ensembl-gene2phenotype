@@ -122,6 +122,11 @@ sub delete {
     $GenomicFeatureDiseaseActionAdaptor->delete($GFDAction, $user);
   }
 
+  my $GenomicFeatureDiseaseLogAdaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor; 
+  foreach my $log_entry (@{$GenomicFeatureDiseaseLogAdaptor->fetch_all_by_GenomicFeatureDisease($GFD)}) {
+    $log_entry->delete($log_entry, $user);
+  }
+
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease_deleted (
       genomic_feature_disease_id,
@@ -362,6 +367,42 @@ sub fetch_all_by_panel_restricted {
   my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
   my $constraint = "gfd.panel_attrib=$panel_id AND gfd.is_visible = 0";
   return $self->generic_fetch($constraint);
+}
+
+sub get_statistics {
+  my $self = shift;
+  my $panels = shift;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $DDD_categories = $attribute_adaptor->get_attribs_by_type_value('DDD_category');
+  %$DDD_categories = reverse %$DDD_categories;
+  my $panel_attrib_ids = join(',', @$panels);
+  my $sth = $self->prepare(qq{
+    select a.value, gfd.DDD_category_attrib, count(*)
+    from genomic_feature_disease gfd, attrib a
+    where a.attrib_id = gfd.panel_attrib
+    AND gfd.panel_attrib IN ($panel_attrib_ids)
+    group by a.value, gfd.DDD_category_attrib;
+  });
+  $sth->execute;
+
+  my $hash = {};
+  while (my ($panel, $DDD_category_attrib_id, $count) = $sth->fetchrow_array) {
+    my $DDD_category_value = $DDD_categories->{$DDD_category_attrib_id};
+    $hash->{$panel}->{$DDD_category_value} = $count;
+  }
+  my @results = ();
+  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both DD and IF', 'child IF'); 
+  push @results, \@header;
+  foreach my $panel (sort keys %$hash) {
+    my @row = ();
+    push @row, $panel;
+    for (my $i = 1; $i <= $#header; $i++) {
+      push @row, ($hash->{$panel}->{$header[$i]} || 0) + 0;
+    }
+    push @results, \@row;
+  }
+
+  return \@results;
 }
 
 sub fetch_all_by_panel_without_publications {
