@@ -81,7 +81,6 @@ sub delete {
 
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease_log_deleted (
-      genomic_feature_disease_log_id,
       genomic_feature_disease_id,
       genomic_feature_id,
       disease_id,
@@ -90,14 +89,12 @@ sub delete {
       panel_attrib,
       created,
       user_id,
-      action,
-      deleted,
-      deleted_by_user_id
-    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+      action
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   });
 
   $sth->execute(
-    $gfd_log->dbID,
+    $gfd_log->genomic_feature_disease_id,
     $gfd_log->genomic_feature_id,
     $gfd_log->disease_id,
     $gfd_log->DDD_category_attrib,
@@ -105,7 +102,7 @@ sub delete {
     $gfd_log->panel_attrib,
     $gfd_log->created,
     $gfd_log->user_id,
-    $user->user_id
+    $gfd_log->action
   );
   $sth->finish();
 

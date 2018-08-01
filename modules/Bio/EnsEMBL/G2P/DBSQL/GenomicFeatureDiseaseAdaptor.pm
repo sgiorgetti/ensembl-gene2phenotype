@@ -124,7 +124,7 @@ sub delete {
 
   my $GenomicFeatureDiseaseLogAdaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor; 
   foreach my $log_entry (@{$GenomicFeatureDiseaseLogAdaptor->fetch_all_by_GenomicFeatureDisease($GFD)}) {
-    $log_entry->delete($log_entry, $user);
+    $GenomicFeatureDiseaseLogAdaptor->delete($log_entry, $user);
   }
 
   my $sth = $dbh->prepare(q{
