@@ -48,6 +48,7 @@ delete_old_features();
 insert_new_features();
 store_synonyms();
 update_prev_gene_symbols();
+remove_entries_without_hgnc_id();
 update_search();
 
 sub backup {
@@ -360,6 +361,37 @@ sub get_ensembl_synonyms {
     }
   }
   return $ensembl_synonyms;
+}
+
+sub remove_entries_without_hgnc_id {
+
+  my $sth = $dbh->prepare(q{
+    select count(*) from genomic_feature gf
+    right join genomic_feature_disease gfd
+    on gf.genomic_feature_id = gfd.genomic_feature_id
+    where gf.hgnc_id is null;
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  my ($count) = $sth->fetchrow_array();
+  $sth->finish();
+  if ($count) {
+    die "Cannot remove genomic features where hgnc_id is 0 because $count genomic_feature_disease entries  link to genomic_feature table";
+  }
+
+  $sth = $dbh->prepare(q{
+    select count(*) from genomic_feature gf
+    right join genomic_feature_synonym gfs
+    on gf.genomic_feature_id = gfs.genomic_feature_id
+    where gf.hgnc_id is null;
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  ($count) = $sth->fetchrow_array();
+  $sth->finish();
+  if ($count) {
+    die "Cannot remove genomic features where hgnc_id is 0 because $count genomic_feature_synonym entries  link to genomic_feature table";
+  }
+
+  $dbh->do(qq{DELETE FROM genomic_feature where hgnc_id is null;}) or die $dbh->errstr unless ($config->{test});
 }
 
 sub update_search {
