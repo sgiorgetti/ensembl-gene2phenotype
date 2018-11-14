@@ -25,14 +25,15 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($phenotype_id, $stable_id, $name, $description, $adaptor) =
-    rearrange(['phenotype_id', 'stable_id', 'name', 'description', 'adaptor'], @_);
+  my ($phenotype_id, $stable_id, $name, $description, $source, $adaptor) =
+    rearrange(['phenotype_id', 'stable_id', 'name', 'description', 'source', 'adaptor'], @_);
 
   my $self = bless {
     'phenotype_id' => $phenotype_id,
     'stable_id' => $stable_id,
     'name' => $name,
     'description' => $description,
+    'source' => $source,
     'adaptor' => $adaptor,
   }, $class;
 
@@ -63,5 +64,10 @@ sub description {
   return $self->{description};
 }
 
+sub source {
+  my $self = shift;
+  $self->{source} = shift if @_;
+  return $self->{source};
+}
 
 1;
