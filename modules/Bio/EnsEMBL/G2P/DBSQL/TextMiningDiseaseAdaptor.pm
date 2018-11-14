@@ -175,46 +175,24 @@ sub _left_join {
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
-  my %row;
-  $sth->bind_columns( \( @row{ @{$sth->{NAME_lc} } } ));
-  while ($sth->fetch) {
-    # we don't actually store the returned object because
-    # the _obj_from_row method stores them in a temporary
-    # hash _temp_objs in $self
-    $self->_obj_from_row(\%row);
-  }
-
-  # Get the created objects from the temporary hash
-  my @objs = values %{ $self->{_temp_objs} };
-  delete $self->{_temp_objs};
-
-  # Return the created objects
-  return \@objs;
-}
-
-sub _obj_from_row {
-  my ($self, $row) = @_;
-  my $obj = $self->{_temp_objs}{$row->{text_mining_disease_id}};
-  unless ( defined $obj ) {
-    $obj = Bio::EnsEMBL::G2P::TextMiningDisease->new(
-      -text_mining_disease_id => $row->{text_mining_disease_id},
-      -publication_id => $row->{publication_id},
-      -mesh_id => $row->{mesh_id},
-      -annotated_text => $row->{annotated_text},
-      -source => $row->{source},
+  my ($text_mining_disease_id, $publication_id, $mesh_id, $annotated_text, $source, $phenotype_id, $mesh_stable_id, $mesh_name);
+  $sth->bind_columns(\($text_mining_disease_id, $publication_id, $mesh_id, $annotated_text, $source, $phenotype_id, $mesh_stable_id, $mesh_name));
+  my @objs;
+  while ($sth->fetch()) {
+    my $obj = Bio::EnsEMBL::G2P::TextMiningDisease->new(
+      -text_mining_disease_id => $text_mining_disease_id,
+      -publication_id => $publication_id,
+      -mesh_id => $mesh_id,
+      -annotated_text => $annotated_text,
+      -source => $source,
+      -phenotype_id => $phenotype_id,
+      -mesh_stable_id => $mesh_stable_id,
+      -mesh_name => $mesh_name,
       -adaptor => $self,
     );
-
-    $self->{_temp_objs}{$row->{text_mining_disease_id}} = $obj;
+    push(@objs, $obj);
   }
-
-  # Add a synonym if available
-  if (defined $row->{phenotype_id} ) {
-    $obj->add_phenotype_id($row->{phenotype_id});
-  }
-  
-  $obj->mesh_stable_id($row->{mesh_stable_id});
-  $obj->mesh_name($row->{mesh_name});
+  return \@objs;
 }
 
 1;
