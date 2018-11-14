@@ -151,7 +151,7 @@ sub _columns {
     'gfdl.genomic_feature_id',
     'gfdl.disease_id',
     'gfdl.DDD_category_attrib',
-    'gfdl.is_visible',
+    'gfd.is_visible',
     'gfdl.panel_attrib',
     'gfdl.created',
     'gfdl.user_id',
@@ -166,6 +166,7 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['genomic_feature_disease_log', 'gfdl'],
+    ['genomic_feature_disease', 'gfd'],
     ['genomic_feature', 'gf'],
     ['disease', 'd']
   );
@@ -176,6 +177,7 @@ sub _left_join {
   my $self = shift;
 
   my @left_join = (
+    ['genomic_feature_disease', 'gfdl.genomic_feature_disease_id = gfd.genomic_feature_disease_id'],
     ['genomic_feature', 'gfdl.genomic_feature_id = gf.genomic_feature_id'],
     ['disease', 'gfdl.disease_id = d.disease_id'],
   );
