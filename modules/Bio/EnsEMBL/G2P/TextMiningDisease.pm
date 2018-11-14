@@ -25,7 +25,7 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($text_mining_disease_id, $publication_id, $mesh_id, $annotated_text, $source, $adaptor) = rearrange(['text_mining_disease_id', 'publication_id', 'mesh_id', 'annotated_text', 'source', 'adaptor'], @_);
+  my ($text_mining_disease_id, $publication_id, $mesh_id, $annotated_text, $source, $phenotype_id, $mesh_stable_id, $mesh_name, $adaptor) = rearrange(['text_mining_disease_id', 'publication_id', 'mesh_id', 'annotated_text', 'source', 'phenotype_id', 'mesh_stable_id', 'mesh_name', 'adaptor'], @_);
 
   my $self = bless {
       'text_mining_disease_id' => $text_mining_disease_id,
@@ -33,6 +33,9 @@ sub new {
       'mesh_id' => $mesh_id,
       'annotated_text' => $annotated_text,
       'source' => $source,
+      'phenotype_id' => $phenotype_id,
+      'mesh_stable_id' => $mesh_stable_id,
+      'mesh_name' => $mesh_name,
       'adaptor' => $adaptor,
   }, $class;
 
@@ -49,6 +52,12 @@ sub publication_id {
   my $self = shift;
   $self->{publication_id} = shift if ( @_ );
   return $self->{publication_id};
+}
+
+sub phenotype_id {
+  my $self = shift;
+  $self->{phenotype_id} = shift if ( @_ );
+  return $self->{phenotype_id};
 }
 
 sub mesh_id {
@@ -84,13 +93,13 @@ sub source {
 sub add_phenotype_id {
   my $self = shift;
   my $phenotype_id = shift;
-  $self->{'phenotype_id'}{$phenotype_id}++;
+  $self->{'all_phenotype_ids'}{$phenotype_id}++;
   return;
 }
 
 sub get_all_phenotype_ids {
   my $self = shift;
-  my @phenotype_ids = keys %{$self->{phenotype_id}};
+  my @phenotype_ids = keys %{$self->{all_phenotype_ids}};
   return \@phenotype_ids;
 }
 
