@@ -57,7 +57,6 @@ sub delete {
   my $sth = $dbh->prepare(q{
     DELETE FROM text_mining_disease WHERE publication_id  = ?;
   });
-  print $TMD->publication_id, "\n";
   $sth->execute($TMD->publication_id);
   $sth->finish();
 }
@@ -69,9 +68,7 @@ sub fetch_all_by_Publication {
   return $self->generic_fetch($constraint);
 }
 
-
 sub _fetch_all_by_Publication_REST {
-
 
 }
 
