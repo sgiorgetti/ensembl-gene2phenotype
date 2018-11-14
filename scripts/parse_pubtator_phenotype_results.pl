@@ -1,4 +1,4 @@
-use strict;
+g2p_pmids-use strict;
 use warnings;
 
 use FileHandle;
@@ -25,7 +25,7 @@ die ('A registry_file file is required (--registry_file)') unless (defined($conf
 # file_mesh_ids_linked_to_GFD
 # file_disease2pubtator
 # file_mesh_ids_linked_to_GFD
-# file_oxo_mappings_results mappings.csv
+export_mesh_ids# file_oxo_mappings_results mappings.csv
 # file_oxo_mappings_processed ebi_oxo_mappings
 # file_all_mesh_terms
 # file_c_mesh_terms file_d_mesh_terms
@@ -107,6 +107,34 @@ sub get_pmids_linked_to_GFDs {
 }
 
 sub parse_oxo_mappings {
+  my $config = shift;
+  my $read_oxo_mappings = $config->{file_oxo_mappings_results}; # mappings.csv
+  my $write_oxo_mappings = $config->{file_oxo_mappings_processed}; # ebi_oxo_mappings
+  my $fh = FileHandle->new($read_oxo_mappings, 'r');
+  my $meshIDs = {};
+
+  while (<$fh>) {
+    chomp;
+    my @row = split/\t/;
+    my $curie_id = $row[0];
+    my $label = $row[1];
+    my $mapped_curie = $row[2];
+    my $mapped_label = $row[3];
+    $meshIDs->{$curie_id}->{label} = $label;
+    $meshIDs->{$curie_id}->{mappings}->{$mapped_curie} = $mapped_label;
+  }
+  $fh->close;
+
+  $fh = FileHandle->new($write_oxo_mappings, 'w');
+  foreach my $mashID (keys %$mashIDs) {
+    my $label = $mashIDs->{$meshID}->{label};
+    my $mappings = join(',', keys %{$meshIDs->{$mashID}->{mappings}});
+    print $fh "$meshID\t$label\t$mappings\n";
+  }
+  $fh->close;
+}
+
+sub parse_oxo_mappings_csv {
   my $config = shift;
   my $read_oxo_mappings = $config->{file_oxo_mappings_results}; # mappings.csv
   my $write_oxo_mappings = $config->{file_oxo_mappings_processed}; # ebi_oxo_mappings
@@ -269,6 +297,41 @@ sub populate_phenotype_mapping_table {
   $fh->close;
 }
 
+sub populate_text_mining_disease_table_from_file {
+  my $config = shift; 
+
+  my $file_disease2pubtator = $config->{file_disease2pubtator};
+
+  my $mesh_ids = {};
+
+  my $sth = $dbh->prepare(q{
+    SELECT mesh_id, stable_id from mesh;
+  }, {mysql_use_result => 1});
+  $sth->execute() or die $dbh->errstr;
+  my ($mesh_id, $stable_id);
+  $sth->bind_columns(\($mesh_id, $stable_id));
+  while ($sth->fetch) {
+    $mesh_ids->{$stable_id} = $mesh_id;
+  }
+  $sth->finish;
+
+  $dbh->do(qq{Truncate table text_mining_disease;}) or die $dbh->errstr;
+
+  my $fh = FileHandle->new($file_disease2pubtator, 'r');
+
+  while (<$fh>) {
+    chomp;
+    next if (/^PMID/);
+    my ($pmid, $meshID, $mentions, $resource) = split/\t/;
+    next if (!$g2p_pmids->{$pmid});
+    next if ($meshID !~ /^MESH/);
+    my $publication_id = $g2p_pmids->{$pmid};
+    my $mesh_id = $mesh_ids->{$meshID};
+    $mentions =~ s/"//g;
+   $dbh->do(qq{INSERT INTO text_mining_disease(publication_id, mesh_id, annotated_text, source) VALUES($publication_id, $mesh_id, "$mentions", "$resource");}) or die $dbh->errstr;
+  }
+  $fh->close;
+}
 
 sub populate_text_mining_disease_table {
   my $config = shift; 
@@ -305,6 +368,9 @@ sub populate_text_mining_disease_table {
   }
   $fh->close;
 }
+
+
+
 
 sub update_pipline_step {
   my $config = shift;

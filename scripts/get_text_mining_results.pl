@@ -45,14 +45,17 @@ sub main {
       my $array = decode_json($response->{content});
       my $mesh_terms = {};
       foreach my $entry (@$array) {
-        print Dumper($entry), "\n";
+        my $text = $entry->{text};
         foreach my $denotation (@{$entry->{denotations}}) {
           my $mesh_term = $denotation->{obj};
+          my $begin = $denotation->{span}->{begin};
+          my $end = $denotation->{span}->{end};
+          my $annotated_text = substr $text, $begin, $end - $begin;  
           $mesh_term =~ s/Disease://;
+          print $pmid, ' ', $mesh_term, ' ', $annotated_text, "\n";
           $mesh_terms->{$mesh_term} = 1;
         }
       }
-      get_mesh2hpo($mesh_terms);
     }
   }
 }
