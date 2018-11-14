@@ -294,6 +294,7 @@ CREATE TABLE phenotype (
   stable_id varchar(255) DEFAULT NULL,
   name varchar(255) DEFAULT NULL,
   description varchar(255) DEFAULT NULL,
+  source varchar(24) DEFAULT NULL,
   PRIMARY KEY (phenotype_id),
   UNIQUE KEY desc_idx (description),
   KEY name_idx (name),
