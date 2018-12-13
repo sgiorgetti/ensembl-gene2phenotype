@@ -49,6 +49,7 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (41, 4, 'Ski
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (42, 4, 'Cancer');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (43, 4, 'Prenatal');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (45, 4, 'NeonatalRespiratory');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (46, 4, 'Demo');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (437, 6, 'Data source');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (438, 6, 'OLS exact');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (439, 6, 'OLS partial');
