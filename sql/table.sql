@@ -425,3 +425,19 @@ CREATE TABLE variation_synonym (
   KEY name_idx (name)
 );
 
+CREATE TABLE genomic_feature_statistic (
+  genomic_feature_statistic_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_id int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (genomic_feature_statistic_id),
+  KEY genomic_feature_idx (genomic_feature_id)
+);
+
+CREATE TABLE genomic_feature_statistic_attrib (
+  genomic_feature_statistic_id int(10) unsigned NOT NULL,
+  attrib_type_id int(10) DEFAULT NULL,
+  value varchar(255) DEFAULT NULL,
+  KEY genomic_feature_statistic_idx (genomic_feature_statistic_id),
+  KEY type_value_idx (attrib_type_id, value)
+); 
+
+

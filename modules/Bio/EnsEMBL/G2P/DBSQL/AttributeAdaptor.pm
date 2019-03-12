@@ -96,5 +96,35 @@ sub get_attribs_by_type_value {
   return $attribs;
 }
 
+sub attrib_id_for_type_code {
+  my ($self, $type) = @_;
+
+  unless ($self->{attrib_types}) {
+
+    my $attrib_types;
+
+    my $sql = qq{
+      SELECT  t.attrib_type_id, t.code, t.name, t.description
+      FROM    attrib_type t
+    };
+
+    my $sth = $self->prepare($sql);
+
+    $sth->execute;
+
+    while (my ($attrib_type_id, $code, $name, $description ) = $sth->fetchrow_array) {
+      $attrib_types->{$code}->{attrib_type_id} = $attrib_type_id;
+      $attrib_types->{$code}->{name}           = ($name eq '') ? $code : $name;
+      $attrib_types->{$code}->{description}    = $description;
+    }
+
+    $self->{attrib_types}  = $attrib_types;
+  }
+
+  return defined $type ? 
+    $self->{attrib_types}->{$type}->{attrib_type_id} :
+      undef;
+}
+
 
 1;

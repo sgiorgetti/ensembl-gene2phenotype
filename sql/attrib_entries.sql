@@ -4,6 +4,10 @@ INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES 
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (4, 'g2p_panel', 'G2P panel', 'G2P panel');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (5, 'retired', 'retired attrib type', 'retired attrib type');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (6, 'ontology_mapping', 'Ontology Mapping', 'Method used to link a description to an ontology term');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (7, 'gws', 'Genome-wide significance statistic', 'Gene-wise assessment of DNM significance');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (8, 'p_value', 'P-value', 'Minimum P-value from testing of the DDD dataset or the meta-analysis dataset');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (9, 'dataset', 'dataset', 'DDD or meta-analysis dataset');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (10, 'clustering', 'clustering', 'Mutations are considered clustered if the P-value from proximity clustering of DNMs is less than 0.01');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (1, 5, 'monoallelic (autosome)');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (2, 5, 'monoallelic (autosome; obligate mosaic)');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (3, 1, 'biallelic');
@@ -58,5 +62,6 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (441, 6, 'Zo
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (442, 6, 'Manual');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (443, 6, 'HPO');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (444, 6, 'Orphanet');
-
-
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (445, 7, 'p_value');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (446, 7, 'data_set');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (447, 7, 'clustering');
