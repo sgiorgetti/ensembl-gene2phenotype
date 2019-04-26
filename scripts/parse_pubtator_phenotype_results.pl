@@ -1,4 +1,4 @@
-g2p_pmids-use strict;
+use strict;
 use warnings;
 
 use FileHandle;
@@ -25,7 +25,7 @@ die ('A registry_file file is required (--registry_file)') unless (defined($conf
 # file_mesh_ids_linked_to_GFD
 # file_disease2pubtator
 # file_mesh_ids_linked_to_GFD
-export_mesh_ids# file_oxo_mappings_results mappings.csv
+# file_oxo_mappings_results mappings.csv
 # file_oxo_mappings_processed ebi_oxo_mappings
 # file_all_mesh_terms
 # file_c_mesh_terms file_d_mesh_terms
@@ -56,8 +56,8 @@ if ($pipline_step eq 'resume_loading_pubtator_phenotype_results') {
   parse_oxo_mappings($config);
 # 4. Parse all MESH terms
   retrieve_all_mesh_terms($config);
-# 5. Populate mesh table
-  populate_mesh_table($config);
+# 5. Add new mesh terms to phenotype table
+  add_new_mesh_terms($config);
 # 6. Populate phenotype_mapping table
   populate_phenotype_mapping_table($config);
 # 7. Populate text_mining_disease table
@@ -126,9 +126,9 @@ sub parse_oxo_mappings {
   $fh->close;
 
   $fh = FileHandle->new($write_oxo_mappings, 'w');
-  foreach my $mashID (keys %$mashIDs) {
-    my $label = $mashIDs->{$meshID}->{label};
-    my $mappings = join(',', keys %{$meshIDs->{$mashID}->{mappings}});
+  foreach my $meshID (keys %$meshIDs) {
+    my $label = $meshIDs->{$meshID}->{label};
+    my $mappings = join(',', keys %{$meshIDs->{$meshID}->{mappings}});
     print $fh "$meshID\t$label\t$mappings\n";
   }
   $fh->close;
@@ -211,9 +211,10 @@ sub get_value {
   return $value;
 }
 
-sub populate_mesh_table {
+
+sub add_new_mesh_terms {
   my $config = shift;
-  $dbh->do(qq{Truncate table mesh;}) or die $dbh->errstr;
+  my $existing_mesh_mappings = _get_stable_id_to_phenotype_id_mappings('MESH');
 
   my $file_all_mesh_terms = $config->{file_all_mesh_terms};
   my $file_mesh_ids_linked_to_GFD = $config->{file_mesh_ids_linked_to_GFD};
@@ -234,11 +235,12 @@ sub populate_mesh_table {
   while (<$fh>) {
     chomp;
     next if (!/^MESH/);
+    next if ($existing_mesh_mappings->{$_});
     my $term = $all_mesh_terms->{$_};
     if (!$term) {
-      $dbh->do(qq{INSERT INTO mesh(stable_id) VALUES("$_");}) or die $dbh->errstr;
+      $dbh->do(qq{INSERT INTO phenotype(stable_id, source) VALUES("$_", "MESH");}) or die $dbh->errstr;
     } else {
-      $dbh->do(qq{INSERT INTO mesh(stable_id, name) VALUES("$_", "$term");}) or die $dbh->errstr;
+      $dbh->do(qq{INSERT INTO phenotype(stable_id, name, source) VALUES("$_", "$term", "MESH");}) or die $dbh->errstr;
     }
   }
   $fh->close;
@@ -247,31 +249,8 @@ sub populate_mesh_table {
 sub populate_phenotype_mapping_table {
   my $config = shift;
 
-  my $mesh_ids = {};
-  my $hpo_ids = {};
-
-  my $sth = $dbh->prepare(q{
-    SELECT phenotype_id, stable_id from phenotype;
-  }, {mysql_use_result => 1});
-  $sth->execute() or die $dbh->errstr;
-  my ($phenotype_id, $stable_id);
-  $sth->bind_columns(\($phenotype_id, $stable_id));
-  while ($sth->fetch) {
-    $hpo_ids->{$stable_id} = $phenotype_id;
-  }
-  $sth->finish;
-
-
-  $sth = $dbh->prepare(q{
-    SELECT mesh_id, stable_id from mesh;
-  }, {mysql_use_result => 1});
-  $sth->execute() or die $dbh->errstr;
-  my ($mesh_id);
-  $sth->bind_columns(\($mesh_id, $stable_id));
-  while ($sth->fetch) {
-    $mesh_ids->{$stable_id} = $mesh_id;
-  }
-  $sth->finish;
+  my $mesh_ids = _get_stable_id_to_phenotype_id_mappings('MESH');;
+  my $hpo_ids = _get_stable_id_to_phenotype_id_mappings('HP');
 
   my $file_ebi_oxo_mappings = $config->{file_oxo_mappings_processed};
   my $fh = FileHandle->new($file_ebi_oxo_mappings, 'r');
@@ -302,18 +281,7 @@ sub populate_text_mining_disease_table_from_file {
 
   my $file_disease2pubtator = $config->{file_disease2pubtator};
 
-  my $mesh_ids = {};
-
-  my $sth = $dbh->prepare(q{
-    SELECT mesh_id, stable_id from mesh;
-  }, {mysql_use_result => 1});
-  $sth->execute() or die $dbh->errstr;
-  my ($mesh_id, $stable_id);
-  $sth->bind_columns(\($mesh_id, $stable_id));
-  while ($sth->fetch) {
-    $mesh_ids->{$stable_id} = $mesh_id;
-  }
-  $sth->finish;
+  my $mesh_ids = _get_stable_id_to_phenotype_id_mappings("MESH");
 
   $dbh->do(qq{Truncate table text_mining_disease;}) or die $dbh->errstr;
 
@@ -338,18 +306,7 @@ sub populate_text_mining_disease_table {
 
   my $file_disease2pubtator = $config->{file_disease2pubtator};
 
-  my $mesh_ids = {};
-
-  my $sth = $dbh->prepare(q{
-    SELECT mesh_id, stable_id from mesh;
-  }, {mysql_use_result => 1});
-  $sth->execute() or die $dbh->errstr;
-  my ($mesh_id, $stable_id);
-  $sth->bind_columns(\($mesh_id, $stable_id));
-  while ($sth->fetch) {
-    $mesh_ids->{$stable_id} = $mesh_id;
-  }
-  $sth->finish;
+  my $mesh_ids = _get_stable_id_to_phenotype_id_mappings('MESH');
 
   $dbh->do(qq{Truncate table text_mining_disease;}) or die $dbh->errstr;
 
@@ -368,9 +325,6 @@ sub populate_text_mining_disease_table {
   }
   $fh->close;
 }
-
-
-
 
 sub update_pipline_step {
   my $config = shift;
@@ -402,4 +356,23 @@ sub get_pipline_step {
     }
   }
 }
+
+sub _get_stable_id_to_phenotype_id_mappings {
+  my $source = shift;
+  my $mappings = {};
+  my $sth = $dbh->prepare(qq{
+    SELECT phenotype_id, stable_id from phenotype WHERE source="$source";
+  }, {mysql_use_result => 1});
+  $sth->execute() or die $dbh->errstr;
+  my ($phenotype_id, $stable_id);
+  $sth->bind_columns(\($phenotype_id, $stable_id));
+  while ($sth->fetch) {
+    $mappings->{$stable_id} = $phenotype_id;
+  }
+  $sth->finish;
+  return $mappings; 
+}
+
+
+
 
