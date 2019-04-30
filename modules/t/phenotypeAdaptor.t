@@ -14,6 +14,7 @@ limitations under the License.
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Test::More;
 use Bio::EnsEMBL::Test::MultiTestDB;
 use Bio::EnsEMBL::Test::TestUtils;
@@ -57,6 +58,13 @@ my $phenotype_id = $phenotype->{phenotype_id};
 
 my $dbh = $pa->dbc->db_handle;
 $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+
+
+my $mappings = $pa->_get_mesh2hp_mappings('MESH:D012174');
+ok(scalar keys %{$mappings->{'MESH:D012174'}} == 3, 'fetch_mesh_ids');
+
+
+
 
 done_testing();
 1;
