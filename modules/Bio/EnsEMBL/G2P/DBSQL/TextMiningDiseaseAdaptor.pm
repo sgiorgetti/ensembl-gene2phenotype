@@ -16,6 +16,7 @@ use warnings;
 
 package Bio::EnsEMBL::G2P::DBSQL::TextMiningDiseaseAdaptor;
 
+use Bio::EnsEMBL::G2P::Utils::Net qw(do_GET);
 use Bio::EnsEMBL::G2P::TextMiningDisease;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use HTTP::Tiny;
@@ -23,6 +24,8 @@ use JSON;
 use Encode qw(decode encode);
 use Data::Dumper;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
+
+my $pubtator_server = 'https://www.ncbi.nlm.nih.gov/CBBresearch/Lu/Demo/RESTful/tmTool.cgi/Disease';
 
 sub store {
   my $self = shift;
@@ -55,9 +58,9 @@ sub delete {
   my $TMD = shift;
   my $dbh = $self->dbc->db_handle;
   my $sth = $dbh->prepare(q{
-    DELETE FROM text_mining_disease WHERE publication_id  = ?;
+    DELETE FROM text_mining_disease WHERE text_mining_disease_id  = ?;
   });
-  $sth->execute($TMD->publication_id);
+  $sth->execute($TMD->text_mining_disease_id);
   $sth->finish();
 }
 
@@ -68,63 +71,29 @@ sub fetch_all_by_Publication {
   return $self->generic_fetch($constraint);
 }
 
-sub _fetch_all_by_Publication_REST {
-
-}
-
-
-sub store_all_by_Publication_REST {
+sub store_all_by_Publication {
   my $self = shift;
   my $publication = shift;
-
-  # cleanup first
   my $tmds = $self->fetch_all_by_Publication($publication);
   foreach my $tmd (@$tmds) {
     $self->delete($tmd);
   }
 
-  my $http = HTTP::Tiny->new();
-  my $server = 'https://www.ncbi.nlm.nih.gov/CBBresearch/Lu/Demo/RESTful/tmTool.cgi/Disease/';
-
   my $pmid = $publication->pmid;
-  my $response = $http->get($server.$pmid.'/JSON');
-  die "Failed !\n" unless $response->{success};
+  my $mesh_terms = $self->_get_all_mesh_terms_by_pmid($pmid);
 
-  my $mesh_terms = {};
-  my @text_mining_disease_results = ();
-
-  if (length $response->{content}) {
-    my $array = decode_json($response->{content});
-    foreach my $entry (@$array) { # only 1 entry
-      my $text = $entry->{text};
-      foreach my $denotation (@{$entry->{denotations}}) {
-        my $mesh_term = $denotation->{obj};
-        my $begin = $denotation->{span}->{begin};
-        my $end = $denotation->{span}->{end};
-        my $annotated_text = substr $text, $begin, $end - $begin;
-        $mesh_term =~ s/Disease:/MESH:/;
-        if ($mesh_term) {
-          $mesh_terms->{$mesh_term} = $annotated_text  
-        }
-      }
-    }
-  }
   my $phenotype_adaptor = $self->db->get_PhenotypeAdaptor;
+  my @mesh_stable_ids = keys %$mesh_terms; 
+  return [] if (!scalar @mesh_stable_ids);
 
-  my @mesh_phenotypes = ();
-  foreach my $name (keys %$mesh_terms) {
-    my $mesh_phenotype = $phenotype_adaptor->fetch_by_stable_id_source($name, 'MESH');
-    if (!$mesh_phenotype) {
-      $mesh_phenotype = $phenotype_adaptor->store_mesh_phenotype($name);
-    }
-    push @mesh_phenotypes, $mesh_phenotype;
-  }
-  $phenotype_adaptor->store_mappings_to_hp(\@mesh_phenotypes);
+  my @mesh_phenotypes = @{$phenotype_adaptor->store_all_by_stable_ids_source(\@mesh_stable_ids, 'MESH', 1)};
   my %mesh_stable_id_2_phenotype_id = map {$_->stable_id => $_->dbID} @mesh_phenotypes;
-  foreach my $mesh_term (keys %$mesh_terms) {
-    my $phenotype_id = $mesh_stable_id_2_phenotype_id{$mesh_term};
+
+  my @text_mining_disease_results = ();
+  foreach my $mesh_stable_id (@mesh_stable_ids) {
+    my $phenotype_id = $mesh_stable_id_2_phenotype_id{$mesh_stable_id};
     if ($phenotype_id) {
-      my $annotated_text = $mesh_terms->{$mesh_term};
+      my $annotated_text = $mesh_terms->{$mesh_stable_id};
       my $publication_id = $publication->dbID; 
       my $TMD = Bio::EnsEMBL::G2P::TextMiningDisease->new(
         -publication_id => $publication->dbID,
@@ -137,6 +106,31 @@ sub store_all_by_Publication_REST {
   }
   return \@text_mining_disease_results;
 }
+
+sub _get_all_mesh_terms_by_pmid {
+  my $self = shift;
+  my $pmid = shift;
+  my $endpoint = "$pubtator_server/$pmid/JSON";
+  my $content = do_GET($endpoint);
+  my $mesh_terms = {};
+  my $array = decode_json($content);
+  foreach my $entry (@$array) { # only 1 entry
+    my $text = $entry->{text};
+    foreach my $denotation (@{$entry->{denotations}}) {
+      my $mesh_term = $denotation->{obj};
+      my $begin = $denotation->{span}->{begin};
+      my $end = $denotation->{span}->{end};
+      my $annotated_text = substr $text, $begin, $end - $begin;
+      $mesh_term =~ s/Disease:/MESH:/;
+      if ($mesh_term) {
+        $mesh_terms->{$mesh_term} = $annotated_text  
+      }
+    }
+  }
+
+  return $mesh_terms;
+}
+
 
 sub _columns {
   my $self = shift;
