@@ -27,6 +27,13 @@ my $tmda = $g2pdb->get_TextMiningDiseaseAdaptor;
 
 ok($tmda && $tmda->isa('Bio::EnsEMBL::G2P::DBSQL::TextMiningDiseaseAdaptor'), 'isa text_mining_disease_adaptor');
 
+my $publication_adaptor = $g2pdb->get_PublicationAdaptor;
+
+my $publications = $publication_adaptor->fetch_all;
+foreach my $publication (@$publications) {
+  my $pmid = $publication->pmid;
+  $tmda->store_all_by_Publication($publication);
+}
 
 done_testing();
 1;
