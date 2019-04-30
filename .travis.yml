@@ -6,7 +6,7 @@ perl:
 env:
   - COVERALLS=true  DB=mysql
 
-dist: precise
+dist: xenial
 
 sudo: false
 
