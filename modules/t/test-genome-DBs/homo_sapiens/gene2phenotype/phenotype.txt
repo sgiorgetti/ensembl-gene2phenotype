@@ -42,7 +42,7 @@
 456	HP:0000581	Blepharophimosis	\N	HP
 466	HP:0000592	Blue sclerae	\N	HP
 505	HP:0000637	Long palpebral fissure	\N	HP
-506	HP:0000639	N	HPystagmus	\N	HP
+506	HP:0000639	N	HPystagmus	\N
 528	HP:0000664	Synophrys	\N	HP
 568	HP:0000718	Aggressive behavior	\N	HP
 596	HP:0000750	Delayed speech and language development	\N	HP
@@ -127,7 +127,7 @@
 7016	HP:0010314	Premature thelarche	\N	HP
 7772	HP:0011108	Recurrent sinusitis	\N	HP
 8109	HP:0011448	Ankle clonus	\N	HP
-8864	HP:0012208	N	HPonmotile sperm	\N	HP
+8864	HP:0012208	N	HPonmotile sperm	\N
 8912	HP:0012256	Absent outer dynein arms	\N	HP
 8918	HP:0012262	Abnormal ciliary motility	\N	HP
 11294	HP:0200020	Corneal erosion	\N	HP
@@ -135,3 +135,34 @@
 11568	HP:0000218	High palate	\N	HP
 11708	HP:0000219	Thin upper lip vermilion	\N	HP
 11709	HP:0000218	High palate	\N	HP
+11710	MESH:D010009	Osteochondrodysplasias	\N	MESH
+11711	MESH:D010013	Osteogenesis Imperfecta	\N	MESH
+11712	MESH:D030342	Genetic Diseases, Inborn	\N	MESH
+11713	MESH:D004409	Dyskinesia, Drug-Induced	\N	MESH
+11714	MESH:D001847	Bone Diseases	\N	MESH
+11715	MESH:D001851	Bone Diseases, Metabolic	\N	MESH
+11716	MESH:C564652	Polymicrogyria, Bilateral Frontoparietal	\N	MESH
+11717	MESH:D000014	Abnormalities, Drug-Induced	\N	MESH
+11718	MESH:D005124	Eye Abnormalities	\N	MESH
+11719	MESH:D006849	Hydrocephalus	\N	MESH
+11720	MESH:D009136	Muscular Dystrophies	\N	MESH
+11721	MESH:D058494	Walker-Warburg Syndrome	\N	MESH
+11722	MESH:D003072	Cognition Disorders	\N	MESH
+11723	MESH:D004194	Disease	\N	MESH
+11724	MESH:D009069	Movement Disorders	\N	MESH
+11725	MESH:D009422	Nervous System Diseases	\N	MESH
+11726	MESH:C537279	Goldberg-Shprintzen megacolon syndrome	\N	MESH
+11727	MESH:D006627	Hirschsprung Disease	\N	MESH
+11728	MESH:D008607	Intellectual Disability	\N	MESH
+11729	MESH:D008831	Microcephaly	\N	MESH
+11730	MESH:D009421	Nervous System Malformations	\N	MESH
+11731	MESH:D065706	Polymicrogyria	\N	MESH
+11732	MESH:C535973	Colpocephaly	\N	MESH
+11733	MESH:C548481	Periventricular Laminar Heterotopia	\N	MESH
+11734	MESH:C562568	Cerebellar Hypoplasia	\N	MESH
+11735	MESH:D001259	Ataxia	\N	MESH
+11736	MESH:D001927	Brain Diseases	\N	MESH
+11737	MESH:D002658	Developmental Disabilities	\N	MESH
+11738	MESH:D004827	Epilepsy	\N	MESH
+11739	MESH:D054091	Periventricular Nodular Heterotopia	\N	MESH
+11740	MESH:D061085	Agenesis of Corpus Callosum	\N	MESH
