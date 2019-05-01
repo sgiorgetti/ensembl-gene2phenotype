@@ -46,6 +46,12 @@ sub dbID {
   return $self->{phenotype_id};
 }
 
+sub phenotype_id {
+  my $self = shift;
+  $self->{phenotype_id} = shift if @_;
+  return $self->{phenotype_id};
+}
+
 sub stable_id {
   my $self = shift;
   $self->{stable_id} = shift if @_;
