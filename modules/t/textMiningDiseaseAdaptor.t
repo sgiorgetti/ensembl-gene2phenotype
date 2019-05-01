@@ -28,12 +28,25 @@ my $tmda = $g2pdb->get_TextMiningDiseaseAdaptor;
 ok($tmda && $tmda->isa('Bio::EnsEMBL::G2P::DBSQL::TextMiningDiseaseAdaptor'), 'isa text_mining_disease_adaptor');
 
 my $publication_adaptor = $g2pdb->get_PublicationAdaptor;
+my $pmid = 17277775;
+my $annotated_text = 'recessive metabolic bone disorder';
+my $publication = $publication_adaptor->fetch_by_PMID($pmid);
+my $tmds = $tmda->store_all_by_Publication($publication);
 
-my $publications = $publication_adaptor->fetch_all;
-foreach my $publication (@$publications) {
-  my $pmid = $publication->pmid;
-  $tmda->store_all_by_Publication($publication);
-}
+ok(scalar @$tmds == 3, 'count TextMiningDisease objects after store');
+my ($tmd) = grep {$_->annotated_text eq $annotated_text} @$tmds;
+
+ok($tmd->mesh_id == 11711, 'get mesh_id');
+ok($tmd->publication_id == 7387, 'get publication_id');
+
+$tmds = $tmda->fetch_all_by_Publication($publication);
+ok(scalar @$tmds == 3, 'count TextMiningDisease objects after fetch');
+($tmd) = grep {$_->annotated_text eq $annotated_text} @$tmds;
+
+ok($tmd->phenotype_id == 745, 'get phenotype_id');
+ok($tmd->mesh_stable_id eq 'MESH:D001851', 'get mesh_stable_id');
+ok($tmd->mesh_name eq 'Bone Diseases, Metabolic', 'get mesh name');
+
 
 done_testing();
 1;
