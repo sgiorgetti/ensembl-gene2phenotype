@@ -155,7 +155,8 @@ sub store_by_stable_id_source {
   my $self = shift;
   my $stable_id = shift;
   my $source = shift;
-  return $self->_store_by_stable_ids_MESH([$stable_id]) if ($source eq "MESH");
+  my $phenotypes = $self->_store_by_stable_ids_MESH([$stable_id]) if ($source eq "MESH");
+  return $phenotypes->[0] if (scalar @$phenotypes);
 }
 
 sub _store_by_stable_ids_MESH {
