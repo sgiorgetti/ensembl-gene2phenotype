@@ -84,23 +84,4 @@ sub annotated_text {
   return $self->{annotated_text};
 }
 
-sub source {
-  my $self = shift;
-  $self->{source} = shift if ( @_ );
-  return $self->{soruce};
-}
-
-sub add_phenotype_id {
-  my $self = shift;
-  my $phenotype_id = shift;
-  $self->{'all_phenotype_ids'}{$phenotype_id}++;
-  return;
-}
-
-sub get_all_phenotype_ids {
-  my $self = shift;
-  my @phenotype_ids = keys %{$self->{all_phenotype_ids}};
-  return \@phenotype_ids;
-}
-
 1;
