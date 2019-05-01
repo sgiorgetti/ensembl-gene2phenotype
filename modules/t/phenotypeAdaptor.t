@@ -45,7 +45,7 @@ $phenotype = $pa->fetch_by_name($name);
 ok($phenotype->name eq $name, 'fetch_by_name');
 
 my $phenotypes = $pa->fetch_all();
-ok(scalar @$phenotypes == 168, 'fetch_all');
+ok(scalar @$phenotypes == 173, 'fetch_all');
 
 $phenotype = Bio::EnsEMBL::G2P::Phenotype->new(
   -name => 'test_phenotype',
@@ -59,12 +59,19 @@ my $phenotype_id = $phenotype->{phenotype_id};
 my $dbh = $pa->dbc->db_handle;
 $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
 
-
 my $mappings = $pa->_get_mesh2hp_mappings('MESH:D012174');
 ok(scalar keys %{$mappings->{'MESH:D012174'}} == 3, 'fetch_mesh_ids');
 
+$phenotypes = $pa->fetch_all_by_name_list_source(['Osteochondrodysplasias', 'Osteogenesis Imperfecta'], 'MESH');
+ok (scalar @$phenotypes == 2, 'fetch_all_by_name_list_source');
 
+$phenotype = $pa->fetch_by_stable_id_source('MESH:D009886', 'MESH');
+$phenotype_id = $phenotype->phenotype_id;
 
+my $add_mesh2hp_mappings = 1;
+$pa->store_all_by_stable_ids_source(['MESH:D009886'], 'MESH', $add_mesh2hp_mappings);
+my $mesh2hp_mappings = $pa->_get_mesh2hp_mappings_from_db([$phenotype]);
+ok(scalar keys %{$mesh2hp_mappings->{$phenotype_id}} == 4, 'count HP mappings for given mesh phenotype');
 
 done_testing();
 1;

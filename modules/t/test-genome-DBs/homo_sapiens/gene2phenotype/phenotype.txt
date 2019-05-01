@@ -166,3 +166,7 @@
 11738	MESH:D004827	Epilepsy	\N	MESH
 11739	MESH:D054091	Periventricular Nodular Heterotopia	\N	MESH
 11740	MESH:D061085	Agenesis of Corpus Callosum	\N	MESH
+11741	HP:0000544	External ophthalmoplegia	\N	HP
+11742	HP:0000597	Ophthalmoparesis	\N	HP
+11743	HP:0000602	Ophthalmoplegia	\N	HP
+11744	HP:0007942	Internal ophthalmoplegia	\N	HP

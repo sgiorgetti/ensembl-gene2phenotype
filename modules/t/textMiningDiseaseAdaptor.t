@@ -36,7 +36,7 @@ my $tmds = $tmda->store_all_by_Publication($publication);
 ok(scalar @$tmds == 3, 'count TextMiningDisease objects after store');
 my ($tmd) = grep {$_->annotated_text eq $annotated_text} @$tmds;
 
-ok($tmd->mesh_id == 11711, 'get mesh_id');
+ok($tmd->mesh_id == 11715, 'get mesh_id');
 ok($tmd->publication_id == 7387, 'get publication_id');
 
 $tmds = $tmda->fetch_all_by_Publication($publication);
