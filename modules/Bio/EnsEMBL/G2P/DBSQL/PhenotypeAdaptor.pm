@@ -16,7 +16,7 @@ use warnings;
 
 package Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor;
 
-use Bio::EnsEMBL::G2P::Utils::Net qw(do_GET do_POST);
+use Bio::EnsEMBL::G2P::Utils::Net qw(do_POST);
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::Phenotype;
 use JSON;
