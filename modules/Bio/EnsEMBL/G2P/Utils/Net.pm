@@ -5,7 +5,6 @@ use warnings;
 
 use base qw/Exporter/;
 use Time::HiRes;
-
 our @EXPORT_OK;
 
 @EXPORT_OK = qw(
@@ -39,8 +38,8 @@ sub _post_http_tiny {
   my $response = $http->post_form($url, $data,
   {
     'Content-type' => 'application/json',
+    'Origin' => $url,
     'Accept' => 'application/json',
-    'Access-Control-Allow-Origin' => '*'
   },);
   return unless $response->{success};
   return $response->{content} if length $response->{content};
