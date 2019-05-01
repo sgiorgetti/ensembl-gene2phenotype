@@ -82,17 +82,6 @@ sub update {
   return $phenotype;
 }
 
-sub _delete_existing_phenotype_mappings {
-  my $self = shift;
-  my $phenotype = shift;
-  my $dbh = $self->dbc->db_handle;
-  my $sth = $dbh->prepare(q{
-    DELETE FROM phenotype_mapping WHERE mesh_id = ?;
-  });
-  $sth->execute($phenotype->dbID);
-  $sth->finish();
-}
-
 sub _insert_mesh2hp_mapping {
   my $self = shift;
   my $mesh_dbid = shift;
@@ -289,8 +278,8 @@ sub fetch_all_by_name_list_source {
   my $self = shift;
   my $names = shift;
   my $source = shift;
-  my $names_concat = join(',', @$names);
-  my $constraint = "p.stable_id IN ($names_concat)";
+  my $names_concat = join(',', map {"'$_'"} @$names);
+  my $constraint = "p.name IN ($names_concat)";
   return $self->generic_fetch($constraint);
 }
 
