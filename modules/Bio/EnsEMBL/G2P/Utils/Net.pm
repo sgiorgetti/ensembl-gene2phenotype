@@ -39,7 +39,8 @@ sub _post_http_tiny {
   my $response = $http->post_form($url, $data,
   {
     'Content-type' => 'application/json',
-    'Accept' => 'application/json'
+    'Accept' => 'application/json',
+    'Access-Control-Allow-Origin' => '*'
   },);
   return unless $response->{success};
   return $response->{content} if length $response->{content};
