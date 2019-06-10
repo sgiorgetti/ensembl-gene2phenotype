@@ -38,7 +38,6 @@ sub _post_http_tiny {
   my $response = $http->post_form($url, $data,
   {
     'Content-type' => 'application/json',
-    'Origin' => $url,
     'Accept' => 'application/json',
   },);
   return unless $response->{success};
