@@ -24,10 +24,15 @@ use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDisease);
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($created, $user_id, $action, $adaptor, $DDD_category, $gene_symbol, $disease_name, $genomic_feature_disease_id) =
-    rearrange(['created', 'user_id', 'action', 'adaptor', 'DDD_category', 'gene_symbol', 'disease_name', 'genomic_feature_disease_id'], @_);
+  my ($genomic_feature_disease_log_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel, $panel_attrib, $created, $user_id, $action, $adaptor, $DDD_category, $gene_symbol, $disease_name, $genomic_feature_disease_id) = rearrange(['genomic_feature_disease_log_id', 'genomic_feature_id', 'disease_id', 'DDD_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'created', 'user_id', 'action', 'adaptor', 'DDD_category', 'gene_symbol', 'disease_name', 'genomic_feature_disease_id'], @_);
   my $self = $class->SUPER::new(@_);
- 
+  $self->{'genomic_feature_disease_log_id'} = $genomic_feature_disease_log_id;
+  $self->{'genomic_feature_id'} = $genomic_feature_id;
+  $self->{'disease_id'} = $disease_id;
+  $self->{'DDD_category_attrib'} = $DDD_category_attrib;
+  $self->{'is_visible'} = $is_visible;
+  $self->{'panel'} = $panel;
+  $self->{'panel_attrib'} = $panel_attrib;
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
@@ -38,6 +43,12 @@ sub new {
   $self->{'genomic_feature_disease_id'} = $genomic_feature_disease_id;
 
   return $self;
+}
+
+sub dbID {
+  my $self = shift;
+  $self->{genomic_feature_disease_log_id} = shift if @_;
+  return $self->{genomic_feature_disease_log_id};
 }
 
 sub genomic_feature_disease_id {
