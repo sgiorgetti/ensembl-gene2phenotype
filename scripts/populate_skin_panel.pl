@@ -91,12 +91,19 @@ foreach my $row (@rows) {
   if ($ar eq 'monoalellelic') {
     $ar = 'monoallelic';
   }
+  next if ($ar eq 'both');
   my $ar_attrib = $ar_values->{$ar} || undef;
   if (!$ar_attrib && $ar) {
     die "no allelic requirement for $gene_symbol $allelic_requirement\n";
   }
 #  my $mc =~ s/-/ /g;
   my $mc = lc $mutation_consequence;
+  if ($mc eq 'loss of function and missense reported') {
+    $mc = 'loss of function';
+  }
+  if ($mc eq 'missense') {
+    $mc = 'all missense/in frame';
+  }
   my $mc_attrib = $mc_values->{$mc} || undef;
   if (!$mc_attrib && $mc) {
     die "no mutation consquence for $gene_symbol $mutation_consequence\n";
@@ -143,8 +150,9 @@ foreach my $row (@rows) {
     my @pubmed_ids = split(/;|,/, $pmids);
     foreach my $pmid (@pubmed_ids) {
       $pmid =~ s/^\s+|\s+$//g;
+      $pmid =~ s/]//g;
       next unless($pmid);
-      print "PMID $pmid\n";
+#      print "PMID $pmid\n";
       my $publication = $pa->fetch_by_PMID($pmid);
       if (!$publication) {
         $publication = Bio::EnsEMBL::G2P::Publication->new(
@@ -171,13 +179,12 @@ foreach my $row (@rows) {
     my $phenotype_id = $new_GFD_phenotype->get_Phenotype->dbID;
     $new_GFD_phenotypes_lookup->{"$GFD_id\t$phenotype_id"} = 1;
   }
-
-  my @hpo_ids = split(';', $phenotypes);
+  my @hpo_ids = split(';', $phenotypes || '');
   foreach my $hpo_id (@hpo_ids) {
     $hpo_id =~ s/^\s+|\s+$//g;
     my $phenotype = $phenotype_a->fetch_by_stable_id($hpo_id);
     if (!$phenotype) {
-      print $hpo_id, "\n";
+      print 'No phenotype ', $hpo_id, "\n";
      } else {
       my $phenotype_id = $phenotype->dbID;
       if (!$new_GFD_phenotypes_lookup->{"$GFD_id\t$phenotype_id"}) {
@@ -199,7 +206,12 @@ foreach my $row (@rows) {
   }
 
   my $organ_mappings = {
+    'Liver/bile ducts' => 'Liver',
+    'Blood' => 'Bone Marrow/Immune',
     'hair' => 'Hair/Nails',
+    'nail' => 'Hair/Nails',
+    'Cardiovasculature: Eye' => 'Eye',
+    'Lymphatics' => 'Heart/Cardiovasculature/Lymphatic',
     'Cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
     'Cardiovascular' => 'Heart/Cardiovasculature/Lymphatic',
     'Teeth and Dentitian' => 'Teeth & Dentitian',
@@ -208,6 +220,7 @@ foreach my $row (@rows) {
     'teeth' => 'Teeth & Dentitian',
     'Hair/Nail' => 'Hair/Nails',
     'Heart/Cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
+    'heart/cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
     'Heart/Cardiovascular/Lymphatic' => 'Heart/Cardiovasculature/Lymphatic',
     'Hair/nail' => 'Hair/Nails',
     'Hair' => 'Hair/Nails',
@@ -219,12 +232,16 @@ foreach my $row (@rows) {
     'Heart' => 'Heart/Cardiovasculature/Lymphatic',
     'Heart/cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
     'heart' => 'Heart/Cardiovasculature/Lymphatic',
+    'Cardiovasculature/lymphatic' => 'Heart/Cardiovasculature/Lymphatic',
     'Nails/hair' => 'Hair/Nails',
     'Ears' => 'Ear',
     'Eyes' => 'Eye',
+    'Skeleton: Eye' => 'Eye',
     'Skeletal' => 'Skeleton',
+    'skeletal' => 'Skeleton',
     'Spinal cord/peripheral nerves/musculature' => 'Peripheral nerves',
     'Nails' => 'Hair/Nails',
+    'Nail' => 'Hair/Nails',
     'Gasrtointestinal' => 'GI tract',
     'Gasttrointestinal' => 'GI tract',
     'Gastrointestinal' => 'GI tract',
