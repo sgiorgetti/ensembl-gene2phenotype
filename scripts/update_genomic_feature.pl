@@ -41,6 +41,9 @@ foreach my $table (@tables_with_genomic_feature_id_link) {
   }) or die $dbh->errstr;
 }
 
+
+my $gene_symbols_before_update = get_gene_symbols_from_GFD();
+
 load_latest_geneset_from_gtf();
 # - parse line with gene_name, gene_id and gene_biotype from GTF file
 # - exclude gene_biotypes: anything containing pseudogene and misc_RNA
@@ -79,6 +82,29 @@ cleanup();
 
 healthchecks();
 # foreign key checks for all tables which use genomic_feature_id
+
+my $gene_symbols_after_update = get_gene_symbols_from_GFD();
+
+foreach my $gfd_id (keys %$gene_symbols_before_update) {
+  if ($gene_symbols_before_update->{$gfd_id} ne $gene_symbols_after_update->{$gfd_id}) {
+    print STDERR "Changed gene_symbol after update $gfd_id ", $gene_symbols_before_update->{$gfd_id}, ' => ', $gene_symbols_after_update->{$gfd_id}, "\n";
+  }
+}
+
+sub get_gene_symbols_from_GFD {
+  my $gfd_id_2_symbol = {};
+  my $sth = $dbh->prepare(q{
+    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol  FROM genomic_feature_disease gfd
+    LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my ($gf_id, $gene_symbol) = @$row;
+    $gfd_id_2_symbol->{$gf_id} = $gene_symbol;
+  }
+  $sth->finish();
+  return $gfd_id_2_symbol;
+}
 
 sub load_latest_geneset_from_gtf {
   my $gene_symbol_2_ensembl_stable_id__from_GTF = read_from_gtf($config->{gtf_file}); 
