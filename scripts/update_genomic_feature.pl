@@ -41,7 +41,6 @@ foreach my $table (@tables_with_genomic_feature_id_link) {
   }) or die $dbh->errstr;
 }
 
-
 my $gene_symbols_before_update = get_gene_symbols_from_GFD();
 
 load_latest_geneset_from_gtf();
@@ -358,7 +357,7 @@ sub load_new_ensembl_genes {
       $dbh->do(qq{
         UPDATE genomic_feature SET ensembl_stable_id="$ensembl_stable_id" WHERE gene_symbol="$gene_symbol";
       }) 
-    } else {
+  } else {
       print STDOUT "load_new_ensembl_genes INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES(\"$gene_symbol\", \"$ensembl_stable_id\")\n";  
       $dbh->do(qq{
         INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES("$gene_symbol", "$ensembl_stable_id");
@@ -373,16 +372,21 @@ sub update_xrefs {
   my $fh_hgnc = FileHandle->new($hgnc_mapping_file, 'r');
   my $hgnc_mappings = {};
   my $symbol2id_mappings = {};
+
+  my $mappings = {};
+
   while (<$fh_hgnc>) {
     chomp;
-    my ($hgnc_id, $symbol, $prev_symbol) = split/\t/;
-    if ($prev_symbol) {
-      $hgnc_mappings->{$symbol}->{$prev_symbol} = 1;
-    }
-    $hgnc_id =~ s/HGNC://;
-    $symbol2id_mappings->{$symbol} = $hgnc_id;
+    my ($hgnc_id, $symbol, $prev_symbol, $ncbi_id, $ensembl_stable_id, $omim_gene) = split/\t/;
+    $hgnc_id =~ m/HGNC://;
+    $mappings->{$symbol}->{prev_symbol}->{$prev_symbol} = 1 if (defined $prev_symbol);
+    $mappings->{$symbol}->{ncbi_id}->{$ncbi_id} = 1 if (defined $ncbi_id);
+    $mappings->{$symbol}->{hgnc_id}->{$hgnc_id} = 1 if (defined $hgnc_id);
+    $mappings->{$symbol}->{ensembl_stable_id}->{$ensembl_stable_id} = 1 if (defined $ensembl_stable_id);
+    $mappings->{$symbol}->{mim}->{$omim_gene} = 1 if (defined $omim_gene);
   }
   $fh_hgnc->close();
+
   my $GFs = $gfa->fetch_all;
 
   my $gene_symbols = {};
@@ -391,16 +395,16 @@ sub update_xrefs {
     my $genomic_feature_id = $gf->dbID;
     my @gf_synonyms = @{$gf->get_all_synonyms};
     my $gene_symbol = $gf->gene_symbol;
+
     if (!$gene_symbol) {
-      print 'No gene_symbol for ', $gf->dbID, "\n";
+      print STDERR 'update_xrefs -- no gene_symbol for ', $gf->dbID, "\n";
     } else {
-      my $hgnc_id = $symbol2id_mappings->{$gene_symbol};
-      if ($hgnc_id && (!$gf->hgnc_id || ($gf->hgnc_id && $gf->hgnc_id != $hgnc_id)) ) {
-        print STDOUT "update_xrefs UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;\n";
-        $dbh->do(qq{UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr unless ($config->{test});
-      }
-      if ($hgnc_mappings->{$gene_symbol}) {
-        foreach my $prev_gene_symbol (keys %{$hgnc_mappings->{$gene_symbol}}) {
+      update_xref_id('hgnc_id', $gf, $mappings->{$gene_symbol}->{hgnc_id}); 
+      update_xref_id('ncbi_id', $gf, $mappings->{$gene_symbol}->{ncbi_id}); 
+      update_xref_id('mim', $gf, $mappings->{$gene_symbol}->{mim}); 
+
+      if (scalar keys %{$mappings->{$gene_symbol}->{prev_symbol}} > 0) {
+        foreach my $prev_gene_symbol (keys %{$mappings->{$gene_symbol}->{prev_symbol}}) {
           if (! grep( /^$prev_gene_symbol$/, @gf_synonyms ) ) {
             print STDOUT "update_xrefs Update prev gene symbols: INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');\n";
            $dbh->do(qq{INSERT IGNORE INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');}) or die $dbh->errstr unless ($config->{test});
@@ -409,6 +413,29 @@ sub update_xrefs {
       }
     }
   }
+}
+
+sub update_xref_id {
+  my $xref_name = shift;
+  my $gf = shift;
+  my $mappings = shift;
+  my @xref_values = keys %$mappings;
+  if (scalar @xref_values > 1) {
+    print STDOUT "update_xrefs More than one mapping for xref $xref_name: ", join(',',  @xref_values), "Gene symbol: ", $gf->gene_symbol, "\n";
+    return;
+  }
+  return if (scalar @xref_values == 0);
+  my $xref_value = $xref_values[0];
+  if ($xref_value && (!$gf->$xref_name || ($gf->$xref_name && $gf->$xref_name != $xref_value)) ) {
+    update_xrefs_sql($xref_name, $xref_value);
+  }
+}
+
+sub update_xrefs_sql {
+  my $column_name = shift;
+  my $column_value = shift;
+    print STDOUT "update_xrefs UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;\n";
+    $dbh->do(qq{UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr unless ($config->{test});
 }
 
 sub update_search {
