@@ -53,17 +53,17 @@ if ($pipline_step eq 'export_mesh_ids') {
 
 if ($pipline_step eq 'resume_loading_pubtator_phenotype_results') {
 # 3. parse EBI OXO mapping results: mappings.csv to ebi_oxo_mappings.txt
-  parse_oxo_mappings($config);
+#  parse_oxo_mappings($config);
 # 4. Parse all MESH terms
-  retrieve_all_mesh_terms($config);
+#  retrieve_all_mesh_terms($config);
 # 5. Add new mesh terms to phenotype table
-  add_new_mesh_terms($config);
+#  add_new_mesh_terms($config);
 # 6. Populate phenotype_mapping table
-  populate_phenotype_mapping_table($config);
+#  populate_phenotype_mapping_table($config);
 # 7. Populate text_mining_disease table
   populate_text_mining_disease_table($config);
 # 8. clean up pipline_step file
-  remove_pipline_step_file($config);
+#  remove_pipline_step_file($config);
   print STDERR "Completed loading pubtator phenotype results\n";
 }
 
@@ -79,7 +79,7 @@ sub export_mesh_ids {
     chomp;
     next if (/^PMID/);
   #PMID    MeshID  Mentions        Resource
-    my ($pmid, $meshID, $mentions, $resource) = split/\t/;
+    my ($pmid, $type, $meshID, $mentions, $resource) = split/\t/;
     next if (!$g2p_pmids->{$pmid});
     next if ($meshID =~ /^OMIM/);
     $meshIDs->{$meshID} = 1;
@@ -278,7 +278,7 @@ sub populate_phenotype_mapping_table {
 
 sub populate_text_mining_disease_table_from_file {
   my $config = shift; 
-
+  print "populate_text_mining_disease_table\n"; 
   my $file_disease2pubtator = $config->{file_disease2pubtator};
 
   my $mesh_ids = _get_stable_id_to_phenotype_id_mappings("MESH");
@@ -290,7 +290,7 @@ sub populate_text_mining_disease_table_from_file {
   while (<$fh>) {
     chomp;
     next if (/^PMID/);
-    my ($pmid, $meshID, $mentions, $resource) = split/\t/;
+    my ($pmid, $type, $meshID, $mentions, $resource) = split/\t/;
     next if (!$g2p_pmids->{$pmid});
     next if ($meshID !~ /^MESH/);
     my $publication_id = $g2p_pmids->{$pmid};
@@ -315,7 +315,7 @@ sub populate_text_mining_disease_table {
   while (<$fh>) {
     chomp;
     next if (/^PMID/);
-    my ($pmid, $meshID, $mentions, $resource) = split/\t/;
+    my ($pmid, $type, $meshID, $mentions, $resource) = split/\t/;
     next if (!$g2p_pmids->{$pmid});
     next if ($meshID !~ /^MESH/);
     my $publication_id = $g2p_pmids->{$pmid};

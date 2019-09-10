@@ -30,8 +30,8 @@ main();
 
 sub main {
   my @mesh_terms = ();
-  my $fh = FileHandle->new('/mesh_ids_linked_to_GFD_20181010', 'r');
-  my $fh_out = FileHandle->new('/mesh2hpo', 'w');
+  my $fh = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20190903/mesh_ids_linked_to_GFD_20190903', 'r');
+  my $fh_out = FileHandle->new('/Users/anja/Documents/G2P/pubtator/20190903/mesh2hpo_rest', 'w');
 
   while (<$fh>) {
     chomp;
@@ -42,11 +42,12 @@ sub main {
   my $count_elements = 0;
   for my $i (0 .. $#mesh_terms) {
     if ($count_elements == 50 || $i == $#mesh_terms) {
+      print $count_elements, "\n";
       my $mappings = get_mesh2hpo(\@array, $fh_out);
       foreach my $mapping (@$mappings) {
         print $fh_out join("\t", @$mapping), "\n";
       }
-      sleep(10);
+      sleep(60);
       @array = ();
       $count_elements = 0;
     }  
@@ -77,8 +78,10 @@ sub get_mesh2hpo {
       'Content-type' => 'application/json',
       'Accept' => 'application/json'
     },);
-   
+  if (!$response->{success}) {
+    print Dumper $response;
     die "Failed!\n" unless $response->{success};
+  }
     
     my $array = decode_json($response->{content});
     #"curie_id","label","mapped_curie","mapped_label","mapping_source_prefix","mapping_target_prefix","distance"
@@ -94,6 +97,7 @@ sub get_mesh2hpo {
         my $mapped_label = $item->{label};
         my $mapped_curie = $item->{curie};
         if ($target_prefix eq 'HP') {
+          print $label, "\n";
           push @mappings, [$curie, $label, $mapped_curie, $mapped_label];
         }
       }
@@ -112,8 +116,10 @@ sub get_next_url {
     'Content-type' => 'application/json',
     'Accept' => 'application/json'
   },);
- 
-  die "Failed!\n" unless $response->{success};
+  if (!$response->{success}) {
+    print Dumper $response;
+    die "Failed!\n" unless $response->{success};
+  }
 
   my $array = decode_json($response->{content});
   my $page = $array->{page};
