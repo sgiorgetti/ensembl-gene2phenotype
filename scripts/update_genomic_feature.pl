@@ -86,11 +86,12 @@ foreach my $panel (keys %$gene_attribs_after_update) {
   foreach my $gfd_id (keys %{$gene_attribs_after_update->{$panel}}) {
     my $attribs_before = $gene_attribs_before_update->{$panel}->{$gfd_id};
     my $attribs_after = $gene_attribs_after_update->{$panel}->{$gfd_id};
-    if ($attribs_before->{gene_symbol} ne $attribs_after->{gene_symbol} ) {
-      print STDERR "$panel Changed gene_symbol after update $gfd_id ", $attribs_before->{gene_symbol}, ' => ', $attribs_after->{gene_symbol}, "\n";
+    if ($attribs_before->{'gene_symbol'} ne $attribs_after->{'gene_symbol'} ) {
+      print STDERR "$panel Changed gene_symbol after update $gfd_id ", $attribs_before->{'gene_symbol'}, ' => ', $attribs_after->{'gene_symbol'}, "\n";
     }
-    if ($attribs_before->{mim} ne $attribs_after->{mim} ) {
-      print STDERR "$panel Changed gene mim after update $gfd_id ", $attribs_before->{mim}, ' => ', $attribs_after->{mim}, "\n";
+    if ($attribs_before->{'mim'} ne $attribs_after->{'mim'} ) {
+      my $gene_symbol = $attribs_after->{'gene_symbol'};
+      print STDERR "$panel Changed gene mim after update $gfd_id, $gene_symbol ", $attribs_before->{'mim'}, ' => ', $attribs_after->{'mim'}, "\n";
     }
   }
 }
@@ -100,13 +101,13 @@ sub get_gene_attribs_for_GFD {
   my $sth = $dbh->prepare(q{
     SELECT gfd.genomic_feature_disease_id, a.value, gf.gene_symbol, gf.mim FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
-    LEFT JOIN attrib ON a gfd.panel_attrib = a.attrib_id;
+    LEFT JOIN attrib a ON gfd.panel_attrib = a.attrib_id;
   });
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
     my ($gf_id, $panel, $gene_symbol, $mim) = @$row;
     $gene_attribs->{$panel}->{$gf_id}->{'gene_symbol'} = $gene_symbol;
-    $gene_attribs->{$panel}->{$gf_id}->{'mim'} = $mim;
+    $gene_attribs->{$panel}->{$gf_id}->{'mim'} = $mim || 'NA';
   }
   $sth->finish();
   return $gene_attribs;
@@ -451,14 +452,30 @@ sub update_xrefs_sql {
 }
 
 sub update_search {
+  $dbh->do(qq{CREATE TABLE search_update LIKE search});
+  $dbh->do(qq{INSERT IGNORE INTO search_update SELECT distinct gene_symbol from genomic_feature;}) or die $dbh->errstr unless ($config->{test});
+  $dbh->do(qq{INSERT IGNORE INTO search_update SELECT distinct name from disease;}) or die $dbh->errstr unless ($config->{test});
+  $dbh->do(qq{INSERT IGNORE INTO search_update SELECT distinct name from genomic_feature_synonym;}) or die $dbh->errstr unless ($config->{test});
+
+  my $sth = $dbh->prepare(q{
+    SELECT distinct * FROM search_update;
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  my @new_search_terms = ();
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my ($term) = @$row;
+    push @new_search_terms, $term if (!looks_like_identifier($term));
+  }
+  $sth->finish();
   $dbh->do(qq{TRUNCATE search;}) or die $dbh->errstr unless ($config->{test});
-  $dbh->do(qq{INSERT IGNORE INTO search SELECT distinct gene_symbol from genomic_feature;}) or die $dbh->errstr unless ($config->{test});
-  $dbh->do(qq{INSERT IGNORE INTO search SELECT distinct name from disease;}) or die $dbh->errstr unless ($config->{test});
-  $dbh->do(qq{INSERT IGNORE INTO search SELECT distinct name from genomic_feature_synonym;}) or die $dbh->errstr unless ($config->{test});
+  foreach my $term (@new_search_terms) {
+    $dbh->do(qq{INSERT search(search_term) values("$term");}) or die $dbh->errstr;
+  }
 }
 
 sub cleanup {
   $dbh->do(qq{DROP TABLE IF EXISTS genomic_feature_update;}) or die $dbh->errstr;
+  $dbh->do(qq{DROP TABLE IF EXISTS search_update;}) or die $dbh->errstr;
 }
 
 sub healthchecks {
