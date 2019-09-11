@@ -9,7 +9,7 @@ use Getopt::Long;
 use Bio::EnsEMBL::Registry;
 
 # perl update_publication.pl -registry_file registry
-
+# perl update_publication.pl >out 2>err
 my $config = {};
 
 GetOptions(
@@ -41,7 +41,7 @@ foreach my $table (@tables_with_genomic_feature_id_link) {
   }) or die $dbh->errstr;
 }
 
-my $gene_symbols_before_update = get_gene_symbols_from_GFD();
+my $gene_attribs_before_update = get_gene_attribs_for_GFD();
 
 load_latest_geneset_from_gtf();
 # - parse line with gene_name, gene_id and gene_biotype from GTF file
@@ -49,9 +49,7 @@ load_latest_geneset_from_gtf();
 # - a gene_symbol can have more than one ensembl_stable_id mappings
 # - if that is the case we choose the lowest ENSG identifier
 # - print mapping counts and biotype counts to file
-
-update_stable_ids_from_alt_to_chrom();
-# - this should only be run once because of a legacy error when stable ids from alternative sequence have been used
+update_to_new_stable_id();
 # - join genomic_feature_update table with genomic_feature on gene_symbol where the ensembl_stable_id is not the same
 # - update ensembl_stable_id
 
@@ -82,27 +80,36 @@ cleanup();
 healthchecks();
 # foreign key checks for all tables which use genomic_feature_id
 
-my $gene_symbols_after_update = get_gene_symbols_from_GFD();
+my $gene_attribs_after_update = get_gene_attribs_for_GFD();
 
-foreach my $gfd_id (keys %$gene_symbols_before_update) {
-  if ($gene_symbols_before_update->{$gfd_id} ne $gene_symbols_after_update->{$gfd_id}) {
-    print STDERR "Changed gene_symbol after update $gfd_id ", $gene_symbols_before_update->{$gfd_id}, ' => ', $gene_symbols_after_update->{$gfd_id}, "\n";
+foreach my $panel (keys %$gene_attribs_after_update) {
+  foreach my $gfd_id (keys %{$gene_attribs_after_update->{$panel}}) {
+    my $attribs_before = $gene_attribs_before_update->{$panel}->{$gfd_id};
+    my $attribs_after = $gene_attribs_after_update->{$panel}->{$gfd_id};
+    if ($attribs_before->{gene_symbol} ne $attribs_after->{gene_symbol} ) {
+      print STDERR "$panel Changed gene_symbol after update $gfd_id ", $attribs_before->{gene_symbol}, ' => ', $attribs_after->{gene_symbol}, "\n";
+    }
+    if ($attribs_before->{mim} ne $attribs_after->{mim} ) {
+      print STDERR "$panel Changed gene mim after update $gfd_id ", $attribs_before->{mim}, ' => ', $attribs_after->{mim}, "\n";
+    }
   }
 }
 
-sub get_gene_symbols_from_GFD {
-  my $gfd_id_2_symbol = {};
+sub get_gene_attribs_for_GFD {
+  my $gene_attribs = {};
   my $sth = $dbh->prepare(q{
-    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol  FROM genomic_feature_disease gfd
+    SELECT gfd.genomic_feature_disease_id, a.value, gf.gene_symbol, gf.mim FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
+    LEFT JOIN attrib ON a gfd.panel_attrib = a.attrib_id;
   });
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
-    my ($gf_id, $gene_symbol) = @$row;
-    $gfd_id_2_symbol->{$gf_id} = $gene_symbol;
+    my ($gf_id, $panel, $gene_symbol, $mim) = @$row;
+    $gene_attribs->{$panel}->{$gf_id}->{'gene_symbol'} = $gene_symbol;
+    $gene_attribs->{$panel}->{$gf_id}->{'mim'} = $mim;
   }
   $sth->finish();
-  return $gfd_id_2_symbol;
+  return $gene_attribs;
 }
 
 sub load_latest_geneset_from_gtf {
@@ -265,8 +272,7 @@ sub delete_outdated_genomic_features {
 
 }
 
-
-sub update_stable_ids_from_alt_to_chrom {
+sub update_to_new_stable_id {
   my $update_ensembl_ids = {};
   my $sth = $dbh->prepare(q{
     SELECT old.genomic_feature_id, old.gene_symbol, new.ensembl_stable_id FROM genomic_feature_update new
@@ -280,7 +286,7 @@ sub update_stable_ids_from_alt_to_chrom {
   }
   $sth->finish();
   while (my ($gf_id, $new_ensembl_stable_id) = each %$update_ensembl_ids) {
-    print STDERR "update_stable_ids_from_alt_to_chrom UPDATE genomic_feature SET ensembl_stable_id=\"$new_ensembl_stable_id\" WHERE genomic_feature_id=$gf_id;\n";
+    print STDERR "update_to_new_stable_id UPDATE genomic_feature SET ensembl_stable_id=\"$new_ensembl_stable_id\" WHERE genomic_feature_id=$gf_id;\n";
     $dbh->do(qq{
       UPDATE genomic_feature SET ensembl_stable_id="$new_ensembl_stable_id" WHERE genomic_feature_id=$gf_id;
     }) or die $dbh->errstr;
@@ -306,7 +312,7 @@ sub update_to_new_gene_symbol {
   foreach my $genomic_feature_id (keys %$updates) {
     foreach my $old_gene_symbol (keys %{$updates->{$genomic_feature_id}}) {
       my $new_gene_symbol = $updates->{$genomic_feature_id}->{$old_gene_symbol};
-      if ($new_gene_symbol =~ /^AL|C[0-9]*\.[0-9]/) {
+      if (looks_like_identifier($new_gene_symbol) && !looks_like_identifier($old_gene_symbol)) {
         print STDERR "update_to_new_gene_symbol Don't update to new_gene_symbol $old_gene_symbol -> $new_gene_symbol\n";
       } else {
         print STDOUT "update_to_new_gene_symbol UPDATE genomic_feature SET gene_symbol=\"$new_gene_symbol\" WHERE genomic_feature_id=$genomic_feature_id;\n";
@@ -325,6 +331,11 @@ sub update_to_new_gene_symbol {
       }) or die $dbh->errstr;
     }
   }
+}
+
+sub looks_like_identifier {
+  my $symbol = shift;
+  return ($symbol =~ /^[A-Z]+[0-9]+\.[0-9]+/);  
 }
 
 sub load_new_ensembl_genes {
@@ -378,12 +389,12 @@ sub update_xrefs {
   while (<$fh_hgnc>) {
     chomp;
     my ($hgnc_id, $symbol, $prev_symbol, $ncbi_id, $ensembl_stable_id, $omim_gene) = split/\t/;
-    $hgnc_id =~ m/HGNC://;
-    $mappings->{$symbol}->{prev_symbol}->{$prev_symbol} = 1 if (defined $prev_symbol);
-    $mappings->{$symbol}->{ncbi_id}->{$ncbi_id} = 1 if (defined $ncbi_id);
-    $mappings->{$symbol}->{hgnc_id}->{$hgnc_id} = 1 if (defined $hgnc_id);
-    $mappings->{$symbol}->{ensembl_stable_id}->{$ensembl_stable_id} = 1 if (defined $ensembl_stable_id);
-    $mappings->{$symbol}->{mim}->{$omim_gene} = 1 if (defined $omim_gene);
+    $hgnc_id =~ s/HGNC://;
+    $mappings->{$symbol}->{prev_symbol}->{$prev_symbol} = 1 if ($prev_symbol);
+    $mappings->{$symbol}->{ncbi_id}->{$ncbi_id} = 1 if ($ncbi_id);
+    $mappings->{$symbol}->{hgnc_id}->{$hgnc_id} = 1 if ($hgnc_id);
+    $mappings->{$symbol}->{ensembl_stable_id}->{$ensembl_stable_id} = 1 if ($ensembl_stable_id);
+    $mappings->{$symbol}->{mim}->{$omim_gene} = 1 if ($omim_gene);
   }
   $fh_hgnc->close();
 
@@ -427,15 +438,16 @@ sub update_xref_id {
   return if (scalar @xref_values == 0);
   my $xref_value = $xref_values[0];
   if ($xref_value && (!$gf->$xref_name || ($gf->$xref_name && $gf->$xref_name != $xref_value)) ) {
-    update_xrefs_sql($xref_name, $xref_value);
+    update_xrefs_sql($xref_name, $xref_value, $gf->dbID);
   }
 }
 
 sub update_xrefs_sql {
   my $column_name = shift;
   my $column_value = shift;
-    print STDOUT "update_xrefs UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;\n";
-    $dbh->do(qq{UPDATE genomic_feature SET hgnc_id=$hgnc_id WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr unless ($config->{test});
+  my $genomic_feature_id = shift;
+    print STDOUT "update_xrefs UPDATE genomic_feature SET $column_name=$column_value WHERE genomic_feature_id=$genomic_feature_id;\n";
+    $dbh->do(qq{UPDATE genomic_feature SET $column_name=$column_value WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr unless ($config->{test});
 }
 
 sub update_search {
@@ -461,7 +473,5 @@ sub healthchecks {
     print STDERR "healthchecks foreign key check $table $count\n";
     $sth->finish();
   }
-
 }
-
 
