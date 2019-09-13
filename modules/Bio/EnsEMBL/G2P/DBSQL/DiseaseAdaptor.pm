@@ -208,10 +208,9 @@ sub _obj_from_row {
   unless (defined($obj)) {
 
     $obj = Bio::EnsEMBL::G2P::Disease->new_fast({
-      dbID    => $row->{disease_id},
-      
-      name           => $row->{name},
-      mim    => $row->{description},
+      dbID  => $row->{disease_id},
+      name  => $row->{name},
+      mim   => $row->{mim},
       adaptor        => $self,
     });
 
