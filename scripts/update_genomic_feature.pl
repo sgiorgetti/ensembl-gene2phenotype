@@ -43,13 +43,15 @@ foreach my $table (@tables_with_genomic_feature_id_link) {
 
 my $gene_attribs_before_update = get_gene_attribs_for_GFD();
 
+my $fh_db_updates = FileHandle->new("$working_dir/DB_udpdates.txt", 'w');
+
 load_latest_geneset_from_gtf();
 # - parse line with gene_name, gene_id and gene_biotype from GTF file
 # - exclude gene_biotypes: anything containing pseudogene and misc_RNA
 # - a gene_symbol can have more than one ensembl_stable_id mappings
 # - if that is the case we choose the lowest ENSG identifier
 # - print mapping counts and biotype counts to file
-update_to_new_stable_id();
+update_to_new_stable_id(); # needs to be done once with current version -1 GTF file
 # - join genomic_feature_update table with genomic_feature on gene_symbol where the ensembl_stable_id is not the same
 # - update ensembl_stable_id
 
@@ -239,7 +241,6 @@ sub delete_outdated_genomic_features {
       LEFT JOIN genomic_feature_update new ON gf.ensembl_stable_id = new.ensembl_stable_id
       WHERE new.ensembl_stable_id IS NULL
       AND gf.genomic_feature_id IN (SELECT genomic_feature_id from $table);
-
     });
     my $outdated_gf_in_GFD = {};
     $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
@@ -247,7 +248,7 @@ sub delete_outdated_genomic_features {
       $outdated_gf_in_GFD->{$row->[0]} = 1;
     }
     $sth->finish();
-    print STDERR "delete_outdated_genomic_features Outdated GF in $table: " . scalar keys %$outdated_gf_in_GFD, "\n";
+    print $fh_db_updates "delete_outdated_genomic_features Count outdated GF in $table: " . scalar keys %$outdated_gf_in_GFD, "\n";
   }
 
   $dbh->do(qq{DROP TABLE IF EXISTS genomic_feature_ids;}) or die $dbh->errstr;
@@ -256,6 +257,21 @@ sub delete_outdated_genomic_features {
   foreach my $table (@tables_with_genomic_feature_id_link) {
      $dbh->do(qq{INSERT INTO genomic_feature_ids(genomic_feature_id) SELECT genomic_feature_id from $table;}) or die $dbh->errstr;
   }
+
+  # Find outdated genomic_feature IDs used in G2P panels:
+
+  $sth = $dbh->prepare(qq{
+    SELECT gf.genomic_feature_id, gf.gene_symbol FROM genomic_feature gf
+    LEFT JOIN genomic_feature_update new ON gf.ensembl_stable_id = new.ensembl_stable_id
+    WHERE new.ensembl_stable_id IS NULL
+    AND gf.genomic_feature_id IN (SELECT genomic_feature_id from genomic_feature_ids);
+  }) or die $dbh->errstr;
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    print STDERR "Outdated genomic_features used in G2P: ", join(',', @$row), "\n";
+  }
+  $sth->finish();
+
   $dbh->do(qq{
     DELETE gf.* FROM genomic_feature gf
     LEFT JOIN genomic_feature_update new ON gf.ensembl_stable_id = new.ensembl_stable_id
@@ -287,7 +303,7 @@ sub update_to_new_stable_id {
   }
   $sth->finish();
   while (my ($gf_id, $new_ensembl_stable_id) = each %$update_ensembl_ids) {
-    print STDERR "update_to_new_stable_id UPDATE genomic_feature SET ensembl_stable_id=\"$new_ensembl_stable_id\" WHERE genomic_feature_id=$gf_id;\n";
+    print $fh_db_updates "update_to_new_stable_id UPDATE genomic_feature SET ensembl_stable_id=\"$new_ensembl_stable_id\" WHERE genomic_feature_id=$gf_id;\n";
     $dbh->do(qq{
       UPDATE genomic_feature SET ensembl_stable_id="$new_ensembl_stable_id" WHERE genomic_feature_id=$gf_id;
     }) or die $dbh->errstr;
@@ -315,21 +331,21 @@ sub update_to_new_gene_symbol {
       my $new_gene_symbol = $updates->{$genomic_feature_id}->{$old_gene_symbol};
       if (looks_like_identifier($new_gene_symbol) && !looks_like_identifier($old_gene_symbol)) {
         print STDERR "update_to_new_gene_symbol Don't update to new_gene_symbol $old_gene_symbol -> $new_gene_symbol\n";
+        print STDERR "update_to_new_gene_symbol INSERT IGNORE INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, \"$new_gene_symbol\");\n";
+        $dbh->do(qq{
+          INSERT IGNORE INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, "$new_gene_symbol");
+        }) or die $dbh->errstr;
       } else {
-        print STDOUT "update_to_new_gene_symbol UPDATE genomic_feature SET gene_symbol=\"$new_gene_symbol\" WHERE genomic_feature_id=$genomic_feature_id;\n";
+        print $fh_db_updates "update_to_new_gene_symbol UPDATE genomic_feature SET gene_symbol=\"$new_gene_symbol\" WHERE genomic_feature_id=$genomic_feature_id;\n";
         $dbh->do(qq{
           UPDATE genomic_feature SET gene_symbol="$new_gene_symbol" WHERE genomic_feature_id=$genomic_feature_id;
         }) or die $dbh->errstr;
 
-        print STDOUT "update_to_new_gene_symbol INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, \"$old_gene_symbol\")\n";
+        print $fh_db_updates "update_to_new_gene_symbol INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, \"$old_gene_symbol\")\n";
         $dbh->do(qq{
           INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, \"$old_gene_symbol\");
         }) or die $dbh->errstr;
       }
-      print STDERR "update_to_new_gene_symbol INSERT IGNORE INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, \"$new_gene_symbol\");\n";
-      $dbh->do(qq{
-        INSERT IGNORE INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, "$new_gene_symbol");
-      }) or die $dbh->errstr;
     }
   }
 }
@@ -370,7 +386,7 @@ sub load_new_ensembl_genes {
         UPDATE genomic_feature SET ensembl_stable_id="$ensembl_stable_id" WHERE gene_symbol="$gene_symbol";
       }) 
   } else {
-      print STDOUT "load_new_ensembl_genes INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES(\"$gene_symbol\", \"$ensembl_stable_id\")\n";  
+      print $fh_db_updates "load_new_ensembl_genes INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES(\"$gene_symbol\", \"$ensembl_stable_id\")\n";  
       $dbh->do(qq{
         INSERT INTO genomic_feature(gene_symbol, ensembl_stable_id) VALUES("$gene_symbol", "$ensembl_stable_id");
       }) or die $dbh->errstr;
@@ -418,7 +434,7 @@ sub update_xrefs {
       if (scalar keys %{$mappings->{$gene_symbol}->{prev_symbol}} > 0) {
         foreach my $prev_gene_symbol (keys %{$mappings->{$gene_symbol}->{prev_symbol}}) {
           if (! grep( /^$prev_gene_symbol$/, @gf_synonyms ) ) {
-            print STDOUT "update_xrefs Update prev gene symbols: INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');\n";
+            print $fh_db_updates "update_xrefs Update prev gene symbols: INSERT INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');\n";
            $dbh->do(qq{INSERT IGNORE INTO genomic_feature_synonym(genomic_feature_id, name) VALUES($genomic_feature_id, '$prev_gene_symbol');}) or die $dbh->errstr unless ($config->{test});
           }
         }
@@ -447,7 +463,7 @@ sub update_xrefs_sql {
   my $column_name = shift;
   my $column_value = shift;
   my $genomic_feature_id = shift;
-    print STDOUT "update_xrefs UPDATE genomic_feature SET $column_name=$column_value WHERE genomic_feature_id=$genomic_feature_id;\n";
+    print $fh_db_updates "update_xrefs UPDATE genomic_feature SET $column_name=$column_value WHERE genomic_feature_id=$genomic_feature_id;\n";
     $dbh->do(qq{UPDATE genomic_feature SET $column_name=$column_value WHERE genomic_feature_id=$genomic_feature_id;}) or die $dbh->errstr unless ($config->{test});
 }
 
