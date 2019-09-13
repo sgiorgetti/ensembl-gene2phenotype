@@ -31,6 +31,7 @@ sub store {
     INSERT INTO genomic_feature (
       gene_symbol,
       hgnc_id,
+      ncbi_id,
       mim,
       ensembl_stable_id,
       seq_region_id,
@@ -43,6 +44,7 @@ sub store {
   $sth->execute(
     $GF->gene_symbol,
     $GF->hgnc_id,
+    $GF->ncbi_id,
     $GF->mim,
     $GF->ensembl_stable_id,
     $GF->{seq_region_id} || undef,
@@ -68,6 +70,7 @@ sub update {
     UPDATE genomic_feature
       SET gene_symbol = ?,
           hgnc_id = ?,
+          ncbi_id = ?,
           mim = ?,
           ensembl_stable_id = ?,
           seq_region_id = ?,
@@ -80,6 +83,7 @@ sub update {
   $sth->execute(
     $gf->gene_symbol,
     $gf->hgnc_id,
+    $gf->ncbi_id,
     $gf->mim,
     $gf->ensembl_stable_id,
     $gf->{seq_region_id} || undef,
@@ -169,6 +173,7 @@ sub _columns {
     'gf.genomic_feature_id',
     'gf.gene_symbol',
     'gf.hgnc_id',
+    'gf.ncbi_id',
     'gf.mim',
     'gf.ensembl_stable_id',
     'gf.seq_region_id',
@@ -225,6 +230,7 @@ sub _obj_from_row {
       -genomic_feature_id => $row->{genomic_feature_id},
       -gene_symbol => $row->{gene_symbol},
       -hgnc_id => $row->{hgnc_id},
+      -ncbi_id => $row->{ncbi_id},
       -mim => $row->{mim},
       -ensembl_stable_id => $row->{ensembl_stable_id},      
       -adaptor => $self,
