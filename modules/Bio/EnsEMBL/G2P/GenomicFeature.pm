@@ -25,14 +25,15 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($genomic_feature_id, $gene_symbol, $hgnc_id, $mim, $ensembl_stable_id, $seq_region_id, $seq_region_start, $seq_region_end, $seq_region_strand, $adaptor) =
-    rearrange(['genomic_feature_id', 'gene_symbol', 'hgnc_id', 'mim', 'ensembl_stable_id', 'seq_region_id', 'seq_region_start', 'seq_region_end', 'seq_region_strand', 'adaptor'], @_);
+  my ($genomic_feature_id, $gene_symbol, $hgnc_id, $ncbi_id, $mim, $ensembl_stable_id, $seq_region_id, $seq_region_start, $seq_region_end, $seq_region_strand, $adaptor) =
+    rearrange(['genomic_feature_id', 'gene_symbol', 'hgnc_id', 'ncbi_id', 'mim', 'ensembl_stable_id', 'seq_region_id', 'seq_region_start', 'seq_region_end', 'seq_region_strand', 'adaptor'], @_);
   
   my $self = bless {
     'dbID' => $genomic_feature_id,
     'genomic_feature_id' => $genomic_feature_id,
     'gene_symbol' => $gene_symbol,
     'hgnc_id' => $hgnc_id,
+    'ncbi_id' => $ncbi_id,
     'mim' => $mim,
     'ensembl_stable_id' => $ensembl_stable_id,
     'adaptor' => $adaptor,
@@ -63,6 +64,12 @@ sub hgnc_id {
   my $self = shift;
   $self->{hgnc_id} = shift if @_;
   return $self->{hgnc_id};
+}
+
+sub ncbi_id {
+  my $self = shift;
+  $self->{ncbi_id} = shift if @_;
+  return $self->{ncbi_id};
 }
 
 sub mim {
