@@ -18,6 +18,7 @@ GetOptions(
   'hgnc_mapping_file=s',
   'gtf_file=s',
   'working_dir=s',
+  'version=s',
   'test=i',
 ) or die "Error: Failed to parse command line arguments\n";
 die ('A registry_file file is required (--registry_file)') unless (defined($config->{registry_file}));
@@ -32,8 +33,9 @@ my $gfa = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeature');
 my $gfda = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
 my $gene_adaptor = $registry->get_adaptor('human', 'core', 'gene');
 
-my @tables_with_genomic_feature_id_link = qw/genomic_feature_disease genomic_feature_disease_deleted genomic_feature_disease_log genomic_feature_disease_log_deleted genomic_feature_statistic genomic_feature_synonym/;
-foreach my $table (@tables_with_genomic_feature_id_link) {
+my @G2P_tables_with_genomic_feature_id_link = qw/genomic_feature_disease genomic_feature_disease_deleted genomic_feature_disease_log genomic_feature_disease_log_deleted genomic_feature_statistic/;
+
+foreach my $table (@G2P_tables_with_genomic_feature_id_link) {
   $dbh->do(qq{
     DELETE t.* FROM $table t
     LEFT JOIN genomic_feature gf ON t.genomic_feature_id = gf.genomic_feature_id
@@ -43,7 +45,7 @@ foreach my $table (@tables_with_genomic_feature_id_link) {
 
 my $gene_attribs_before_update = get_gene_attribs_for_GFD();
 
-my $fh_db_updates = FileHandle->new("$working_dir/DB_udpdates.txt", 'w');
+my $fh_db_updates = FileHandle->new($config->{working_dir} . "/DB_udpdates_" . $config->{version} . ".txt", 'w');
 
 load_latest_geneset_from_gtf();
 # - parse line with gene_name, gene_id and gene_biotype from GTF file
@@ -51,7 +53,7 @@ load_latest_geneset_from_gtf();
 # - a gene_symbol can have more than one ensembl_stable_id mappings
 # - if that is the case we choose the lowest ENSG identifier
 # - print mapping counts and biotype counts to file
-update_to_new_stable_id(); # needs to be done once with current version -1 GTF file
+#update_to_new_stable_id(); # needs to be done once with current version -1 GTF file
 # - join genomic_feature_update table with genomic_feature on gene_symbol where the ensembl_stable_id is not the same
 # - update ensembl_stable_id
 
@@ -235,7 +237,7 @@ sub _print_biotype_counts {
 sub delete_outdated_genomic_features {
   # check if G2P tables are using outdated genomic_feature_ids
 
-  foreach my $table (@tables_with_genomic_feature_id_link) {
+  foreach my $table (@G2P_tables_with_genomic_feature_id_link) {
     my $sth = $dbh->prepare(qq{
       SELECT gf.genomic_feature_id FROM genomic_feature gf
       LEFT JOIN genomic_feature_update new ON gf.ensembl_stable_id = new.ensembl_stable_id
@@ -254,13 +256,13 @@ sub delete_outdated_genomic_features {
   $dbh->do(qq{DROP TABLE IF EXISTS genomic_feature_ids;}) or die $dbh->errstr;
   $dbh->do(qq{CREATE TABLE genomic_feature_ids LIKE genomic_feature_disease;}) or die $dbh->errstr;
 
-  foreach my $table (@tables_with_genomic_feature_id_link) {
+  foreach my $table (@G2P_tables_with_genomic_feature_id_link) {
      $dbh->do(qq{INSERT INTO genomic_feature_ids(genomic_feature_id) SELECT genomic_feature_id from $table;}) or die $dbh->errstr;
   }
 
   # Find outdated genomic_feature IDs used in G2P panels:
 
-  $sth = $dbh->prepare(qq{
+  my $sth = $dbh->prepare(qq{
     SELECT gf.genomic_feature_id, gf.gene_symbol FROM genomic_feature gf
     LEFT JOIN genomic_feature_update new ON gf.ensembl_stable_id = new.ensembl_stable_id
     WHERE new.ensembl_stable_id IS NULL
@@ -449,7 +451,7 @@ sub update_xref_id {
   my $mappings = shift;
   my @xref_values = keys %$mappings;
   if (scalar @xref_values > 1) {
-    print STDOUT "update_xrefs More than one mapping for xref $xref_name: ", join(',',  @xref_values), "Gene symbol: ", $gf->gene_symbol, "\n";
+    print STDOUT "update_xrefs More than one mapping for xref $xref_name: ", join(',',  @xref_values), " Gene symbol: ", $gf->gene_symbol, "\n";
     return;
   }
   return if (scalar @xref_values == 0);
