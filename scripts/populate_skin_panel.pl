@@ -106,7 +106,7 @@ foreach my $row (@rows) {
   }
   my $mc_attrib = $mc_values->{$mc} || undef;
   if (!$mc_attrib && $mc) {
-    die "no mutation consquence for $gene_symbol $mutation_consequence\n";
+    die "no mutation consequence for $gene_symbol $mutation_consequence $mc\n";
   }
   
   my $gfd = $gfda->fetch_by_GenomicFeature_Disease_panel_id($gf, $disease, $panel_attrib_id);
@@ -210,7 +210,6 @@ foreach my $row (@rows) {
     'Blood' => 'Bone Marrow/Immune',
     'hair' => 'Hair/Nails',
     'nail' => 'Hair/Nails',
-    'Cardiovasculature: Eye' => 'Eye',
     'Lymphatics' => 'Heart/Cardiovasculature/Lymphatic',
     'Cardiovasculature' => 'Heart/Cardiovasculature/Lymphatic',
     'Cardiovascular' => 'Heart/Cardiovasculature/Lymphatic',
@@ -236,7 +235,6 @@ foreach my $row (@rows) {
     'Nails/hair' => 'Hair/Nails',
     'Ears' => 'Ear',
     'Eyes' => 'Eye',
-    'Skeleton: Eye' => 'Eye',
     'Skeletal' => 'Skeleton',
     'skeletal' => 'Skeleton',
     'Spinal cord/peripheral nerves/musculature' => 'Peripheral nerves',
