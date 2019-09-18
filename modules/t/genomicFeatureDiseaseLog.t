@@ -28,7 +28,7 @@ my $gfdla = $g2pdb->get_GenomicFeatureDiseaseLogAdaptor;
 my $dbID = 133;
 my $genomic_feature_id = 59384;
 my $disease_id = 326;
-my $DDD_category_attrib = 32;
+my $confidence_category_attrib = 32;
 my $is_visible = 1;
 my $panel = '38';
 my $user_id = 1;
@@ -37,7 +37,7 @@ my $action = 'create';
 my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
   -genomic_feature_id => $genomic_feature_id,
   -disease_id => $disease_id,
-  -DDD_category_attrib => $DDD_category_attrib,
+  -confidence_category_attrib => $confidence_category_attrib,
   -is_visible => $is_visible,
   -panel => $panel,
   -user_id => $user_id,
@@ -47,8 +47,8 @@ my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
 
 ok($gfdl->genomic_feature_id == $genomic_feature_id, 'genomic_feature_id');
 ok($gfdl->disease_id == $disease_id, 'disease_id');
-ok($gfdl->DDD_category_attrib == $DDD_category_attrib, 'DDD_category_attrib');
-ok($gfdl->DDD_category eq 'confirmed DD gene', 'DDD_category');
+ok($gfdl->confidence_category_attrib == $confidence_category_attrib, 'confidence_category_attrib');
+ok($gfdl->confidence_category eq 'confirmed DD gene', 'confidence_category');
 ok($gfdl->is_visible == 1, 'is_visible');
 ok($gfdl->panel eq $panel, 'panel');
 ok($gfdl->action eq $action, 'action');

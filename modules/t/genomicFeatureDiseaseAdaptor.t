@@ -41,23 +41,23 @@ my $username = 'user1';
 my $user = $ua->fetch_by_username($username);
 ok($user->username eq $username, 'user object');
 
-my $DDD_category = 'both DD and IF';
+my $confidence_category = 'both RD and IF';
 my $panel = 'DD';
 
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -DD_Category => $DDD_category,
+  -confidence_category => $confidence_category,
   -is_visible => 1,
   -panel => $panel,
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/DDD_category or DDD_category_attrib is required/, 'Die on missing DDD category';
+throws_ok { $gfda->store($gfd, $user); } qr/confidence_category or confidence_category_attrib is required/, 'Die on missing confidence category';
 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -DDD_Category => $DDD_category,
+  -confidence_category => $confidence_category,
   -is_visible => 1,
   -panels => $panel,
   -adaptor => $gfda,
@@ -67,19 +67,19 @@ throws_ok { $gfda->store($gfd, $user); } qr/panel or panel_attrib is required/, 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -DDD_Category => 'both',
+  -confidence_category => 'both',
   -is_visible => 1,
   -panel => $panel,
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/Could not get DDD category attrib id for value/, 'Die on wrong value for DDD_category_attrib';
+throws_ok { $gfda->store($gfd, $user); } qr/Could not get confidence category attrib id for value/, 'Die on wrong value for confidence_category_attrib';
 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -DDD_Category => $DDD_category,
+  -confidence_category => $confidence_category,
   -is_visible => 1,
-  -panel => 'DDD',
+  -panel => 'DD',
   -adaptor => $gfda,
 );
 throws_ok { $gfda->store($gfd, $user); } qr/Could not get panel attrib id for value/, 'Die on wrong value for panel_attrib';
@@ -87,7 +87,7 @@ throws_ok { $gfda->store($gfd, $user); } qr/Could not get panel attrib id for va
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -DDD_category => $DDD_category,
+  -confidence_category => $confidence_category,
   -is_visible => 1,
   -panel => $panel,
   -adaptor => $gfda,
@@ -98,11 +98,11 @@ ok($gfda->store($gfd, $user), 'store');
 my $GFD_id = $gfd->{genomic_feature_disease_id};
 
 $gfd = $gfda->fetch_by_dbID($GFD_id);
-$gfd->DDD_category('possible DD gene');
+$gfd->confidence_category('possible DD gene');
 ok($gfda->update($gfd, $user), 'update');
 
 $gfd = $gfda->fetch_by_dbID($GFD_id);
-ok($gfd->DDD_category eq 'possible DD gene', 'test update');
+ok($gfd->confidence_category eq 'possible DD gene', 'test update');
 
 my $dbh = $gfda->dbc->db_handle;
 $dbh->do(qq{DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr;

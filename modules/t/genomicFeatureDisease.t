@@ -28,14 +28,14 @@ my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 my $dbID = 133;
 my $genomic_feature_id = 59384;
 my $disease_id = 326;
-my $DDD_category_attrib = 32;
+my $confidence_category_attrib = 32;
 my $is_visible = 1;
 my $panel = '38';
 
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature_id,
   -disease_id => $disease_id,
-  -DDD_category_attrib => $DDD_category_attrib,
+  -confidence_category_attrib => $confidence_category_attrib,
   -is_visible => $is_visible,
   -panel => $panel,
   -adaptor => $gfda,
@@ -43,8 +43,8 @@ my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
 
 ok($gfd->genomic_feature_id == $genomic_feature_id, 'genomic_feature_id');
 ok($gfd->disease_id == $disease_id, 'disease_id');
-ok($gfd->DDD_category_attrib == $DDD_category_attrib, 'DDD_category_attrib');
-ok($gfd->DDD_category eq 'confirmed DD gene', 'DDD_category');
+ok($gfd->confidence_category_attrib == $confidence_category_attrib, 'confidence_category_attrib');
+ok($gfd->confidence_category eq 'confirmed DD gene', 'confidence_category');
 ok($gfd->is_visible == 1, 'is_visible');
 ok($gfd->panel eq $panel, 'panel');
 
