@@ -16,17 +16,16 @@ use Encode qw(decode encode);
 
 my $config = {};
 
-#GetOptions(
-#  $config,
-#  'registry_file=s',
-#) or die "Error: Failed to parse command line arguments\n";
-#die ('A registry_file file is required (--registry_file)') unless (defined($config->{registry_file}));
+GetOptions(
+  $config,
+  'registry_file=s',
+) or die "Error: Failed to parse command line arguments\n";
+die ('A registry_file file is required (--registry_file)') unless (defined($config->{registry_file}));
 
-
-#my $registry = G2P::Registry->new($config->{registry_file});
 
 my $registry = 'Bio::EnsEMBL::Registry';
-$registry->load_all('/Users/anja/Documents/G2P/ensembl.registry');
+my $registry_file = $config->{registry_file};
+$registry->load_all($registry_file);
 
 my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle; 
 
@@ -34,13 +33,13 @@ main();
 
 sub main {
   my $http = HTTP::Tiny->new();
-  my $server = 'http://www.ebi.ac.uk/europepmc/webservices/rest/search/query=ext_id:';
+  my $server = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search/query=ext_id:';
   
   my $pmids = get_pmids();
   foreach my $pmid (keys %$pmids) {
+    next if ($pmids->{$pmid}->{title} && $pmids->{$pmid}->{source});
     my $response = $http->get($server.$pmid.'&format=json');
     die "Failed !\n" unless $response->{success};
-     
     if (length $response->{content}) {
       my $hash = decode_json($response->{content});
       my $result = $hash->{resultList}->{result}[0];
@@ -58,22 +57,11 @@ sub main {
       $source .= "$pubYear." if ($pubYear);
       $source =~ s/'/\\'/g;
       my $title_length = length($title);
-      my $old_title = $pmids->{$pmid}->{title};
-      $old_title =~ s/'/\\'/g;
-
-#      $old_title = decode('utf8', $old_title);
-      my $old_source = $pmids->{$pmid}->{source};
-      $old_source =~ s/'/\\'/g;
-
-#      $old_source = decode('utf8', $old_source);
       $title = encode('utf8', $title);
       $source = encode('utf8', $source);
-      if (!$old_source || $old_source ne $source || !$old_title || $old_title ne $title) {
-        print STDERR "OLD $pmid $old_title $old_source\n";
-        print STDERR "NEW $pmid $title $source\n\n";
-        $dbh->do(qq{UPDATE publication SET title='$title' WHERE pmid=$pmid;}) or die $dbh->errstr;  
-        $dbh->do(qq{UPDATE publication SET source='$source' WHERE pmid=$pmid;}) or die $dbh->errstr;  
-      }
+      print STDERR "NEW $pmid $title $source\n";
+      $dbh->do(qq{UPDATE publication SET title='$title' WHERE pmid=$pmid;}) or die $dbh->errstr;  
+      $dbh->do(qq{UPDATE publication SET source='$source' WHERE pmid=$pmid;}) or die $dbh->errstr;  
     }
   }
 }
