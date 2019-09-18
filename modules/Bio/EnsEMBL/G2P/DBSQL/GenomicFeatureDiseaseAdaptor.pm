@@ -40,8 +40,8 @@ sub store {
     die "panel or panel_attrib is required\n";
   }
 
-  if (! (defined $gfd->{DDD_category} || defined $gfd->{DDD_category_attrib})) {
-    die "DDD_category or DDD_category_attrib is required\n";
+  if (! (defined $gfd->{confidence_category} || defined $gfd->{confidence_category_attrib})) {
+    die "confidence_category or confidence_category_attrib is required\n";
   }
 
   my $aa = $self->db->get_AttributeAdaptor;
@@ -51,17 +51,17 @@ sub store {
     $gfd->{panel_attrib} = $panel_attrib;
   }
 
-  if ( defined $gfd->{DDD_category} ) {
-    my $DDD_category_attrib = $aa->attrib_id_for_type_value('DDD_Category', $gfd->{DDD_category});
-    die "Could not get DDD category attrib id for value ", $gfd->{DDD_category}, "\n" unless ($DDD_category_attrib);
-    $gfd->{DDD_category_attrib} = $DDD_category_attrib;
+  if ( defined $gfd->{confidence_category} ) {
+    my $confidence_category_attrib = $aa->attrib_id_for_type_value('confidence_category', $gfd->{confidence_category});
+    die "Could not get confidence category attrib id for value ", $gfd->{confidence_category}, "\n" unless ($confidence_category_attrib);
+    $gfd->{confidence_category_attrib} = $confidence_category_attrib;
   }
 
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
       disease_id,
-      DDD_category_attrib,
+      confidence_category_attrib,
       is_visible,
       panel_attrib
     ) VALUES (?, ?, ?, ?, ?)
@@ -70,7 +70,7 @@ sub store {
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
-    $gfd->{DDD_category_attrib},
+    $gfd->{confidence_category_attrib},
     $gfd->is_visible || 1,
     $gfd->{panel_attrib},
   );
@@ -132,7 +132,7 @@ sub delete {
       genomic_feature_disease_id,
       genomic_feature_id,
       disease_id,
-      DDD_category_attrib,
+      confidence_category_attrib,
       is_visible,
       panel_attrib,
       deleted,
@@ -144,7 +144,7 @@ sub delete {
     $GFD->dbID,
     $GFD->genomic_feature_id,
     $GFD->disease_id,
-    $GFD->DDD_category_attrib,
+    $GFD->confidence_category_attrib,
     $GFD->is_visible,
     $GFD->panel_attrib,
     $user->user_id
@@ -177,7 +177,7 @@ sub update {
     UPDATE genomic_feature_disease
       SET genomic_feature_id = ?,
         disease_id = ?,
-        DDD_category_attrib = ?,
+        confidence_category_attrib = ?,
         is_visible = ?,
         panel_attrib = ?
       WHERE genomic_feature_disease_id = ? 
@@ -185,7 +185,7 @@ sub update {
   $sth->execute(
     $gfd->genomic_feature_id,
     $gfd->disease_id,
-    $gfd->DDD_category_attrib,
+    $gfd->confidence_category_attrib,
     $gfd->is_visible,
     $gfd->panel_attrib,
     $gfd->dbID
@@ -210,7 +210,7 @@ sub update_log {
     -panel_attrib => $gfd->panel_attrib,
     -disease_id => $gfd->disease_id,
     -genomic_feature_id => $gfd->genomic_feature_id,
-    -DDD_category_attrib => $gfd->DDD_category_attrib,
+    -confidence_category_attrib => $gfd->confidence_category_attrib,
     -user_id => $user->dbID,
     -action => $action, 
     -adaptor => $GFD_log_adaptor,
@@ -373,22 +373,22 @@ sub get_statistics {
   my $self = shift;
   my $panels = shift;
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $DDD_categories = $attribute_adaptor->get_attribs_by_type_value('DDD_category');
-  %$DDD_categories = reverse %$DDD_categories;
+  my $confidence_categories = $attribute_adaptor->get_attribs_by_type_value('confidence_category');
+  %$confidence_categories = reverse %$confidence_categories;
   my $panel_attrib_ids = join(',', @$panels);
   my $sth = $self->prepare(qq{
-    select a.value, gfd.DDD_category_attrib, count(*)
+    select a.value, gfd.confidence_category_attrib, count(*)
     from genomic_feature_disease gfd, attrib a
     where a.attrib_id = gfd.panel_attrib
     AND gfd.panel_attrib IN ($panel_attrib_ids)
-    group by a.value, gfd.DDD_category_attrib;
+    group by a.value, gfd.confidence_category_attrib;
   });
   $sth->execute;
 
   my $hash = {};
-  while (my ($panel, $DDD_category_attrib_id, $count) = $sth->fetchrow_array) {
-    my $DDD_category_value = $DDD_categories->{$DDD_category_attrib_id};
-    $hash->{$panel}->{$DDD_category_value} = $count;
+  while (my ($panel, $confidence_category_attrib_id, $count) = $sth->fetchrow_array) {
+    my $confidence_category_value = $confidence_categories->{$confidence_category_attrib_id};
+    $hash->{$panel}->{$confidence_category_value} = $count;
   }
   my @results = ();
   my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both DD and IF', 'child IF'); 
@@ -438,7 +438,7 @@ sub _columns {
     'gfd.genomic_feature_disease_id',
     'gfd.genomic_feature_id',
     'gfd.disease_id',
-    'gfd.DDD_category_attrib',
+    'gfd.confidence_category_attrib',
     'gfd.is_visible',
     'gfd.panel_attrib',
   );
@@ -456,18 +456,18 @@ sub _tables {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib);
-  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib));
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib);
+  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib));
 
   my @objs;
 
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
   while ($sth->fetch()) {
-    my $DDD_category = undef; 
+    my $confidence_category = undef; 
     my $panel = undef; 
-    if ($DDD_category_attrib) {
-      $DDD_category = $attribute_adaptor->attrib_value_for_id($DDD_category_attrib);
+    if ($confidence_category_attrib) {
+      $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
     }
     if ($panel_attrib) {
       $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
@@ -477,8 +477,8 @@ sub _objs_from_sth {
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -genomic_feature_id => $genomic_feature_id,
       -disease_id => $disease_id,
-      -DDD_category => $DDD_category, 
-      -DDD_category_attrib => $DDD_category_attrib,
+      -confidence_category => $confidence_category, 
+      -confidence_category_attrib => $confidence_category_attrib,
       -is_visible => $is_visible,
       -panel => $panel,
       -panel_attrib => $panel_attrib,

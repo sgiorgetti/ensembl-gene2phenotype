@@ -36,7 +36,7 @@ sub store {
       genomic_feature_disease_id,
       genomic_feature_id,
       disease_id,
-      DDD_category_attrib,
+      confidence_category_attrib,
       is_visible,
       panel_attrib,
       created,
@@ -49,7 +49,7 @@ sub store {
     $gfd_log->{genomic_feature_disease_id},
     $gfd_log->{genomic_feature_id},
     $gfd_log->{disease_id},
-    $gfd_log->DDD_category_attrib || undef,
+    $gfd_log->confidence_category_attrib || undef,
     $gfd_log->is_visible || 1,
     $gfd_log->panel_attrib || undef,
     $gfd_log->user_id,
@@ -84,7 +84,7 @@ sub delete {
       genomic_feature_disease_id,
       genomic_feature_id,
       disease_id,
-      DDD_category_attrib,
+      confidence_category_attrib,
       is_visible,
       panel_attrib,
       created,
@@ -97,7 +97,7 @@ sub delete {
     $gfd_log->genomic_feature_disease_id,
     $gfd_log->genomic_feature_id,
     $gfd_log->disease_id,
-    $gfd_log->DDD_category_attrib,
+    $gfd_log->confidence_category_attrib,
     $gfd_log->is_visible,
     $gfd_log->panel_attrib,
     $gfd_log->created,
@@ -150,7 +150,7 @@ sub _columns {
     'gfdl.genomic_feature_disease_id',
     'gfdl.genomic_feature_id',
     'gfdl.disease_id',
-    'gfdl.DDD_category_attrib',
+    'gfdl.confidence_category_attrib',
     'gfd.is_visible',
     'gfdl.panel_attrib',
     'gfdl.created',
@@ -187,18 +187,18 @@ sub _left_join {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action, $gene_symbol, $disease_name);
-  $sth->bind_columns(\($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action, $gene_symbol, $disease_name));
+  my ($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action, $gene_symbol, $disease_name);
+  $sth->bind_columns(\($genomic_feature_disease_log_id, $genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib, $created, $user_id, $action, $gene_symbol, $disease_name));
 
   my @objs;
 
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
   while ($sth->fetch()) {
-    my $DDD_category = undef; 
+    my $confidence_category = undef; 
     my $panel = undef; 
-    if ($DDD_category_attrib) {
-      $DDD_category = $attribute_adaptor->attrib_value_for_id($DDD_category_attrib);
+    if ($confidence_category_attrib) {
+      $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
     }
     if ($panel_attrib) {
       $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
@@ -208,8 +208,8 @@ sub _objs_from_sth {
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -genomic_feature_id => $genomic_feature_id,
       -disease_id => $disease_id,
-      -DDD_category => $DDD_category, 
-      -DDD_category_attrib => $DDD_category_attrib,
+      -confidence_category => $confidence_category, 
+      -confidence_category_attrib => $confidence_category_attrib,
       -is_visible => $is_visible,
       -panel => $panel,
       -panel_attrib => $panel_attrib,
