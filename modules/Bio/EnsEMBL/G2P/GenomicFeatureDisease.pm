@@ -24,8 +24,8 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $DDD_category, $DDD_category_attrib, $is_visible, $panel, $panel_attrib, $adaptor) =
-    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'DDD_category', 'DDD_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $adaptor) =
+    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
@@ -33,8 +33,8 @@ sub new {
     'genomic_feature_disease_id' => $genomic_feature_disease_id,
     'genomic_feature_id' => $genomic_feature_id,
     'disease_id' => $disease_id,
-    'DDD_category' => $DDD_category,
-    'DDD_category_attrib' => $DDD_category_attrib,
+    'confidence_category' => $confidence_category,
+    'confidence_category_attrib' => $confidence_category_attrib,
     'is_visible' => $is_visible,
     'panel' => $panel,
     'panel_attrib' => $panel_attrib,
@@ -60,39 +60,39 @@ sub disease_id {
   return $self->{disease_id};
 }
 
-sub DDD_category {
+sub confidence_category {
   my $self = shift;
-  my $DDD_category = shift;
-  if ($DDD_category) {
+  my $confidence_category = shift;
+  if ($confidence_category) {
     my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $DDD_category_attrib = $attribute_adaptor->attrib_id_for_value($DDD_category);
-    die "Could not get DDD category attrib id for value $DDD_category\n" unless ($DDD_category_attrib);
-    $self->{DDD_category} = $DDD_category;
-    $self->{DDD_category_attrib} = $DDD_category_attrib;
+    my $confidence_category_attrib = $attribute_adaptor->attrib_id_for_value($confidence_category);
+    die "Could not get confidence category attrib id for value $confidence_category\n" unless ($confidence_category_attrib);
+    $self->{confidence_category} = $confidence_category;
+    $self->{confidence_category_attrib} = $confidence_category_attrib;
   } else {
-    if ($self->{DDD_category_attrib} && !$self->{DDD_category}) {
+    if ($self->{confidence_category_attrib} && !$self->{confidence_category}) {
       my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-      my $DDD_category = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
-      $self->{DDD_category} = $DDD_category;
+      my $confidence_category = $attribute_adaptor->attrib_value_for_id($self->{confidence_category_attrib});
+      $self->{confidence_category} = $confidence_category;
     }   
-    die "No DDD_category" unless ($self->{DDD_category} );
+    die "No confidence_category" unless ($self->{confidence_category} );
   }
-  return $self->{DDD_category};
+  return $self->{confidence_category};
 }
 
-sub DDD_category_attrib {
+sub confidence_category_attrib {
   my $self = shift;
-  my $DDD_category_attrib = shift;
-  if ($DDD_category_attrib) {
+  my $confidence_category_attrib = shift;
+  if ($confidence_category_attrib) {
     my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $DDD_category = $attribute_adaptor->attrib_value_for_id($DDD_category_attrib);
-    die "Could not get DDD category for value $DDD_category_attrib\n" unless ($DDD_category);
-    $self->{DDD_category} = $DDD_category;
-    $self->{DDD_category_attrib} = $DDD_category_attrib;
+    my $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
+    die "Could not get confidence category for value $confidence_category_attrib\n" unless ($confidence_category);
+    $self->{confidence_category} = $confidence_category;
+    $self->{confidence_category_attrib} = $confidence_category_attrib;
   } else {
-    die "No DDD_category_attrib" unless ($self->{DDD_category_attrib});
+    die "No confidence_category_attrib" unless ($self->{confidence_category_attrib});
   }
-  return $self->{DDD_category_attrib};
+  return $self->{confidence_category_attrib};
 }
 
 sub is_visible {

@@ -24,12 +24,12 @@ use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDisease);
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_disease_log_id, $genomic_feature_id, $disease_id, $DDD_category_attrib, $is_visible, $panel, $panel_attrib, $created, $user_id, $action, $adaptor, $DDD_category, $gene_symbol, $disease_name, $genomic_feature_disease_id) = rearrange(['genomic_feature_disease_log_id', 'genomic_feature_id', 'disease_id', 'DDD_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'created', 'user_id', 'action', 'adaptor', 'DDD_category', 'gene_symbol', 'disease_name', 'genomic_feature_disease_id'], @_);
+  my ($genomic_feature_disease_log_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $created, $user_id, $action, $adaptor, $confidence_category, $gene_symbol, $disease_name, $genomic_feature_disease_id) = rearrange(['genomic_feature_disease_log_id', 'genomic_feature_id', 'disease_id', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'created', 'user_id', 'action', 'adaptor', 'confidence_category', 'gene_symbol', 'disease_name', 'genomic_feature_disease_id'], @_);
   my $self = $class->SUPER::new(@_);
   $self->{'genomic_feature_disease_log_id'} = $genomic_feature_disease_log_id;
   $self->{'genomic_feature_id'} = $genomic_feature_id;
   $self->{'disease_id'} = $disease_id;
-  $self->{'DDD_category_attrib'} = $DDD_category_attrib;
+  $self->{'confidence_category_attrib'} = $confidence_category_attrib;
   $self->{'is_visible'} = $is_visible;
   $self->{'panel'} = $panel;
   $self->{'panel_attrib'} = $panel_attrib;
@@ -37,7 +37,7 @@ sub new {
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
   $self->{'adaptor'} = $adaptor;
-  $self->{'DDD_category'} = $DDD_category;
+  $self->{'confidence_category'} = $confidence_category;
   $self->{'gene_symbol'} = $gene_symbol;
   $self->{'disease_name'} = $disease_name;
   $self->{'genomic_feature_disease_id'} = $genomic_feature_disease_id;
@@ -87,24 +87,23 @@ sub disease_name {
   return $self->{disease_name};
 }
 
-sub disease_confidence {
+sub confidence_category {
   my $self = shift;
-  my $DDD_category = shift;
-  if ($DDD_category) {
+  my $confidence_category = shift;
+  if ($confidence_category) {
     my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $DDD_category_attrib = $attribute_adaptor->attrib_id_for_value($DDD_category);
-    die "Could not get DDD category attrib id for value $DDD_category\n" unless ($DDD_category_attrib);
-    $self->{DDD_category} = $DDD_category;
-    $self->{DDD_category_attrib} = $DDD_category_attrib;
+    my $confidence_category_attrib = $attribute_adaptor->attrib_id_for_value($confidence_category);
+    die "Could not get confidence category attrib id for value $confidence_category\n" unless ($confidence_category_attrib);
+    $self->{confidence_category} = $confidence_category;
+    $self->{confidence_category_attrib} = $confidence_category_attrib;
   } else {
-    if ($self->{DDD_category_attrib} && !$self->{DDD_category}) {
+    if ($self->{confidence_category_attrib} && !$self->{confidence_category}) {
       my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-      my $DDD_category = $attribute_adaptor->attrib_value_for_id($self->{DDD_category_attrib});
-      $self->{DDD_category} = $DDD_category;
+      my $confidence_category = $attribute_adaptor->attrib_value_for_id($self->{confidence_category_attrib});
+      $self->{confidence_category} = $confidence_category;
     }
-#    die "No DDD_category" unless ($self->{DDD_category} );
   }
-  return $self->{DDD_category};
+  return $self->{confidence_category};
 }
 
 1;

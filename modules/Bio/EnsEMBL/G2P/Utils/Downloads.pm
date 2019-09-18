@@ -109,7 +109,7 @@ sub write_data {
   my $fh = shift;
   my $where = shift;
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfd.DDD_category_attrib, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, a.value, gf.genomic_feature_id
+    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfd.confidence_category_attrib, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, a.value, gf.genomic_feature_id
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_action gfda ON gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
@@ -120,15 +120,15 @@ sub write_data {
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
 
-  my ($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created);
-  $sth->bind_columns(\($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $DDD_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
+  my ($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created);
+  $sth->bind_columns(\($gfd_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
     $hgnc_id ||= 'No hgnc id';
     $gene_mim ||= 'No gene mim';
     $disease_name ||= 'No disease name';
     $disease_mim ||= 'No disease mim';
-    my $DDD_category = ($DDD_category_attrib) ? $attribs->{$DDD_category_attrib} : 'No DDD category';
+    my $confidence_category = ($confidence_category_attrib) ? $attribs->{$confidence_category_attrib} : 'No confidence category';
     my $allelic_requirement = ($ar_attrib) ? join(',', map { $attribs->{$_} } split(',', $ar_attrib)) : undef;
     my $mutation_consequence = ($mc_attrib) ? join(',', map { $attribs->{$_} } split(',', $mc_attrib)) : undef;
 
@@ -151,7 +151,7 @@ sub write_data {
 
     $created = $gfd_create_dates->{$gfd_id} || 'No date';
  
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created);
+    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created);
 
     $csv->print ($fh, \@row);
   }
