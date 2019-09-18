@@ -255,6 +255,7 @@ sub delete_outdated_genomic_features {
 
   $dbh->do(qq{DROP TABLE IF EXISTS genomic_feature_ids;}) or die $dbh->errstr;
   $dbh->do(qq{CREATE TABLE genomic_feature_ids LIKE genomic_feature_disease;}) or die $dbh->errstr;
+  $dbh->do(qq{ALTER TABLE genomic_feature_ids DROP disease_id;}) or die $dbh->errstr;
 
   foreach my $table (@G2P_tables_with_genomic_feature_id_link) {
      $dbh->do(qq{INSERT INTO genomic_feature_ids(genomic_feature_id) SELECT genomic_feature_id from $table;}) or die $dbh->errstr;
