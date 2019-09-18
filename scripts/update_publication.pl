@@ -32,54 +32,97 @@ my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
 main();
 
 sub main {
-  my $http = HTTP::Tiny->new();
-  my $server = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search/query=ext_id:';
-  
-  my $pmids = get_pmids();
-  foreach my $pmid (keys %$pmids) {
-    next if ($pmids->{$pmid}->{title} && $pmids->{$pmid}->{source});
-    my $response = $http->get($server.$pmid.'&format=json');
-    die "Failed !\n" unless $response->{success};
-    if (length $response->{content}) {
-      my $hash = decode_json($response->{content});
-      my $result = $hash->{resultList}->{result}[0];
-      my $title = $result->{title};
-      next if (!$title);
-      $title =~ s/'/\\'/g;
-      my $journalTitle = $result->{journalTitle};
-      my $journalVolume = $result->{journalVolume};
-      my $pageInfo = $result->{pageInfo};
-      my $pubYear = $result->{pubYear}; 
-      my $source = '';
-      $source .= "$journalTitle. " if ($journalTitle);
-      $source .= "$journalVolume: " if ($journalVolume);
-      $source .= "$pageInfo, " if ($pageInfo);
-      $source .= "$pubYear." if ($pubYear);
-      $source =~ s/'/\\'/g;
-      my $title_length = length($title);
-      $title = encode('utf8', $title);
-      $source = encode('utf8', $source);
-      print STDERR "NEW $pmid $title $source\n";
-      $dbh->do(qq{UPDATE publication SET title='$title' WHERE pmid=$pmid;}) or die $dbh->errstr;  
-      $dbh->do(qq{UPDATE publication SET source='$source' WHERE pmid=$pmid;}) or die $dbh->errstr;  
+  my $query_by_pmid = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search/query=ext_id:';
+  my $query_by_title = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search/query=';    
+
+  my $publication_attribs = get_publication_attribs();
+  foreach my $publication_id (keys %$publication_attribs) {
+    my $pmid_attrib = $publication_attribs->{$publication_id}->{pmid}; 
+    my $title_attrib = $publication_attribs->{$publication_id}->{title};
+    my $source_attrib = $publication_attribs->{$publication_id}->{source};
+    my $response;
+    if (!$pmid_attrib && $title_attrib) {
+      $response = run_query($query_by_title.$title_attrib);
+    }
+    if ($pmid_attrib && (!$title_attrib || !$source_attrib)) {
+      $response = run_query($query_by_pmid.$pmid_attrib);
+    }
+    my $results = parse_publication_attribs($response);
+    foreach my $result (@$results) {
+      my ($pmid, $title, $source) = @{$result};
+      if ((!$title_attrib || !$source_attrib) && $title && $source) {
+        if ($pmid eq $pmid_attrib) {
+          print STDERR "Update Title and or Source $pmid, $title, $source\n";
+          $dbh->do(qq{UPDATE publication SET title='$title' WHERE publication_id=$publication_id;}) or die $dbh->errstr;  
+          $dbh->do(qq{UPDATE publication SET source='$source' WHERE publication_id=$publication_id;}) or die $dbh->errstr;  
+        }
+      }
+      if (!$pmid_attrib && $pmid) {
+        if ($title eq $title_attrib) {
+          print STDERR "Update PMID $pmid, $title, $source\n";
+          $dbh->do(qq{UPDATE publication SET pmid='$pmid' WHERE publication_id=$publication_id;}) or die $dbh->errstr;  
+        }
+      }
     }
   }
 }
 
+sub run_query {
+  my $query = shift;
+  $query =~ s/\s+/+/g;
+  $query =~ s/\?/%3F/g;
 
-sub get_pmids {
+  my $http = HTTP::Tiny->new();
+  my $response = $http->get($query.'&format=json');
+  die "Failed !\n" unless $response->{success};
+  return $response;
+}
+
+sub parse_publication_attribs {
+  my $response = shift;
+  my @results = ();
+  if (length $response->{content}) {
+    my $hash = decode_json($response->{content});
+    foreach my $result (@{$hash->{resultList}->{result}}) {
+      my ($pmid, $title, $source) = (undef, undef, undef);
+      $pmid = $result->{pmid};
+      $title = $result->{title};
+      if ($title) {
+        $title =~ s/'/\\'/g;
+        $title = encode('utf8', $title);
+      }
+      my $journalTitle = $result->{journalTitle};
+      my $journalVolume = $result->{journalVolume};
+      my $pageInfo = $result->{pageInfo};
+      my $pubYear = $result->{pubYear}; 
+      $source .= "$journalTitle. " if ($journalTitle);
+      $source .= "$journalVolume: " if ($journalVolume);
+      $source .= "$pageInfo, " if ($pageInfo);
+      $source .= "$pubYear." if ($pubYear);
+      if ($source) {
+        $source =~ s/'/\\'/g;
+        $source = encode('utf8', $source);
+      }
+      $pmid = encode('utf8', $pmid);
+      push  @results, [$pmid, $title, $source];
+    }
+  }
+
+  return \@results;
+}
+
+sub get_publication_attribs {
   my $pmids = {};
   my $sth = $dbh->prepare(q{
-    SELECT pmid, title, source FROM publication;
+    SELECT publication_id, pmid, title, source FROM publication;
   }); 
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
-  my ($pmid, $title, $source);
-  $sth->bind_columns(\($pmid, $title, $source));
+  my ($publication_id, $pmid, $title, $source);
+  $sth->bind_columns(\($publication_id, $pmid, $title, $source));
   while (my $row = $sth->fetchrow_arrayref()) {
-    if ($pmid) {
-      $pmids->{$pmid}->{title} = $title;
-      $pmids->{$pmid}->{source} = $source;
-    }
+    $pmids->{$publication_id}->{pmid} = $pmid;
+    $pmids->{$publication_id}->{title} = $title;
+    $pmids->{$publication_id}->{source} = $source;
   } 
   $sth->finish(); 
   return $pmids;
