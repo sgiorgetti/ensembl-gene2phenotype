@@ -28,7 +28,7 @@
 28	2	increased gene dosage
 29	2	part of contiguous gene duplication
 30	2	part of contiguous genomic interval deletion
-31	3	both DD and IF
+31	3	both RD and IF
 32	3	confirmed DD gene
 33	3	possible DD gene
 34	3	probable DD gene
