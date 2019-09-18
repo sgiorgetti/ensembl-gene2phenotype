@@ -1,6 +1,6 @@
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (1, 'allelic_requirement', 'Allelic requirement', 'Allelic requirement');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (2, 'mutation_consequence', 'Mutation consequence', 'Mutation consequence');
-INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (3, 'DDD_Category', 'DDD category', 'DDD category');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (3, 'confidence_category', 'confidence category', 'confidence category');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (4, 'g2p_panel', 'G2P panel', 'G2P panel');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (5, 'retired', 'retired attrib type', 'retired attrib type');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (6, 'ontology_mapping', 'Ontology Mapping', 'Method used to link a description to an ontology term');
@@ -39,7 +39,7 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (28, 2, 'inc
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (29, 2, 'part of contiguous gene duplication');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (30, 2, 'part of contiguous genomic interval deletion');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (44, 2, 'gain of function');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (31, 3, 'both DD and IF');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (31, 3, 'both RD and IF');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (32, 3, 'confirmed');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (33, 3, 'possible');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (34, 3, 'probable');
