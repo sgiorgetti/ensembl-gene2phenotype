@@ -81,9 +81,19 @@ sub fetch_by_dbID {
 sub fetch_by_name {
   my $self = shift;
   my $name = shift;
+  $name =~ s/'/\\'/g;
   my $constraint = "d.name='$name'";
   my $result = $self->generic_fetch($constraint);
   $result->[0];
+}
+
+sub fetch_all_by_name {
+  my $self = shift;
+  my $name = shift;
+  $name =~ s/'/\\'/g;
+  my $constraint = "d.name='$name'";
+  my $result = $self->generic_fetch($constraint);
+  return $result;
 }
 
 sub fetch_by_mim {
