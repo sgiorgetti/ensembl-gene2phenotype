@@ -69,7 +69,13 @@ sub _retry_sleep {
 
 sub _get_http_tiny {
   my ($url) = @_;
-  my $response = HTTP::Tiny->new->get($url);
+#  my $response = HTTP::Tiny->new->get($url);
+
+  my $http = HTTP::Tiny->new(
+    http_proxy => 'http://10.7.48.163:3128',
+    proxy => 'http://10.7.48.163:3128',
+  );
+  my $response = $http->get($url);
   return unless $response->{success};
   return $response->{content} if length $response->{content};
   return;
