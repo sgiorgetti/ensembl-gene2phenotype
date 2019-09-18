@@ -47,7 +47,7 @@ my $panel = 'DD';
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -confidence_category => $confidence_category,
+  -category => $confidence_category, # use wrong key name
   -is_visible => 1,
   -panel => $panel,
   -adaptor => $gfda,
@@ -79,7 +79,7 @@ $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -disease_id => $disease->dbID,
   -confidence_category => $confidence_category,
   -is_visible => 1,
-  -panel => 'DD',
+  -panel => 'DDD',
   -adaptor => $gfda,
 );
 throws_ok { $gfda->store($gfd, $user); } qr/Could not get panel attrib id for value/, 'Die on wrong value for panel_attrib';
