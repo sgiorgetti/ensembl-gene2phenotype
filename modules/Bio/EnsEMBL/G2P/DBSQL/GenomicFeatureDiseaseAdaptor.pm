@@ -391,7 +391,7 @@ sub get_statistics {
     $hash->{$panel}->{$confidence_category_value} = $count;
   }
   my @results = ();
-  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both DD and IF', 'child IF'); 
+  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both RD and IF', 'child IF'); 
   push @results, \@header;
   foreach my $panel (sort keys %$hash) {
     my @row = ();
