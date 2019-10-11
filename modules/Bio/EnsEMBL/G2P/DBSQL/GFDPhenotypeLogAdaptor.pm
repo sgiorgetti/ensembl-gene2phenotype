@@ -32,7 +32,7 @@ sub store {
   }
 
   my $sth = $dbh->prepare(q{
-    INSERT INTO gfd_phenotype_log(
+    INSERT INTO GFD_phenotype_log(
       genomic_feature_disease_phenotype_id,
       genomic_feature_disease_id,
       phenotype_id,
