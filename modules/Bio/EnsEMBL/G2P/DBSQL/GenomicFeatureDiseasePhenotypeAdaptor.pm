@@ -24,6 +24,7 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 sub store {
   my $self = shift;
   my $GFD_phenotype = shift;  
+  my $user = shift;
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -41,7 +42,8 @@ sub store {
 
   # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_phenotype', 'genomic_feature_disease_phenotype_id');
-  $GFD_phenotype->{genomic_feature_disease_phenotype_id} = $dbID;
+  $GFD_phenotype->dbID($dbID);
+  $self->update_log($GFD_phenotype, $user, 'create');
   return $GFD_phenotype;
 }
 
@@ -76,6 +78,26 @@ sub delete {
   $sth->execute($GFDP->dbID);
   $sth->finish();
 }
+
+sub update_log {
+  my $self = shift;
+  my $gfdp = shift;
+  my $user = shift;
+  my $action = shift;
+  my $gfd_phenotype_log_adaptor = $self->db->get_GFDPhenotypeLogAdaptor;
+  my $gfdl = Bio::EnsEMBL::G2P::GFDPhenotypeLog->new(
+    -genomic_feature_disease_phenotype_id => $gfdp->dbID,
+    -is_visible => $gfdp->get_GenomicFeatureDisease->is_visible,
+    -panel_attrib => $gfdp->get_GenomicFeatureDisease->panel_attrib,
+    -genomic_feature_disease_id => $gfdp->genomic_feature_disease_id,
+    -phenotype_id => $gfdp->phenotype_id,
+    -user_id => $user->dbID,
+    -action => $action, 
+    -adaptor => $gfd_phenotype_log_adaptor,
+  );
+  $gfd_phenotype_log_adaptor->store($gfdl);
+}
+
 
 sub fetch_by_dbID {
   my $self = shift;

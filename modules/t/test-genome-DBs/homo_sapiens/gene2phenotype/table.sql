@@ -32,6 +32,20 @@ CREATE TABLE `GFD_phenotype_comment_deleted` (
   KEY `GFD_phenotype_idx` (`genomic_feature_disease_phenotype_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `GFD_phenotype_log` (
+  `GFD_phenotype_log_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `genomic_feature_disease_phenotype_id` int(10) unsigned NOT NULL,
+  `genomic_feature_disease_id` int(10) unsigned NOT NULL,
+  `phenotype_id` int(10) unsigned NOT NULL,
+  `is_visible` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `panel_attrib` tinyint(1) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `user_id` int(10) unsigned NOT NULL,
+  `action` varchar(128) NOT NULL,
+  PRIMARY KEY (`GFD_phenotype_log_id`),
+  KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
 CREATE TABLE `GFD_publication_comment` (
   `GFD_publication_comment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_disease_publication_id` int(10) unsigned NOT NULL,

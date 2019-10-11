@@ -26,7 +26,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePhenotypeAdaptor;
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 my $pa = $g2pdb->get_PhenotypeAdaptor;
-
+my $ua = $g2pdb->get_UserAdaptor;
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor'), 'isa GenomicFeatureDiseasePhenotypeAdaptor');
 
 my $GFDP_id = 2118;
@@ -56,8 +56,10 @@ $GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
   -phenotype_id => $phenotype_id,
   -adaptor => $gfdpa
 );
+my $username = 'user1';
+my $user = $ua->fetch_by_username($username);
 
-ok($gfdpa->store($GFDP), 'store');
+ok($gfdpa->store($GFDP, $user), 'store');
 $GFDP_id = $GFDP->{genomic_feature_disease_phenotype_id};
 
 my $dbh = $gfda->dbc->db_handle;

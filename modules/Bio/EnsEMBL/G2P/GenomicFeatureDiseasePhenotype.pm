@@ -40,7 +40,14 @@ sub new {
 
 sub dbID {
   my $self = shift;
+  $self->{genomic_feature_disease_phenotype_id} = shift if ( @_ );
   return $self->{genomic_feature_disease_phenotype_id};
+}
+
+sub genomic_feature_disease_id {
+  my $self = shift;
+  $self->{genomic_feature_disease_id} = shift if ( @_ );
+  return $self->{genomic_feature_disease_id};
 }
 
 sub phenotype_id {
