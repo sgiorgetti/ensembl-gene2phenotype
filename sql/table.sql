@@ -251,7 +251,7 @@ CREATE TABLE GFD_phenotype_log (
   user_id int(10) unsigned NOT NULL,
   action varchar(128) NOT NULL,
   PRIMARY KEY (GFD_phenotype_log_id),
-  KEY genomic_feature_disease_idx` (genomic_feature_disease_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
 CREATE TABLE GFD_phenotype_comment (
