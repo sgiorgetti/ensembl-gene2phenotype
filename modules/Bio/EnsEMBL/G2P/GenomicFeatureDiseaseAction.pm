@@ -65,7 +65,7 @@ sub allelic_requirement {
     foreach my $value (@values) {
       push @ids, $attribute_adaptor->attrib_id_for_value($value);
     }        
-    $self->{allelic_requirement_attrib} = join(',', @ids);
+    $self->{allelic_requirement_attrib} = join(',', sort @ids);
     $self->{allelic_requirement} = $allelic_requirement;
   } else {
     if (!$self->{allelic_requirement} && $self->{allelic_requirement_attrib} ) {
@@ -74,7 +74,7 @@ sub allelic_requirement {
       foreach my $id (@ids) {
         push @values, $attribute_adaptor->attrib_value_for_id($id);
       }
-      $self->{allelic_requirement} = join(',', @values);
+      $self->{allelic_requirement} = join(',', sort @values);
     }
   }
   return $self->{allelic_requirement};
