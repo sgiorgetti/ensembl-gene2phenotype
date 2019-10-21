@@ -218,10 +218,176 @@ sub update_log {
   $GFD_log_adaptor->store($gfdl);
 }
 
+sub _merge_all_duplicated_LGM_by_panel_gene {
+  my $self = shift;
+  my $user = shift;
+  my $gf_id = shift;
+  my $disease_id = shift;
+  my $panel = shift;
+  my $gfd_ids = shift;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $base_gfd = $self->_fetch_by_genomic_feature_id_disease_id_panel_id($gf_id, $disease_id, $panel_id);
+  my $base_gfd_id = $base_gfd->dbID;
+  my @base_gfd_phenotype_ids = map {$_->get_Phenotype->phenotype_id} @{$base_gfd->get_all_GFDPhenotypes};
+  my @base_gfd_publication_ids = map {$_->get_Publication->publication_id} @{$base_gfd->get_all_GFDPublications};
+  my @base_gfd_organ_ids = map {$_->get_Organ->organ_id} @{$base_gfd->get_all_GFDOrgans};
+  my @base_gfd_actions = map {$_->allelic_requirement . '_' . $_->mutation_consequence} @{$base_gfd->get_all_GenomicFeatureDiseaseActions};
+
+  my $dbh = $self->dbc->db_handle;
+
+  foreach my $gfd_id (@$gfd_ids) {
+    next if ($gfd_id == $base_gfd_id);
+    my $gfd = $self->fetch_by_dbID($gfd_id);
+    # Move over all GFD comments
+    foreach my $gfd_comment (@{$gfd->get_all_GFDComments}) {
+      my $gfd_comment_id = $gfd_comment->dbID;
+#      print STDERR "Update genomic_feature_disease_comment set genomic_feature_disease_id=$base_gfd_id where genomic_feature_disease_id=$gfd_id and genomic_feature_disease_comment_id=$gfd_comment_id\n";
+      $dbh->do(qq/
+        UPDATE genomic_feature_disease_comment
+        SET genomic_feature_disease_id=$base_gfd_id
+        WHERE genomic_feature_disease_comment_id=$gfd_comment_id/) or die $dbh->errstr;
+    }
+    foreach my $gfd_phenotype (@{$gfd->get_all_GFDPhenotypes}) {
+      my $gfd_phenotype_id = $gfd_phenotype->dbID;
+      my $phenotype_id = $gfd_phenotype->get_Phenotype->phenotype_id;
+      # If phenotype is already in target GFD
+      if (grep {$phenotype_id == $_} @base_gfd_phenotype_ids) {
+        foreach my $gfd_phenotype_comment (@{$gfd_phenotype->get_all_GFDPhenotypeComments}) {
+          my ($base_gfd_phenotype_id) = map {$_->dbID} grep {$_->get_Phenotype->phenotype_id == $phenotype_id } @{$base_gfd->get_all_GFDPhenotypes};
+          my $gfd_phenotype_comment_id = $gfd_phenotype_comment->dbID;
+          # move over gfd phenotype comments
+#          print STDERR "UPDATE GFD_phenotype_comment SET genomic_feature_disease_phenotype_id = $base_gfd_phenotype_id WHERE GFD_phenotype_comment_id = $gfd_phenotype_comment_id;\n";
+          $dbh->do(qq/
+            UPDATE GFD_phenotype_comment
+            SET genomic_feature_disease_phenotype_id = $base_gfd_phenotype_id
+            WHERE GFD_phenotype_comment_id = $gfd_phenotype_comment_id;/) or die $dbh->errstr;
+        }
+#        print STDERR "DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;\n";
+        $dbh->do(qq/DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;/) or die $dbh->errstr;
+      } else {
+#        print STDERR "UPDATE genomic_feature_disease_phenotype SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;\n";
+        $dbh->do(qq/UPDATE genomic_feature_disease_phenotype SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;/) or die $dbh->errstr;
+      }
+      # GFD_phenotype_log: 
+#      print STDERR "UPDATE GFD_phenotype_log SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;\n";
+      $dbh->do(qq/UPDATE GFD_phenotype_log SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;/) or die $dbh->errstr;
+    }
+
+    foreach my $gfd_publication (@{$gfd->get_all_GFDPublications}) {
+      my $gfd_publication_id = $gfd_publication->dbID;
+      my $publication_id = $gfd_publication->get_Publication->publication_id;
+      # If publication is already in target GFD
+      if (grep {$publication_id == $_} @base_gfd_publication_ids) {
+        foreach my $gfd_publication_comment (@{$gfd_publication->get_all_GFDPublicationComments}) {
+          my ($base_gfd_publication_id) = map {$_->dbID} grep {$_->get_Publication->publication_id == $publication_id} @{$base_gfd->get_all_GFDPublications};
+          my $gfd_publication_comment_id = $gfd_publication_comment->dbID;
+          # move over gfd publication comments
+#          print STDERR "UPDATE GFD_publication_comment SET genomic_feature_disease_publication_id = $base_gfd_publication_id WHERE GFD_publication_comment_id = $gfd_publication_comment_id;\n";
+          $dbh->do(qq/
+            UPDATE GFD_publication_comment
+            SET genomic_feature_disease_publication_id = $base_gfd_publication_id
+            WHERE GFD_publication_comment_id = $gfd_publication_comment_id;/) or die $dbh->errstr;
+        }
+#        print STDERR "DELETE FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id=$gfd_publication_id;\n";
+        $dbh->do(qq/DELETE FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id=$gfd_publication_id;/) or die $dbh->errstr;
+      } else {
+#        print STDERR "UPDATE genomic_feature_disease_publication SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_publication_id=$gfd_publication_id;\n";
+        $dbh->do(qq/UPDATE genomic_feature_disease_publication SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_publication_id=$gfd_publication_id;/) or die $dbh->errstr;
+      }
+    }
+    
+    foreach my $gfd_organ (@{$gfd->get_all_GFDOrgans}) {
+      my $gfd_organ_id = $gfd_organ->dbID;
+      my $organ_id = $gfd_organ->get_Organ->organ_id;
+      if (grep {$organ_id == $_} @base_gfd_organ_ids) {
+#        print STDERR "DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id=$gfd_organ_id;\n";
+        $dbh->do(qq/DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id=$gfd_organ_id;/) or die $dbh->errstr;
+      } else {
+#        print STDERR "UPDATE genomic_feature_disease_organ SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_organ_id=$gfd_organ_id;\n";
+        $dbh->do(qq/UPDATE genomic_feature_disease_organ SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_organ_id=$gfd_organ_id;/) or die $dbh->errstr;
+      }
+    }
+
+    foreach my $gfd_action (@{$gfd->get_all_GenomicFeatureDiseaseActions}) {
+      my $gfd_action_id = $gfd_action->dbID;
+      my $ar_mc = $gfd_action->allelic_requirement . '_' . $gfd_action->mutation_consequence;
+      if (grep {$_ eq $ar_mc} @base_gfd_actions) {
+#        print STDERR "DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id=$gfd_action_id;\n";
+        $dbh->do(qq/DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id=$gfd_action_id;/) or die $dbh->errstr;
+      } else {
+#        print STDERR "UPDATE genomic_feature_disease_action SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_action_id=$gfd_action_id;\n";
+        $dbh->do(qq/UPDATE genomic_feature_disease_action SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_action_id=$gfd_action_id;/) or die $dbh->errstr;
+      }
+    }
+    # disease name synonyms
+#    print STDERR "Delete GFD $gfd\n";
+    $self->delete($gfd, $user);
+
+    @base_gfd_phenotype_ids = map {$_->get_Phenotype->phenotype_id} @{$base_gfd->get_all_GFDPhenotypes};
+    @base_gfd_publication_ids = map {$_->get_Publication->publication_id} @{$base_gfd->get_all_GFDPublications};
+    @base_gfd_organ_ids = map {$_->get_Organ->organ_id} @{$base_gfd->get_all_GFDOrgans};
+    @base_gfd_actions = map {$_->allelic_requirement . '_' . $_->mutation_consequence} @{$base_gfd->get_all_GenomicFeatureDiseaseActions};
+  }
+  return $base_gfd;
+}
+
+
+#LGM = locus, genotype, mechanism
+sub _get_all_duplicated_LGM_entries_by_panel {
+  my $self = shift;
+  my $panel = shift;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+
+  my $sth = $self->prepare(qq{
+    select gf.gene_symbol, gfd.genomic_feature_id, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, count(*) as count
+    from genomic_feature_disease gfd
+    left join genomic_feature_disease_action gfda on gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
+    left join genomic_feature gf on gfd.genomic_feature_id = gf.genomic_feature_id
+    where gfd.panel_attrib = $panel_id
+    group by gfd.genomic_feature_id, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib
+    having count > 1;
+  });
+  $sth->execute;
+  
+  my @results = ();
+  while (my ($gene_symbol, $genomic_feature_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $count) = $sth->fetchrow_array) {
+    my $allelic_requirement = $attribute_adaptor->attrib_value_for_id($allelic_requirement_attrib);
+    my $mutation_consequence = $attribute_adaptor->attrib_value_for_id($mutation_consequence_attrib);
+    push @results, {
+      gene_symbol => $gene_symbol,
+      gf_id => $genomic_feature_id,
+      panel_id => $panel_id,
+      panel => $panel,
+      genomic_feature_id => $genomic_feature_id,
+      allelic_requirement_attrib => $allelic_requirement_attrib,
+      allelic_requirement => $allelic_requirement,
+      mutation_consequence_attrib => $mutation_consequence_attrib,
+      mutation_consequence => $mutation_consequence,
+      count => $count,
+    };
+  }
+
+  $sth->finish;
+  return \@results;
+} 
+
 sub fetch_by_dbID {
   my $self = shift;
   my $genomic_feature_disease_id = shift;
   return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
+}
+
+
+sub _fetch_by_genomic_feature_id_disease_id_panel_id {
+  my $self = shift;
+  my $genomic_feature_id = shift;
+  my $disease_id = shift;
+  my $panel_id = shift;
+  my $constraint = "gfd.disease_id=$disease_id AND gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id;";
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
 }
 
 sub fetch_by_GenomicFeature_Disease {
