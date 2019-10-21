@@ -298,6 +298,14 @@ CREATE TABLE GFD_publication_comment_deleted (
   KEY GFD_publication_idx (genomic_feature_disease_publication_id)
 );
 
+CREATE TABLE GFD_disease_synonym (
+  GFD_disease_synonym_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_disease_synonym_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
 CREATE TABLE mesh (
   mesh_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   stable_id varchar(255) DEFAULT NULL,
