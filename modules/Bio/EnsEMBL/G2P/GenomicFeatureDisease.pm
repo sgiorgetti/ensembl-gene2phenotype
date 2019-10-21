@@ -177,4 +177,11 @@ sub get_all_GFDComments {
   return $GFD_comment_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
+sub get_all_GFDDiseaseSynonyms {
+  my $self = shift;
+  my $GFD_disease_synonym_adaptor = $self->{adaptor}->db->get_GFDDiseaseSynonymAdaptor;
+  return $GFD_disease_synonym_adaptor->fetch_all_by_GenomicFeatureDisease($self);
+}
+
+
 1;

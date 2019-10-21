@@ -26,6 +26,7 @@ sub get_available_adaptors {
     'Attribute'                        => 'Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor',
     'Disease'                          => 'Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor',
     'EnsemblVariation'                 => 'Bio::EnsEMBL::G2P::DBSQL::EnsemblVariationAdaptor',
+    'GFDDiseaseSynonym'                => 'Bio::EnsEMBL::G2P::DBSQL::GFDDiseaseSynonymAdaptor',
     'GFDPhenotypeComment'              => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor',
     'GFDPhenotypeLog'                  => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeLogAdaptor',
     'GFDPublicationComment'            => 'Bio::EnsEMBL::G2P::DBSQL::GFDPublicationCommentAdaptor',

@@ -18,6 +18,7 @@ package Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor;
 
 use Bio::EnsEMBL::G2P::GenomicFeatureDisease;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
+use Bio::EnsEMBL::G2P::GFDDiseaseSynonym;
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
@@ -233,6 +234,7 @@ sub _merge_all_duplicated_LGM_by_panel_gene {
   my @base_gfd_publication_ids = map {$_->get_Publication->publication_id} @{$base_gfd->get_all_GFDPublications};
   my @base_gfd_organ_ids = map {$_->get_Organ->organ_id} @{$base_gfd->get_all_GFDOrgans};
   my @base_gfd_actions = map {$_->allelic_requirement . '_' . $_->mutation_consequence} @{$base_gfd->get_all_GenomicFeatureDiseaseActions};
+  my @base_gfd_disease_synonym_ids = map {$_->disease_id} @{$base_gfd->get_all_GFDDiseaseSynonyms};
 
   my $dbh = $self->dbc->db_handle;
 
@@ -321,6 +323,17 @@ sub _merge_all_duplicated_LGM_by_panel_gene {
       }
     }
     # disease name synonyms
+    my $disease_id = $gfd->get_Disease->dbID;
+    if (!grep {$_ eq $disease_id} @base_gfd_disease_synonym_ids) {
+      my $gfd_disease_synonym_adaptor = $self->db->get_GFDDiseaseSynonymAdaptor;
+      my $disease_synonym =  Bio::EnsEMBL::G2P::GFDDiseaseSynonym->new(
+        -disease_id => $disease_id,
+        -genomic_feature_disease_id => $base_gfd_id,
+        -adaptor => $gfd_disease_synonym_adaptor,
+      );
+      $gfd_disease_synonym_adaptor->store($disease_synonym);
+    }
+
 #    print STDERR "Delete GFD $gfd\n";
     $self->delete($gfd, $user);
 
@@ -328,6 +341,8 @@ sub _merge_all_duplicated_LGM_by_panel_gene {
     @base_gfd_publication_ids = map {$_->get_Publication->publication_id} @{$base_gfd->get_all_GFDPublications};
     @base_gfd_organ_ids = map {$_->get_Organ->organ_id} @{$base_gfd->get_all_GFDOrgans};
     @base_gfd_actions = map {$_->allelic_requirement . '_' . $_->mutation_consequence} @{$base_gfd->get_all_GenomicFeatureDiseaseActions};
+    @base_gfd_disease_synonym_ids = map {$_->disease_id} @{$base_gfd->get_all_GFDDiseaseSynonyms};
+
   }
   return $base_gfd;
 }
