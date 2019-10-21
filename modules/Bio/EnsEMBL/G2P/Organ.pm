@@ -38,8 +38,15 @@ sub new {
   return $self;
 }
 
+sub organ_id {
+  my $self = shift;
+  $self->{organ_id} = shift if @_;
+  return $self->{organ_id};
+}
+
 sub dbID {
   my $self = shift;
+  $self->{organ_id} = shift if @_;
   return $self->{organ_id};
 }
 
