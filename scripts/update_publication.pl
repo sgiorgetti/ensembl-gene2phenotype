@@ -114,7 +114,7 @@ sub parse_publication_attribs {
 sub get_publication_attribs {
   my $pmids = {};
   my $sth = $dbh->prepare(q{
-    SELECT publication_id, pmid, title, source FROM publication;
+    SELECT publication_id, pmid, title, source FROM publication WHERE title IS NULL OR source IS NULL;
   }); 
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   my ($publication_id, $pmid, $title, $source);
