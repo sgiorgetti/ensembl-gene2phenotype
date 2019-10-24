@@ -80,7 +80,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-    ['gfd_disease_synonym', 'gfdds'],
+    ['GFD_disease_synonym', 'gfdds'],
     ['disease', 'd']
   );
   return @tables;
