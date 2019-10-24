@@ -35,6 +35,7 @@ my $organ_adaptor            = $registry->get_adaptor($species, 'gene2phenotype'
 my $phenotype_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'Phenotype');
 my $attrib_adaptor           = $registry->get_adaptor($species, 'gene2phenotype', 'Attribute');
 my $user_adaptor             = $registry->get_adaptor($species, 'gene2phenotype', 'User');
+my $gfd_comment_adaptor      = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseComment');
 
 my $email = $config->{email};
 my $user = $user_adaptor->fetch_by_email($email);
@@ -43,7 +44,7 @@ my $g2p_panel = $config->{panel};
 my $panel_attrib_id = $attrib_adaptor->attrib_id_for_value($g2p_panel);
 die "Couldn't fetch panel_attrib_id for panel $g2p_panel" if (!defined $g2p_panel);
 
-my $confidence_values = $attrib_adaptor->get_attribs_by_type_value('DDD_Category');
+my $confidence_values = $attrib_adaptor->get_attribs_by_type_value('confidence_category');
 my $ar_values = $attrib_adaptor->get_attribs_by_type_value('allelic_requirement'); 
 my $mc_values = $attrib_adaptor->get_attribs_by_type_value('mutation_consequence'); 
 
@@ -54,7 +55,7 @@ my $sheet = $book->[1];
 my @rows = Spreadsheet::Read::rows($sheet);
 foreach my $row (@rows) {
    
-  my ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, $phenotypes,  $organs,  $pmids,  $panel,  $prev_symbols, $hgnc_id) = @$row;
+  my ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, $phenotypes,  $organs,  $pmids,  $panel,  $prev_symbols, $hgnc_id, $comments) = @$row;
   next if ($gene_symbol =~ /^gene/);
 
   my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
@@ -74,7 +75,7 @@ foreach my $row (@rows) {
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
       -panel_attrib => $panel_attrib_id,
-      -DDD_category_attrib => $disease_confidence_attrib,
+      -confidence_category_attrib => $disease_confidence_attrib,
       -adaptor => $gfd_adaptor,
     );
     $gfd = $gfd_adaptor->store($gfd, $user);
@@ -87,6 +88,8 @@ foreach my $row (@rows) {
   add_phenotypes($gfd, $phenotypes);
 
   add_organ_specificity($gfd, $organs);
+  
+  add_comments($gfd, $comments, $user);
 
 }
 
@@ -296,7 +299,19 @@ sub add_organ_specificity {
   }
 }
 
-
-
+sub add_comments {
+  my $gfd = shift;
+  my $comments = shift;
+  my $user = shift;
+  return if (!$comments);
+  my $gfd_id = $gfd->dbID;
+  my $gfd_comment = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment->new(
+    -comment_text => $comments,
+    -genomic_feature_disease_id => $gfd_id,
+    -adaptor => $gfd_comment_adaptor,
+  );
+  print "add GFD comment $gfd_id $comments\n";
+  $gfd_comment_adaptor->store($gfd_comment, $user);
+}
 
 
