@@ -24,13 +24,14 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_statistic_id, $genomic_feature_id, $attribs, $adaptor) =
-    rearrange(['genomic_feature_statistic_id', 'genomic_feature_id', 'attribs', 'adaptor'], @_);
+  my ($genomic_feature_statistic_id, $genomic_feature_id, $panel_attrib, $attribs, $adaptor) =
+    rearrange(['genomic_feature_statistic_id', 'genomic_feature_id', 'panel_attrib', 'attribs', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_statistic_id,
     'adaptor' => $adaptor,
     'genomic_feature_id' => $genomic_feature_id,
+    'panel_attrib' => $panel_attrib,
     'attribs' => $attribs,
   }, $class;
   return $self;
@@ -46,6 +47,12 @@ sub genomic_feature_id {
   my $self = shift;
   $self->{genomic_feature_id} = shift if ( @_ );
   return $self->{genomic_feature_id};
+}
+
+sub panel_attrib {
+  my $self = shift;
+  $self->{panel_attrib} = shift if ( @_ );
+  return $self->{panel_attrib};
 }
 
 sub get_all_attributes {

@@ -34,12 +34,14 @@ sub store {
 
   my $sth = $dbh->prepare(q{
         INSERT INTO genomic_feature_statistic (
-            genomic_feature_id
-        ) VALUES (?)
+            genomic_feature_id,
+            panel_attrib
+        ) VALUES (?, ?)
     });
 
   $sth->execute(
-    $gfs->genomic_feature_id()
+    $gfs->genomic_feature_id(),
+    $gfs->panel_attrib()
   );
   
   $sth->finish;
@@ -73,10 +75,11 @@ sub fetch_all {
   return $self->generic_fetch();
 }
 
-sub fetch_all_by_GenomicFeature {
+sub fetch_all_by_GenomicFeature_panel_attrib {
   my $self = shift;
   my $gf = shift;
-  my $constraint = "gfs.genomic_feature_id=" . $gf->dbID;
+  my $panel_attrib = shift;
+  my $constraint = "gfs.genomic_feature_id=" . $gf->dbID . " AND gfs.panel_attrib=" . $panel_attrib;
   return $self->generic_fetch($constraint);
 }
 
@@ -85,6 +88,7 @@ sub _columns {
   my @cols = (
     'gfs.genomic_feature_statistic_id',
     'gfs.genomic_feature_id',
+    'gfs.panel_attrib',
     'gfsa.value',
     'at.code'
   );
@@ -151,6 +155,7 @@ sub _obj_from_row {
     $obj = Bio::EnsEMBL::G2P::GenomicFeatureStatistic->new(
       -dbID => $row->{genomic_feature_statistic_id},
       -genomic_feature_id => $row->{genomic_feature_id}, 
+      -panel_attrib => $row->{panel_attrib}, 
       -adaptor => $self,
     );
 
