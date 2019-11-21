@@ -450,6 +450,7 @@ CREATE TABLE variation_synonym (
 CREATE TABLE genomic_feature_statistic (
   genomic_feature_statistic_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned DEFAULT NULL,
+  panel_attrib tinyint(1) DEFAULT NULL,
   PRIMARY KEY (genomic_feature_statistic_id),
   KEY genomic_feature_idx (genomic_feature_id)
 );
