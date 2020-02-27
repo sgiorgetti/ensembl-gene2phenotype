@@ -17,6 +17,10 @@ GetOptions(
   'working_dir=s',
   'version=s'
 ) or die "Error: Failed to parse command line arguments\n";
+
+my $version = $config->{version};
+die ('version must be defiend (--version)') unless defined($version);
+
 die ('A registry_file file is required (--registry_file)') unless (defined($config->{registry_file}));
 die ('A working_dir must be defiened (--working_dir)') unless (defined($config->{working_dir}));
 my $working_dir = $config->{working_dir};
