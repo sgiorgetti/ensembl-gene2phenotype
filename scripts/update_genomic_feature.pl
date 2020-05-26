@@ -31,7 +31,7 @@ if (! -e "$working_dir/hgnc_complete_set.txt") {
 }
 $config->{hgnc_mapping_file} = "$working_dir/hgnc_complete_set.txt";
 
-`wget -P $working_dir ftp://ftp.ensembl.org/pub/release-99/gtf/homo_sapiens/Homo_sapiens.GRCh38.$version.chr.gtf.gz`;
+`wget -P $working_dir ftp://ftp.ensembl.org/pub/release-$version/gtf/homo_sapiens/Homo_sapiens.GRCh38.$version.chr.gtf.gz`;
 if (! -e "$working_dir/Homo_sapiens.GRCh38.$version.chr.gtf.gz") {
   die("File ($working_dir/Homo_sapiens.GRCh38.$version.chr.gtf.gz) doesn't exist.");
 }
@@ -224,7 +224,7 @@ sub read_from_gtf {
   foreach my $gene_symbol (keys %$gene_symbol_2_stable_id) {
     my @stable_ids = sort keys %{$gene_symbol_2_stable_id->{$gene_symbol}};
     if (scalar @stable_ids > 1) {
-      print STDERR "$gene_symbol ", join(' ', @stable_ids), "\n";
+      print STDERR "More than one stable id for $gene_symbol: ", join(', ', @stable_ids), "\n";
     }
     my $stable_id = $stable_ids[0];
     $unique_gene_symbol_2_stable_id->{$gene_symbol} = $stable_id;
