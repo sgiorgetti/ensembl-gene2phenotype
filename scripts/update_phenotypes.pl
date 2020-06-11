@@ -90,26 +90,6 @@ sub load_new_phenotypes {
     WHERE t.ontology_id = o.ontology_id
     AND o.name = 'HP'; 
   }) or die $dbh->errstr;
-
-  # find deprecated phenotypes 
-  my @deprecated_phenotype_ids = ();
-  my $sth = $dbh->prepare(qq{
-    SELECT p_old.phenotype_id FROM phenotype_old p_old
-    LEFT JOIN phenotype p ON p_old.stable_id = p.stable_id
-    WHERE p.stable_id IS NULL;
-  });
-  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
-
-  while (my $row = $sth->fetchrow_arrayref()) {
-    my ($deprecated_phenotype_id) = @$row;
-    push @deprecated_phenotype_ids, $deprecated_phenotype_id;
-  }
-  if (scalar @deprecated_phenotype_ids > 0) {
-    # we need to remove any links to the outdated HPO term and inform the curators
-    if (!$config->{'ignore_deprecated_phenotypes'}) {
-      die "Phenotype ids: " . join(',', @deprecated_phenotype_ids) . " are no longer in the new HP ontology.\n";
-    }
-  }
 }
 
 sub add_phenotype_id_mapping {
@@ -119,7 +99,6 @@ sub add_phenotype_id_mapping {
   $dbh->do(qq{
     UPDATE phenotype p, phenotype_old p_old SET p.old_phenotype_id = p_old.phenotype_id WHERE p_old.stable_id=p.stable_id;
   }) or die $dbh->errstr;
-
 }
 
 sub update_to_new_phenotype_id {
@@ -158,19 +137,32 @@ sub compare_phenotypes {
 
 sub remove_deprecated_phenotypes {
   my $phenotype_ids = shift;
-  # tables: genomic_feature_disease_phenotype, genomic_feature_disease_phenotype_deleted, GFD_phenotype_log, GFD_phenotype_comment
   my $gfdpa = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturediseasephenotype');
   my $gfd_phenotypes = $gfdpa->fetch_all_by_phenotype_ids($phenotype_ids);
   foreach my $gfd_phenotype (@{$gfd_phenotypes}) {
     my $gfdp_id = $gfd_phenotype->dbID; 
-    $dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
-    $dbh->do(qq{DELETE FROM GFD_phenotype_log WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
-    $dbh->do(qq{DELETE FROM GFD_phenotype_comment WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
+    foreach my $table (qw/genomic_feature_disease_phenotype GFD_phenotype_log GFD_phenotype_comment/) {
+      _dump_rows_to_stderr(qq{SELECT * FROM $table WHERE genomic_feature_disease_phenotype_id=$gfdp_id;});
+      $dbh->do(qq{DELETE FROM $table WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
+    }
   }
   foreach my $phenotype_id (@{$phenotype_ids}) {
-    $dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype_deleted WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
-    $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+    foreach my $table (qw/genomic_feature_disease_phenotype_deleted phenotype/) {
+      _dump_rows_to_stderr(qq{SELECT * FROM genomic_feature_disease_phenotype_deleted WHERE phenotype_id=$phenotype_id;});
+      $dbh->do(qq{DELETE FROM $table WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+    }
   }
+}
+
+sub _dump_rows_to_stderr {
+  my $query = shift;
+  print STDERR "Run: $query\n";
+  my $sth = $dbh->prepare($query);
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()) {
+    print STDERR join(' ', @$row), "\n";
+  }
+  $sth->finish();
 }
 
 sub healthchecks {
