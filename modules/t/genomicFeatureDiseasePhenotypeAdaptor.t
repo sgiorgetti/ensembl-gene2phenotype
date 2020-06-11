@@ -25,6 +25,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePhenotypeAdaptor;
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
+
 my $pa = $g2pdb->get_PhenotypeAdaptor;
 my $ua = $g2pdb->get_UserAdaptor;
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor'), 'isa GenomicFeatureDiseasePhenotypeAdaptor');
@@ -65,6 +66,9 @@ $GFDP_id = $GFDP->{genomic_feature_disease_phenotype_id};
 my $dbh = $gfda->dbc->db_handle;
 $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
 $dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$GFDP_id;}) or die $dbh->errstr;
+
+my $GFDPs2 = $gfdpa->fetch_all_by_phenotype_ids([971,4744,982,453,1570,443,506,2583,1783]);
+ok(scalar @$GFDPs2 == 15, 'fetch_all_by_phenotype_ids');
 
 done_testing();
 1;
