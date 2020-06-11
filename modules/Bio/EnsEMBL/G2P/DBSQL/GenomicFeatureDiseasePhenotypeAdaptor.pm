@@ -114,6 +114,16 @@ sub fetch_by_GFD_id_phenotype_id {
   return $result->[0]; 
 }
 
+sub fetch_all_by_phenotype_ids {
+  my $self = shift;
+  my $GFD_id = shift;
+  my $phenotype_ids = shift;
+  my $ids = join(',', @$phenotype_ids);
+  my $constraint = "gfdp.phenotype_id IN ($ids)";
+  my $result = $self->generic_fetch($constraint);
+  return $result;
+}
+
 sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
   my $GFD = shift;
