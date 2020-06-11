@@ -116,7 +116,6 @@ sub fetch_by_GFD_id_phenotype_id {
 
 sub fetch_all_by_phenotype_ids {
   my $self = shift;
-  my $GFD_id = shift;
   my $phenotype_ids = shift;
   my $ids = join(',', @$phenotype_ids);
   my $constraint = "gfdp.phenotype_id IN ($ids)";
