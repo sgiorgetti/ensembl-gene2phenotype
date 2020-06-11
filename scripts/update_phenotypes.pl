@@ -14,7 +14,8 @@ GetOptions(
   $config,
   'registry_file=s',
   'working_dir=s',
-  'new_ontology_db_name=s'
+  'new_ontology_db_name=s',
+  'ignore_deprecated_phenotypes'
 ) or die "Error: Failed to parse command line arguments\n";
 
 die ('A registry_file file is required (--registry_file)') unless (defined($config->{registry_file}));
@@ -22,22 +23,50 @@ die ('A working_dir must be defiened (--working_dir)') unless (defined($config->
 
 my $registry = 'Bio::EnsEMBL::Registry';
 my $registry_file = $config->{registry_file};
+die ("Registry file ($registry_file) doesn't exist") unless (-e $registry_file);
 $registry->load_all($registry_file);
 my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
 my $gfda = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
+my $gfdpa = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturediseasephenotype');
 
+check_for_deprecated_phenotypes($config) unless ($config->{'ignore_deprecated_phenotypes'});
 dump_g2p_phenotypes($config, 'g2p_phenotypes_before_update');
 load_new_phenotypes($config);
 add_phenotype_id_mapping();
 update_to_new_phenotype_id();
-dump_g2p_phenotypes($config, 'g2p_phenotypes_after_update');
 cleanup();
+dump_g2p_phenotypes($config, 'g2p_phenotypes_after_update');
 compare_phenotypes($config, 'g2p_phenotypes_before_update', 'g2p_phenotypes_after_update');
+healthchecks();
+
+sub check_for_deprecated_phenotypes {
+  my $config = shift;
+  my $new_ontology_db_name = $config->{new_ontology_db_name};
+  # find deprecated phenotypes 
+  my $sth = $dbh->prepare(qq{
+    SELECT p.phenotype_id, p.stable_id, p.name FROM phenotype p
+    LEFT JOIN $new_ontology_db_name.term t ON p.stable_id = t.accession
+    LEFT JOIN $new_ontology_db_name.ontology o on t.ontology_id = o.ontology_id
+    WHERE o.name = 'HP'
+    AND p.stable_id IS NULL;
+  });
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  my @phenotype_ids = ();
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my ($phenotype_id, $stable_id, $name) = @{$row};
+    print STDERR "Removing deprecated phenotype: $stable_id, $name\n";
+    push @phenotype_ids, $phenotype_id;
+  }
+  if (scalar @phenotype_ids > 0) {
+    remove_deprecated_phenotypes(\@phenotype_ids);
+  }
+}
 
 sub dump_g2p_phenotypes {
   my $config = shift;
   my $filename = shift;
   my $working_dir = $config->{working_dir};
+  die ("Working directory ($working_dir) doesn't exist") unless (-d $working_dir);
   my $fh = FileHandle->new("$working_dir/$filename", 'w');
   my $gfds = $gfda->fetch_all();
   foreach my $gfd (@{$gfds}) {
@@ -63,15 +92,23 @@ sub load_new_phenotypes {
   }) or die $dbh->errstr;
 
   # find deprecated phenotypes 
+  my @deprecated_phenotype_ids = ();
   my $sth = $dbh->prepare(qq{
-    SELECT count(p_old.phenotype_id) FROM phenotype_old p_old
+    SELECT p_old.phenotype_id FROM phenotype_old p_old
     LEFT JOIN phenotype p ON p_old.stable_id = p.stable_id
     WHERE p.stable_id IS NULL;
   });
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
-  my ($count) = $sth->fetchrow_array();
-  if ($count) {
-    die "$count phenotypes are no longer in the new HP ontology.\n";
+
+  while (my $row = $sth->fetchrow_arrayref()) {
+    my ($deprecated_phenotype_id) = @$row;
+    push @deprecated_phenotype_ids, $deprecated_phenotype_id;
+  }
+  if (scalar @deprecated_phenotype_ids > 0) {
+    # we need to remove any links to the outdated HPO term and inform the curators
+    if (!$config->{'ignore_deprecated_phenotypes'}) {
+      die "Phenotype ids: " . join(',', @deprecated_phenotype_ids) . " are no longer in the new HP ontology.\n";
+    }
   }
 }
 
@@ -119,6 +156,50 @@ sub compare_phenotypes {
   }
 }
 
+sub remove_deprecated_phenotypes {
+  my $phenotype_ids = shift;
+  # tables: genomic_feature_disease_phenotype, genomic_feature_disease_phenotype_deleted, GFD_phenotype_log, GFD_phenotype_comment
+  my $gfdpa = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturediseasephenotype');
+  my $gfd_phenotypes = $gfdpa->fetch_all_by_phenotype_ids($phenotype_ids);
+  foreach my $gfd_phenotype (@{$gfd_phenotypes}) {
+    my $gfdp_id = $gfd_phenotype->dbID; 
+    $dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
+    $dbh->do(qq{DELETE FROM GFD_phenotype_log WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
+    $dbh->do(qq{DELETE FROM GFD_phenotype_comment WHERE genomic_feature_disease_phenotype_id=$gfdp_id;}) or die $dbh->errstr;
+  }
+  foreach my $phenotype_id (@{$phenotype_ids}) {
+    $dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype_deleted WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+    $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $dbh->errstr;
+  }
+}
+
+sub healthchecks {
+  # foreig key check on phenotype_id
+  foreach my $table (qw/genomic_feature_disease_phenotype genomic_feature_disease_phenotype_deleted GFD_phenotype_log/) {
+    my $sth = $dbh->prepare(qq{
+      SELECT count(*) FROM $table t
+      LEFT JOIN phenotype p ON t.phenotype_id = p.phenotype_id
+      WHERE p.phenotype_id IS NULL;
+    });
+    $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+    my ($count) = $sth->fetchrow_array();
+    print STDERR "healthchecks foreign key check $table $count\n";
+    $sth->finish();
+  }
+  
+  foreach my $table (qw/GFD_phenotype_comment GFD_phenotype_comment_deleted/) {
+    my $sth = $dbh->prepare(qq{
+      SELECT count(*) FROM $table t
+      LEFT JOIN genomic_feature_disease_phenotype gfdp ON t.genomic_feature_disease_phenotype_id = gfdp.genomic_feature_disease_phenotype_id
+      WHERE gfdp.genomic_feature_disease_phenotype_id IS NULL;
+    });
+    $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+    my ($count) = $sth->fetchrow_array();
+    print STDERR "healthchecks foreign key check $table $count\n";
+    $sth->finish();
+  }
+}
+
 sub _load_phenotype_file {
   my $file = shift;
   my $entries = {};
@@ -130,5 +211,13 @@ sub _load_phenotype_file {
   }
   $fh->close();
   return $entries;
+}
+
+sub _get_count_sql {
+  my $query = shift;
+  my $sth = $dbh->prepare($query);
+  $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
+  my ($count) = $sth->fetchrow_array();
+  return $count;
 }
 
