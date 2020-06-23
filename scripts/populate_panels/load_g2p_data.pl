@@ -45,6 +45,7 @@ my $panel_attrib_id = $attrib_adaptor->attrib_id_for_value($g2p_panel);
 die "Couldn't fetch panel_attrib_id for panel $g2p_panel" if (!defined $g2p_panel);
 
 my $confidence_values = $attrib_adaptor->get_attribs_by_type_value('confidence_category');
+%{$confidence_values} = map { lc $_ => $confidence_values->{$_} } keys %{$confidence_values};
 my $ar_values = $attrib_adaptor->get_attribs_by_type_value('allelic_requirement'); 
 my $mc_values = $attrib_adaptor->get_attribs_by_type_value('mutation_consequence'); 
 
@@ -111,7 +112,7 @@ sub get_genomic_feature {
     }
     return $gf if (defined $gf);
   }
-  print "No genomic_feature for $gene_symbol \n";
+  print STDERR "No genomic_feature for $gene_symbol \n";
   return undef;
 }
 
@@ -248,7 +249,7 @@ sub add_phenotypes {
     $hpo_id =~ s/^\s+|\s+$//g;
     my $phenotype = $phenotype_adaptor->fetch_by_stable_id($hpo_id);
     if (!$phenotype) {
-      print 'No phenotype ', $hpo_id, "\n";
+      print STDERR 'No phenotype ', $hpo_id, "\n";
      } else {
       my $phenotype_id = $phenotype->dbID;
       if (!$new_gfd_phenotypes_lookup->{"$gfd_id\t$phenotype_id"}) {
@@ -282,7 +283,7 @@ sub add_organ_specificity {
     next unless($name);
     my $organ = $organ_adaptor->fetch_by_name($name);
     if (!$organ) {
-      print "No Organ for $name gfd_id " . $gfd->get_GenomicFeature->gene_symbol ."\n";
+      print STDERR "No Organ for $name gfd_id " . $gfd->get_GenomicFeature->gene_symbol ."\n";
     } else {
       my $organ_id = $organ->dbID;
       if (!$new_gfd_organs_lookup->{"$gfd_id\t$organ_id"}) {
