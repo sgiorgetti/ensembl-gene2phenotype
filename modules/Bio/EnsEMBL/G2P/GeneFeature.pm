@@ -24,16 +24,21 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($adaptor, $gene_feature_id, $gene_symbol, $hgnc_id, $mim, $ensembl_stable_id) = 
-    rearrange(['adaptor', 'gene_feature_id', 'gene_symbol', 'hgnc_id', 'mim', 'ensembl_stable_id'], @_);
-  my $self = $class->SUPER::new(@_);
+  my ($adaptor, $gene_feature_id, $seq_region_name, $seq_region_start, $seq_region_end, $seq_region_strand, $gene_symbol, $hgnc_id, $mim, $ensembl_stable_id) = 
+    rearrange(['adaptor', 'gene_feature_id', 'seq_region_name', 'seq_region_start', 'seq_region_end', 'seq_region_strand', 'gene_symbol', 'hgnc_id', 'mim', 'ensembl_stable_id'], @_);
 
-  $self->{'adaptor'} = $adaptor;
-  $self->{'gene_feature_id'} = $gene_feature_id;
-  $self->{'gene_symbol'} = $gene_symbol;
-  $self->{'hgnc_id'} = $hgnc_id;
-  $self->{'mim'} = $mim;
-  $self->{'ensembl_stable_id'} = $ensembl_stable_id;
+  my $self = bless {
+    'dbID' => $gene_feature_id,
+    'seq_region_name' => $seq_region_name,
+    'seq_region_start' => $seq_region_start,
+    'seq_region_end' => $seq_region_end,
+    'seq_region_strand' => $seq_region_strand,
+    'gene_symbol' => $gene_symbol,
+    'hgnc_id' => $hgnc_id,
+    'mim' => $mim,
+    'ensembl_stable_id' => $ensembl_stable_id,
+    'adaptor' => $adaptor,
+  }, $class;
 
   return $self;
 }
@@ -48,6 +53,30 @@ sub gene_feature_id {
   my $self = shift;
   $self->{genomic_feature_id} = shift if @_;
   return $self->{genomic_feature_id};
+}
+
+sub seq_region_name {
+  my $self = shift;
+  $self->{seq_region_name} = shift if @_;
+  return $self->{seq_region_name};
+}
+
+sub seq_region_start {
+  my $self = shift;
+  $self->{seq_region_start} = shift if @_;
+  return $self->{seq_region_start};
+}
+
+sub seq_region_end {
+  my $self = shift;
+  $self->{seq_region_end} = shift if @_;
+  return $self->{seq_region_end};
+}
+
+sub seq_region_strand {
+  my $self = shift;
+  $self->{seq_region_strand} = shift if @_;
+  return $self->{seq_region_strand};
 }
 
 sub gene_symbol {
