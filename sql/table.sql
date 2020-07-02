@@ -437,7 +437,6 @@ CREATE TABLE transcript_allele (
   cdna_end int(11) unsigned DEFAULT NULL,
   translation_start int(11) unsigned DEFAULT NULL,
   translation_end int(11) unsigned DEFAULT NULL,
-  distance_to_transcript int(11) unsigned DEFAULT NULL,
   codon_allele_string text,
   pep_allele_string text,
   hgvs_genomic text,
