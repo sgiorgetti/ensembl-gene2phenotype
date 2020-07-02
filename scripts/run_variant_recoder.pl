@@ -8,21 +8,22 @@ use FileHandle;
 
 my $http = HTTP::Tiny->new();
 
+#  'grch37' => 'http://grch37.rest.ensembl.org',
+
 my $servers = {
   'grch38' => 'https://rest.ensembl.org',
-  'grch37' => 'http://grch37.rest.ensembl.org',
 };
  
 my $ext = '/variant_recoder/human/';
 
-my $working_dir = '/hps/nobackup/production/ensembl/anja/G2P/text_mining/';
+my $working_dir = '/Users/anja/Documents/G2P/lgmd/variants/';
 
-my $fh = FileHandle->new("$working_dir/results/gene_hgvs_pmid_20171206", 'r');
-my $fh_out = FileHandle->new("$working_dir/results/ensembl_hgvs_20171206", 'w');
+my $fh = FileHandle->new("$working_dir/fgfr3.txt", 'r');
+my $fh_out = FileHandle->new("$working_dir/fgfr3_hgvs_genomic.txt", 'w');
 
 while (<$fh>) {
   chomp;
-  my ($hgvs, $pmid) = split/\t/;
+  my $hgvs = $_;
   print "$hgvs\n";
   foreach my $server_version (keys %$servers) {
     my $server = $servers->{$server_version};
@@ -32,11 +33,12 @@ while (<$fh>) {
     if ($response->{success}) {
       if(length $response->{content}) {
         my $hash = decode_json($response->{content});
-#warnings hgvsc hgvsp input hgvsg
-        foreach my $hgvs_type (qw/hgvsc hgvsp hgvsg/) {
+#warnings hgvsc hgvsp input hgvsg 
+        foreach my $hgvs_type (qw/hgvsg/) {
           if ($hash->[0]->{$hgvs_type}) {
             foreach my $string (@{$hash->[0]->{$hgvs_type}}) {
-              print $fh_out join("\t", $server_version, $pmid, $hgvs, $hgvs_type, $string), "\n";
+              next if ($string =~ /^LRG/);
+              print $fh_out join("\t", $string), "\n";
             }
           }
         }
