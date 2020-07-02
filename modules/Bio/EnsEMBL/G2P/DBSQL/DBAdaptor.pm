@@ -23,6 +23,7 @@ our @ISA = ('Bio::EnsEMBL::DBSQL::DBAdaptor');
 sub get_available_adaptors {
 
   my %pairs = (
+    'AlleleFeature'                    => 'Bio::EnsEMBL::G2P::DBSQL::AlleleFeatureAdaptor',
     'Attribute'                        => 'Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor',
     'Disease'                          => 'Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor',
     'EnsemblVariation'                 => 'Bio::EnsEMBL::G2P::DBSQL::EnsemblVariationAdaptor',
@@ -30,6 +31,7 @@ sub get_available_adaptors {
     'GFDPhenotypeComment'              => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor',
     'GFDPhenotypeLog'                  => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeLogAdaptor',
     'GFDPublicationComment'            => 'Bio::EnsEMBL::G2P::DBSQL::GFDPublicationCommentAdaptor',
+    'GeneFeature'                      => 'Bio::EnsEMBL::G2P::DBSQL::GeneFeatureAdaptor',
     'GenomicFeature'                   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureAdaptor',
     'GenomicFeatureDisease'            => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor',
     'GenomicFeatureDiseaseLog'         => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseLogAdaptor',
@@ -40,14 +42,13 @@ sub get_available_adaptors {
     'GenomicFeatureDiseasePhenotype'   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor',
     'GenomicFeatureDiseasePublication' => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor',   
     'GenomicFeatureStatistic'          => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureStatisticAdaptor', 
+    'LocusGenotypeMechanism'           => 'Bio::EnsEMBL::G2P::DBSQL::LocusGenotypeMechanismAdaptor', 
     'Organ'                            => 'Bio::EnsEMBL::G2P::DBSQL::OrganAdaptor',
     'Panel'                            => 'Bio::EnsEMBL::G2P::DBSQL::PanelAdaptor',
     'Phenotype'                        => 'Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor',
     'Publication'                      => 'Bio::EnsEMBL::G2P::DBSQL::PublicationAdaptor',
+    'TranscriptAllele'                 => 'Bio::EnsEMBL::G2P::DBSQL::TranscriptAlleleAdaptor',
     'User'                             => 'Bio::EnsEMBL::G2P::DBSQL::UserAdaptor',
-    'TextMiningDisease'                => 'Bio::EnsEMBL::G2P::DBSQL::TextMiningDiseaseAdaptor',
-    'TextMiningVariation'              => 'Bio::EnsEMBL::G2P::DBSQL::TextMiningVariationAdaptor',
-    'Variation'                        => 'Bio::EnsEMBL::G2P::DBSQL::VariationAdaptor',
   );
 
   return (\%pairs);
