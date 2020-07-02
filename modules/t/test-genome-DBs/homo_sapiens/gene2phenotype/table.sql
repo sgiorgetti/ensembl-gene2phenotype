@@ -70,17 +70,18 @@ CREATE TABLE `GFD_publication_comment_deleted` (
 
 CREATE TABLE `allele_feature` (
   `allele_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `seq_region_id` int(10) unsigned DEFAULT NULL,
+  `seq_region_name` varchar(255) DEFAULT NULL,
   `seq_region_start` int(10) unsigned DEFAULT NULL,
   `seq_region_end` int(10) unsigned DEFAULT NULL,
   `seq_region_strand` tinyint(2) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
   `ref_allele` varchar(255) DEFAULT NULL,
   `alt_allele` varchar(255) DEFAULT NULL,
   `hgvs_genomic` text,
   PRIMARY KEY (`allele_feature_id`),
-  UNIQUE KEY `unique_allele_idx` (`seq_region_id`,`seq_region_start`,`seq_region_end`,`seq_region_strand`,`alt_allele`),
+  UNIQUE KEY `unique_allele_idx` (`seq_region_name`,`seq_region_start`,`seq_region_end`,`seq_region_strand`,`alt_allele`),
   KEY `hgvs_genomic_idx` (`hgvs_genomic`(255))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `attrib` (
   `attrib_id` int(11) unsigned NOT NULL,
@@ -144,7 +145,7 @@ CREATE TABLE `ensembl_variation` (
 
 CREATE TABLE `gene_feature` (
   `gene_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `seq_region_id` int(10) unsigned DEFAULT NULL,
+  `seq_region_name` varchar(255) DEFAULT NULL,
   `seq_region_start` int(10) unsigned DEFAULT NULL,
   `seq_region_end` int(10) unsigned DEFAULT NULL,
   `seq_region_strand` tinyint(2) NOT NULL,
@@ -153,9 +154,9 @@ CREATE TABLE `gene_feature` (
   `mim` int(10) unsigned DEFAULT NULL,
   `ensembl_stable_id` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`gene_feature_id`),
-  UNIQUE KEY `location_idx` (`seq_region_id`,`seq_region_start`,`seq_region_end`,`seq_region_strand`),
+  UNIQUE KEY `location_idx` (`seq_region_name`,`seq_region_start`,`seq_region_end`,`seq_region_strand`),
   KEY `gene_symbol_idx` (`gene_symbol`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `gene_feature_synonym` (
   `gene_feature_id` int(10) unsigned NOT NULL,
@@ -364,23 +365,23 @@ CREATE TABLE `lgm_panel` (
 
 CREATE TABLE `location_feature` (
   `location_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `seq_region_id` int(10) unsigned DEFAULT NULL,
+  `seq_region_name` varchar(255) DEFAULT NULL,
   `seq_region_start` int(10) unsigned DEFAULT NULL,
   `seq_region_end` int(10) unsigned DEFAULT NULL,
   `seq_region_strand` tinyint(2) NOT NULL,
   PRIMARY KEY (`location_feature_id`),
-  UNIQUE KEY `location_idx` (`seq_region_id`,`seq_region_start`,`seq_region_end`,`seq_region_strand`)
+  UNIQUE KEY `location_idx` (`seq_region_name`,`seq_region_start`,`seq_region_end`,`seq_region_strand`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `locus_genotype_mechanism` (
   `locus_genotype_mechanism_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `locus_type` enum('location','gene','allele') DEFAULT NULL,
   `locus_id` int(10) unsigned NOT NULL,
-  `genotype_id` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') NOT NULL,
-  `mechanism_id` set('21','22','23','24','25','26','27','28','29','30','44') NOT NULL,
+  `genotype_attrib` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') NOT NULL,
+  `mechanism_attrib` set('21','22','23','24','25','26','27','28','29','30','44') NOT NULL,
   PRIMARY KEY (`locus_genotype_mechanism_id`),
-  UNIQUE KEY `genotype_mechanism_idx` (`locus_type`,`locus_id`,`genotype_id`,`mechanism_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `genotype_mechanism_idx` (`locus_type`,`locus_id`,`genotype_attrib`,`mechanism_attrib`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `organ` (
   `organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -448,7 +449,6 @@ CREATE TABLE `transcript_allele` (
   `cdna_end` int(11) unsigned DEFAULT NULL,
   `translation_start` int(11) unsigned DEFAULT NULL,
   `translation_end` int(11) unsigned DEFAULT NULL,
-  `distance_to_transcript` int(11) unsigned DEFAULT NULL,
   `codon_allele_string` text,
   `pep_allele_string` text,
   `hgvs_genomic` text,
@@ -458,7 +458,7 @@ CREATE TABLE `transcript_allele` (
   UNIQUE KEY `unique_transcript_allele_idx` (`allele_feature_id`,`transcript_stable_id`),
   KEY `gene_feature_idx` (`gene_feature_id`),
   KEY `allele_feature_idx` (`allele_feature_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `user` (
   `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
