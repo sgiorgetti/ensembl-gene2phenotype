@@ -68,6 +68,20 @@ CREATE TABLE `GFD_publication_comment_deleted` (
   KEY `GFD_publication_idx` (`genomic_feature_disease_publication_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `allele_feature` (
+  `allele_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `seq_region_id` int(10) unsigned DEFAULT NULL,
+  `seq_region_start` int(10) unsigned DEFAULT NULL,
+  `seq_region_end` int(10) unsigned DEFAULT NULL,
+  `seq_region_strand` tinyint(2) NOT NULL,
+  `ref_allele` varchar(255) DEFAULT NULL,
+  `alt_allele` varchar(255) DEFAULT NULL,
+  `hgvs_genomic` text,
+  PRIMARY KEY (`allele_feature_id`),
+  UNIQUE KEY `unique_allele_idx` (`seq_region_id`,`seq_region_start`,`seq_region_end`,`seq_region_strand`,`alt_allele`),
+  KEY `hgvs_genomic_idx` (`hgvs_genomic`(255))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `attrib` (
   `attrib_id` int(11) unsigned NOT NULL,
   `attrib_type_id` smallint(5) unsigned NOT NULL,
@@ -126,6 +140,28 @@ CREATE TABLE `ensembl_variation` (
   `sift_prediction` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`ensembl_variation_id`),
   KEY `genomic_feature_idx` (`genomic_feature_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `gene_feature` (
+  `gene_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `seq_region_id` int(10) unsigned DEFAULT NULL,
+  `seq_region_start` int(10) unsigned DEFAULT NULL,
+  `seq_region_end` int(10) unsigned DEFAULT NULL,
+  `seq_region_strand` tinyint(2) NOT NULL,
+  `gene_symbol` varchar(128) DEFAULT NULL,
+  `hgnc_id` int(10) unsigned DEFAULT NULL,
+  `mim` int(10) unsigned DEFAULT NULL,
+  `ensembl_stable_id` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`gene_feature_id`),
+  UNIQUE KEY `location_idx` (`seq_region_id`,`seq_region_start`,`seq_region_end`,`seq_region_strand`),
+  KEY `gene_symbol_idx` (`gene_symbol`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `gene_feature_synonym` (
+  `gene_feature_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL,
+  UNIQUE KEY `name` (`gene_feature_id`,`name`),
+  KEY `gene_feature_idx` (`gene_feature_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `genomic_feature` (
@@ -313,15 +349,37 @@ CREATE TABLE `genomic_feature_synonym` (
   KEY `genomic_feature_idx` (`genomic_feature_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `mesh` (
-  `mesh_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `stable_id` varchar(255) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`mesh_id`),
-  UNIQUE KEY `desc_idx` (`description`),
-  KEY `name_idx` (`name`),
-  KEY `stable_idx` (`stable_id`)
+CREATE TABLE `lgm_panel` (
+  `lgm_panel_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `locus_genotype_mechanism_id` int(10) unsigned NOT NULL,
+  `panel_id` int(10) unsigned NOT NULL,
+  `confidence_category_id` set('31','32','33','34','35') DEFAULT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`lgm_panel_id`),
+  UNIQUE KEY `lgm_panel_idx` (`locus_genotype_mechanism_id`,`panel_id`),
+  KEY `lgm_idx` (`locus_genotype_mechanism_id`),
+  KEY `panel_idx` (`panel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `location_feature` (
+  `location_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `seq_region_id` int(10) unsigned DEFAULT NULL,
+  `seq_region_start` int(10) unsigned DEFAULT NULL,
+  `seq_region_end` int(10) unsigned DEFAULT NULL,
+  `seq_region_strand` tinyint(2) NOT NULL,
+  PRIMARY KEY (`location_feature_id`),
+  UNIQUE KEY `location_idx` (`seq_region_id`,`seq_region_start`,`seq_region_end`,`seq_region_strand`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `locus_genotype_mechanism` (
+  `locus_genotype_mechanism_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `locus_type` enum('location','gene','allele') DEFAULT NULL,
+  `locus_id` int(10) unsigned NOT NULL,
+  `genotype_id` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') NOT NULL,
+  `mechanism_id` set('21','22','23','24','25','26','27','28','29','30','44') NOT NULL,
+  PRIMARY KEY (`locus_genotype_mechanism_id`),
+  UNIQUE KEY `genotype_mechanism_idx` (`locus_type`,`locus_id`,`genotype_id`,`mechanism_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `organ` (
@@ -378,49 +436,28 @@ CREATE TABLE `search` (
   PRIMARY KEY (`search_term`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `text_mining_disease` (
-  `text_mining_disease_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `publication_id` int(10) unsigned NOT NULL,
-  `mesh_id` int(10) unsigned NOT NULL,
-  `annotated_text` varchar(255) NOT NULL,
-  `source` varchar(128) NOT NULL,
-  PRIMARY KEY (`text_mining_disease_id`),
-  KEY `mesh_idx` (`mesh_id`),
-  KEY `publication_idx` (`publication_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-
-CREATE TABLE `text_mining_pmid_gene` (
-  `text_mining_pmid_gene_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `publication_id` int(10) DEFAULT NULL,
-  `pmid` int(10) DEFAULT NULL,
-  `genomic_feature_id` int(10) DEFAULT NULL,
-  PRIMARY KEY (`text_mining_pmid_gene_id`),
-  KEY `pmid_idx` (`pmid`),
-  KEY `genomic_feature_idx` (`genomic_feature_id`),
-  KEY `publication_idx` (`publication_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `text_mining_variation` (
-  `text_mining_variation_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `publication_id` int(10) unsigned NOT NULL,
-  `genomic_feature_id` int(10) unsigned NOT NULL,
-  `text_mining_hgvs` varchar(128) NOT NULL,
-  `ensembl_hgvs` varchar(128) NOT NULL,
-  `assembly` varchar(128) NOT NULL,
-  `seq_region` varchar(128) NOT NULL,
-  `seq_region_start` int(11) NOT NULL,
-  `seq_region_end` int(11) NOT NULL,
-  `seq_region_strand` tinyint(4) NOT NULL,
-  `allele_string` varchar(128) DEFAULT NULL,
-  `consequence` varchar(128) DEFAULT NULL,
-  `feature_stable_id` varchar(128) DEFAULT NULL,
-  `biotype` varchar(128) DEFAULT NULL,
-  `polyphen_prediction` varchar(128) DEFAULT NULL,
-  `sift_prediction` varchar(128) DEFAULT NULL,
-  `colocated_variants` varchar(500) DEFAULT NULL,
-  PRIMARY KEY (`text_mining_variation_id`),
-  KEY `genomic_feature_idx` (`genomic_feature_id`),
-  KEY `publication_idx` (`publication_id`)
+CREATE TABLE `transcript_allele` (
+  `transcript_allele_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `allele_feature_id` int(10) unsigned NOT NULL,
+  `gene_feature_id` int(10) unsigned NOT NULL,
+  `transcript_stable_id` varchar(128) DEFAULT NULL,
+  `consequence_types` varchar(255) DEFAULT NULL,
+  `cds_start` int(11) unsigned DEFAULT NULL,
+  `cds_end` int(11) unsigned DEFAULT NULL,
+  `cdna_start` int(11) unsigned DEFAULT NULL,
+  `cdna_end` int(11) unsigned DEFAULT NULL,
+  `translation_start` int(11) unsigned DEFAULT NULL,
+  `translation_end` int(11) unsigned DEFAULT NULL,
+  `distance_to_transcript` int(11) unsigned DEFAULT NULL,
+  `codon_allele_string` text,
+  `pep_allele_string` text,
+  `hgvs_genomic` text,
+  `hgvs_transcript` text,
+  `hgvs_protein` text,
+  PRIMARY KEY (`transcript_allele_id`),
+  UNIQUE KEY `unique_transcript_allele_idx` (`allele_feature_id`,`transcript_stable_id`),
+  KEY `gene_feature_idx` (`gene_feature_id`),
+  KEY `allele_feature_idx` (`allele_feature_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `user` (
@@ -432,25 +469,4 @@ CREATE TABLE `user` (
   UNIQUE KEY `user_idx` (`username`),
   UNIQUE KEY `email_idx` (`email`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-
-CREATE TABLE `variation` (
-  `variation_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `genomic_feature_id` int(10) unsigned NOT NULL,
-  `disease_id` int(10) unsigned DEFAULT NULL,
-  `publication_id` int(10) unsigned DEFAULT NULL,
-  `mutation` varchar(255) DEFAULT NULL,
-  `consequence` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`variation_id`),
-  KEY `disease_idx` (`disease_id`),
-  KEY `genomic_feature_idx` (`genomic_feature_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `variation_synonym` (
-  `variation_id` int(10) unsigned NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `source` varchar(128) NOT NULL,
-  UNIQUE KEY `name` (`variation_id`,`name`),
-  KEY `variation_id` (`variation_id`),
-  KEY `name_idx` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
