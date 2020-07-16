@@ -49,24 +49,45 @@ my $confidence_values = $attrib_adaptor->get_attribs_by_type_value('confidence_c
 my $ar_values = $attrib_adaptor->get_attribs_by_type_value('allelic_requirement'); 
 my $mc_values = $attrib_adaptor->get_attribs_by_type_value('mutation_consequence'); 
 
+my $supported_mc_values = {
+  'all missense/inframe' => 'all missense/in frame',
+};
+
 my $file = $config->{import_file};
 die "Data file $file doesn't exist" if (!-e $file);
 my $book  = ReadData($file);
 my $sheet = $book->[1];
 my @rows = Spreadsheet::Read::rows($sheet);
 foreach my $row (@rows) {
-   
+  if (scalar @$row != 14) {
+    die "Number of columns is not 14\n";
+  }   
   my ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, $phenotypes,  $organs,  $pmids,  $panel,  $prev_symbols, $hgnc_id, $comments) = @$row;
   next if ($gene_symbol =~ /^gene/);
 
+  if (!$panel) {
+    warn "No panel for gene $gene_symbol\n";
+    next;
+  }
+
+  next if (!add_to_panel($panel));  
+
   my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
+
   my $disease = get_disease($disease_name, $disease_mim);
+  if (!$disease_name) {
+    warn "No disease name for gene $gene_symbol\n";
+    next;
+  }
 
   my $disease_confidence_attrib = get_disease_confidence_attrib($DDD_category);
 
   my $allelic_requirement_attrib = get_allelic_requirement_attrib($allelic_requirement);
 
   my $mutation_consequence_attrib = get_mutation_consequence_attrib($mutation_consequence);
+  if (!$mutation_consequence_attrib) {
+    die "No mutation consequence for $gene_symbol\n";
+  }
 
   my $gfd = $gfd_adaptor->fetch_by_GenomicFeature_Disease_panel_id($gf, $disease, $panel_attrib_id);
 
@@ -82,6 +103,8 @@ foreach my $row (@rows) {
     $gfd = $gfd_adaptor->store($gfd, $user);
   }
 
+  
+
   add_genomic_feature_disease_action($gfd, $allelic_requirement_attrib, $mutation_consequence_attrib);
 
   add_publications($gfd, $pmids); 
@@ -92,6 +115,18 @@ foreach my $row (@rows) {
   
   add_comments($gfd, $comments, $user);
 
+}
+
+sub add_to_panel {
+  my $panels = shift;
+  my $add = 0;
+  foreach my $panel (split/;|,/, $panels) {
+    $panel =~ s/^\s+|\s+$//g;
+    if ($panel eq $g2p_panel) {
+      return 1;
+    }
+  } 
+  return $add;
 }
 
 sub get_genomic_feature {
@@ -124,7 +159,7 @@ sub get_disease {
   my $disease_list = $disease_adaptor->fetch_all_by_name($disease_name);
   my @sorted_disease_list = sort {$a->dbID <=> $b->dbID} @$disease_list;
   my $disease = $sorted_disease_list[0]; 
-
+    
   if (! defined $disease) {
     $disease = Bio::EnsEMBL::G2P::Disease->new(
       -name => $disease_name,
@@ -170,8 +205,16 @@ sub get_mutation_consequence_attrib {
   my $mutation_consequence = shift;
   my $mc = lc $mutation_consequence;
   $mc =~ s/^\s+|\s+$//g;
+
   my $mc_attrib = $mc_values->{$mc} || undef;
-  if (!$mc_attrib && $mc) {
+
+  # try some variations
+  if (!$mc_attrib) {
+    $mc = $supported_mc_values->{$mc};  
+    $mc_attrib = $mc_values->{$mc} || undef;
+  }
+
+  if (!$mc_attrib) {
     die "no mutation consequence attrib for $mutation_consequence\n";
   }
   return $mc_attrib;
@@ -277,13 +320,13 @@ sub add_organ_specificity {
     $new_gfd_organs_lookup->{"$gfd_id\t$organ_id"} = 1;
   }
 
-  my @organ_names = split(';', $organs);
+  my @organ_names = split(/;|,/, $organs);
   foreach my $name (@organ_names) {
     $name =~ s/^\s+|\s+$//g;
     next unless($name);
     my $organ = $organ_adaptor->fetch_by_name($name);
     if (!$organ) {
-      print STDERR "No Organ for $name gfd_id " . $gfd->get_GenomicFeature->gene_symbol ."\n";
+      print STDERR "No organ for $name gfd_id " . $gfd->get_GenomicFeature->gene_symbol ."\n";
     } else {
       my $organ_id = $organ->dbID;
       if (!$new_gfd_organs_lookup->{"$gfd_id\t$organ_id"}) {
