@@ -69,16 +69,8 @@ foreach my $row (@rows) {
     warn "No panel for gene $gene_symbol\n";
     next;
   }
-
   next if (!add_to_panel($panel));  
-
   my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
-
-  my $disease = get_disease($disease_name, $disease_mim);
-  if (!$disease_name) {
-    warn "No disease name for gene $gene_symbol\n";
-    next;
-  }
 
   my $disease_confidence_attrib = get_disease_confidence_attrib($DDD_category);
 
@@ -89,9 +81,30 @@ foreach my $row (@rows) {
     die "No mutation consequence for $gene_symbol\n";
   }
 
-  my $gfd = $gfd_adaptor->fetch_by_GenomicFeature_Disease_panel_id($gf, $disease, $panel_attrib_id);
+  my $gfd = undef;
+  # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence 
+  my @gfds_with_matched_ar_and_mc = @{get_gfd_by_allelic_requirement_mutation_consequence($gf, $panel, $allelic_requirement_attrib, $mutation_consequence_attrib)};
+  if (scalar  @gfds_with_matched_ar_and_mc > 1) {
+    warn "Found more than one GFD for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+  } elsif (scalar  @gfds_with_matched_ar_and_mc == 0) {
+    warn "Found no GFD for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+  } else {
+    $gfd = $gfds_with_matched_ar_and_mc[0];
+    $gfd->confidence_category_attrib($disease_confidence_attrib);
+    $gfd_adaptor->update($gfd, $user);
+  }
+
+  if (!$gfd) {  
+    if (!$disease_name) {
+      warn "Disease name is missing for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+      next;
+    }
+    my $disease = get_disease($disease_name, $disease_mim);
+    $gfd = $gfd_adaptor->fetch_by_GenomicFeature_Disease_panel_id($gf, $disease, $panel_attrib_id);
+  }
 
   if (!$gfd) {
+    my $disease = get_disease($disease_name, $disease_mim);
     print "Add new GFD $gene_symbol $disease_name ", $disease->dbID, "\n";
     $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_id => $gf->dbID,
@@ -101,11 +114,8 @@ foreach my $row (@rows) {
       -adaptor => $gfd_adaptor,
     );
     $gfd = $gfd_adaptor->store($gfd, $user);
+    add_genomic_feature_disease_action($gfd, $allelic_requirement_attrib, $mutation_consequence_attrib);
   }
-
-  
-
-  add_genomic_feature_disease_action($gfd, $allelic_requirement_attrib, $mutation_consequence_attrib);
 
   add_publications($gfd, $pmids); 
 
@@ -180,8 +190,8 @@ sub get_disease_confidence_attrib {
   my $DDD_category = shift;
   my $disease_confidence = lc $DDD_category;
   $disease_confidence =~ s/^\s+|\s+$//g;
-  if ($disease_confidence eq 'child if') {
-    $disease_confidence = 'both DD and IF';
+  if ($disease_confidence eq 'child if' || $disease_confidence eq 'rd+if') {
+    $disease_confidence = 'both rd and if';
   }
   my $disease_confidence_attrib = $confidence_values->{$disease_confidence};
   if (!$disease_confidence_attrib) {
@@ -218,6 +228,27 @@ sub get_mutation_consequence_attrib {
     die "no mutation consequence attrib for $mutation_consequence\n";
   }
   return $mc_attrib;
+}
+
+sub get_gfd_by_allelic_requirement_mutation_consequence {
+  my ($gf, $panel, $allelic_requirement_attrib, $mutation_consequence_attrib) = @_;
+  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $panel);
+  my @gfds_with_matching_ar_and_mc = ();
+  foreach my $gfd (@{$gfds}) {
+    my $gfd_actions = $gfd_action_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
+    my $is_match = 0;
+    foreach my $gfd_action (@$gfd_actions) {
+      my $ar_attrib = $gfd_action->allelic_requirement_attrib || '';
+      my $mc_attrib = $gfd_action->mutation_consequence_attrib || '';
+      if ($allelic_requirement_attrib eq $ar_attrib && $mutation_consequence_attrib eq $mc_attrib) {
+        $is_match = 1;
+      }
+    }
+    if ($is_match) {
+      push @gfds_with_matching_ar_and_mc, $gfd;
+    }
+  }
+  return \@gfds_with_matching_ar_and_mc;
 }
 
 sub add_genomic_feature_disease_action {
@@ -348,14 +379,18 @@ sub add_comments {
   my $comments = shift;
   my $user = shift;
   return if (!$comments);
-  my $gfd_id = $gfd->dbID;
-  my $gfd_comment = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment->new(
-    -comment_text => $comments,
-    -genomic_feature_disease_id => $gfd_id,
-    -adaptor => $gfd_comment_adaptor,
-  );
-  print "add GFD comment $gfd_id $comments\n";
-  $gfd_comment_adaptor->store($gfd_comment, $user);
+  $comments =~ s/^\s+|\s+$//g;
+  my @existing_comments = @{$gfd_comment_adaptor->fetch_all_by_GenomicFeatureDisease($gfd)}; 
+  if (! grep { $comments eq $_->comment_text} @existing_comments) {
+    my $gfd_id = $gfd->dbID;
+    my $gfd_comment = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment->new(
+      -comment_text => $comments,
+      -genomic_feature_disease_id => $gfd_id,
+      -adaptor => $gfd_comment_adaptor,
+    );
+    print "add GFD comment $gfd_id $comments\n";
+    $gfd_comment_adaptor->store($gfd_comment, $user);
+  }
 }
 
 
