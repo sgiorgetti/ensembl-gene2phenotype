@@ -197,7 +197,7 @@ sub _obj_from_row {
       -adaptor => $self,
     );
 
-    $self->{_temp_objs}{$row->{genomic_feature_id}} = $obj;
+    $self->{_temp_objs}{$row->{gene_feature_id}} = $obj;
   }
 
   # Add a synonym if available
