@@ -46,8 +46,8 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  $self->{allele_feature_id} = shift if @_;
-  return $self->{allele_feature_id};
+  $self->{dbID} = shift if @_;
+  return $self->{dbID};
 }
 
 sub allele_feature_id {
