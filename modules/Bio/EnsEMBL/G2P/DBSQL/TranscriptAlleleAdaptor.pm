@@ -39,10 +39,15 @@ sub store {
       translation_end,
       codon_allele_string,
       pep_allele_string,
-      hgvs_genomic,
       hgvs_transcript,
-      hgvs_protein
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      hgvs_protein,
+      cadd,
+      sift_prediction,
+      polyphen_prediction,
+      appris,
+      tsl,
+      mane
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   });
 
   $sth->execute(
@@ -58,9 +63,14 @@ sub store {
     $transcript_allele->translation_end,
     $transcript_allele->codon_allele_string,
     $transcript_allele->pep_allele_string,
-    $transcript_allele->hgvs_genomic,
     $transcript_allele->hgvs_transcript,
-    $transcript_allele->hgvs_protein
+    $transcript_allele->hgvs_protein,
+    $transcript_allele->cadd,
+    $transcript_allele->sift_prediction,
+    $transcript_allele->polyphen_prediction,
+    $transcript_allele->appris,
+    $transcript_allele->tsl,
+    $transcript_allele->mane
   );
 
   $sth->finish;
@@ -104,9 +114,14 @@ sub _columns {
     'ta.translation_end',
     'ta.codon_allele_string',
     'ta.pep_allele_string',
-    'ta.hgvs_genomic',
     'ta.hgvs_transcript',
     'ta.hgvs_protein',
+    'ta.cadd',
+    'ta.sift_prediction',
+    'ta.polyphen_prediction',
+    'ta.appris',
+    'ta.tsl',
+    'ta.mane'
   );
   return @cols;
 }
@@ -122,8 +137,8 @@ sub _tables {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($transcript_allele_id, $allele_feature_id, $gene_feature_id, $transcript_stable_id, $consequence_types, $cds_start, $cds_end, $cdna_start, $cdna_end, $translation_start, $translation_end, $codon_allele_string, $pep_allele_string, $hgvs_genomic, $hgvs_transcript, $hgvs_protein); 
-  $sth->bind_columns(\($transcript_allele_id, $allele_feature_id, $gene_feature_id, $transcript_stable_id, $consequence_types, $cds_start, $cds_end, $cdna_start, $cdna_end, $translation_start, $translation_end, $codon_allele_string, $pep_allele_string, $hgvs_genomic, $hgvs_transcript, $hgvs_protein)); 
+  my ($transcript_allele_id, $allele_feature_id, $gene_feature_id, $transcript_stable_id, $consequence_types, $cds_start, $cds_end, $cdna_start, $cdna_end, $translation_start, $translation_end, $codon_allele_string, $pep_allele_string, $hgvs_transcript, $hgvs_protein, $cadd, $sift_prediction, $polyphen_prediction, $appris, $tsl, $mane); 
+  $sth->bind_columns(\($transcript_allele_id, $allele_feature_id, $gene_feature_id, $transcript_stable_id, $consequence_types, $cds_start, $cds_end, $cdna_start, $cdna_end, $translation_start, $translation_end, $codon_allele_string, $pep_allele_string, $hgvs_transcript, $hgvs_protein, $cadd, $sift_prediction, $polyphen_prediction, $appris, $tsl, $mane)); 
 
   my @objs;
   while ($sth->fetch()) {
@@ -141,9 +156,14 @@ sub _objs_from_sth {
       -translation_end => $translation_end,
       -codon_allele_string => $codon_allele_string,
       -pep_allele_string => $pep_allele_string,
-      -hgvs_genomic => $hgvs_genomic,
       -hgvs_transcript => $hgvs_transcript,
       -hgvs_protein => $hgvs_protein,
+      -cadd => $cadd,
+      -sift_prediction => $sift_prediction,
+      -polyphen_prediction => $polyphen_prediction,
+      -appris => $appris,
+      -tsl => $tsl,
+      -mane => $mane,
       -adaptor => $self,
     );
     push(@objs, $obj);
