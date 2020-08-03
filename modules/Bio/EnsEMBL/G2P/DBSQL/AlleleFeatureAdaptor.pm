@@ -17,7 +17,7 @@ use warnings;
 package Bio::EnsEMBL::G2P::DBSQL::AlleleFeatureAdaptor;
 
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
-
+use Bio::EnsEMBL::G2P::AlleleFeature;
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
@@ -76,6 +76,12 @@ sub fetch_by_name_and_hgvs_genomic {
   my $constraint = "af.name='$name' AND af.hgvs_genomic='$hgvs_genomic';";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];
+}
+
+sub fetch_all_by_name {
+  my ($self, $name) = @_;
+  my $constraint = "af.name='$name'";
+  return $self->generic_fetch($constraint);
 }
 
 sub _columns {
