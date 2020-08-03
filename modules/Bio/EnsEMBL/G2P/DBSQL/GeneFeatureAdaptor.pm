@@ -18,7 +18,6 @@ package Bio::EnsEMBL::G2P::DBSQL::GeneFeatureAdaptor;
 
 use Bio::EnsEMBL::G2P::GeneFeature;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
-use Data::Dumper;
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
@@ -186,7 +185,6 @@ sub _objs_from_sth {
 sub _obj_from_row {
   my ($self, $row) = @_;
   my $obj = $self->{_temp_objs}{$row->{gene_feature_id}}; 
-  print Dumper $row;
   unless ( defined $obj ) {
     $obj = Bio::EnsEMBL::G2P::GeneFeature->new(
       -gene_feature_id => $row->{gene_feature_id},
