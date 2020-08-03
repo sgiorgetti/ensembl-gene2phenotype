@@ -57,6 +57,7 @@ sub store {
   my $dbID = $dbh->last_insert_id(undef, undef, 'allele_feature', 'allele_feature_id');
   $allele_feature->{dbID}    = $dbID;
   $allele_feature->{adaptor} = $self;
+  return $allele_feature;
 }
 
 sub fetch_all {
