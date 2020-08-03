@@ -29,6 +29,7 @@ sub new {
 
   my $self = bless {
     'dbID' => $gene_feature_id,
+    'gene_feature_id' => $gene_feature_id,
     'seq_region_name' => $seq_region_name,
     'seq_region_start' => $seq_region_start,
     'seq_region_end' => $seq_region_end,
