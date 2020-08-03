@@ -51,8 +51,8 @@ sub dbID {
 
 sub gene_feature_id {
   my $self = shift;
-  $self->{genomic_feature_id} = shift if @_;
-  return $self->{genomic_feature_id};
+  $self->{gene_feature_id} = shift if @_;
+  return $self->{gene_feature_id};
 }
 
 sub seq_region_name {
