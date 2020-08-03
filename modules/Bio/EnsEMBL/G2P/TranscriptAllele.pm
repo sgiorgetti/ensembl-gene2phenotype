@@ -24,7 +24,7 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($adaptor, $transcript_allele_id, $allele_feature_id, $gene_feature_id, $transcript_stable_id, $consequence_types, $cds_start, $cds_end, $cdna_start, $cdna_end, $translation_start, $translation_end, $codon_allele_string, $pep_allele_string, $hgvs_genomic, $hgvs_transcript, $hgvs_protein) = rearrange(['adaptor', 'transcript_allele_id', 'allele_feature_id', 'gene_feature_id', 'transcript_stable_id', 'consequence_types', 'cds_start', 'cds_end', 'cdna_start', 'cdna_end', 'translation_start', 'translation_end', 'codon_allele_string', 'pep_allele_string', 'hgvs_genomic', 'hgvs_transcript', 'hgvs_protein'], @_);
+  my ($adaptor, $transcript_allele_id, $allele_feature_id, $gene_feature_id, $transcript_stable_id, $consequence_types, $cds_start, $cds_end, $cdna_start, $cdna_end, $translation_start, $translation_end, $codon_allele_string, $pep_allele_string, $hgvs_transcript, $hgvs_protein, $cadd, $sift_prediction, $polyphen_prediction, $appris, $tsl, $mane) = rearrange(['adaptor', 'transcript_allele_id', 'allele_feature_id', 'gene_feature_id', 'transcript_stable_id', 'consequence_types', 'cds_start', 'cds_end', 'cdna_start', 'cdna_end', 'translation_start', 'translation_end', 'codon_allele_string', 'pep_allele_string', 'hgvs_transcript', 'hgvs_protein', 'cadd', 'sift_prediction', 'polyphen_prediction', 'appris', 'tsl', 'mane'], @_);
 
   my $self = bless {
     'dbID' => $transcript_allele_id,
@@ -40,9 +40,14 @@ sub new {
     'translation_end' => $translation_end,
     'codon_allele_string' => $codon_allele_string,
     'pep_allele_string' => $pep_allele_string,
-    'hgvs_genomic' => $hgvs_genomic,
     'hgvs_transcript' => $hgvs_transcript,
     'hgvs_protein' => $hgvs_protein,
+    'cadd' => $cadd,
+    'sift_prediction' => $sift_prediction,
+    'polyphen_prediction' => $polyphen_prediction,
+    'appris' => $appris,
+    'tsl' => $tsl,
+    'mane' => $mane,
     'adaptor' => $adaptor,
   }, $class;
 
@@ -127,12 +132,6 @@ sub pep_allele_string {
   return $self->{pep_allele_string};
 }
 
-sub hgvs_genomic {
-  my $self = shift;
-  $self->{hgvs_genomic} = shift if @_;
-  return $self->{hgvs_genomic};
-}
-
 sub hgvs_transcript {
   my $self = shift;
   $self->{hgvs_transcript} = shift if @_;
@@ -145,5 +144,46 @@ sub hgvs_protein {
   return $self->{hgvs_protein};
 }
 
+sub hgvs_protein {
+  my $self = shift;
+  $self->{hgvs_protein} = shift if @_;
+  return $self->{hgvs_protein};
+}
+
+sub cadd {
+  my $self = shift;
+  $self->{cadd} = shift if @_;
+  return $self->{cadd};
+}
+
+sub sift_prediction {
+  my $self = shift;
+  $self->{sift_prediction} = shift if @_;
+  return $self->{sift_prediction};
+}
+
+sub polyphen_prediction {
+  my $self = shift;
+  $self->{polyphen_prediction} = shift if @_;
+  return $self->{polyphen_prediction};
+}
+
+sub appris {
+  my $self = shift;
+  $self->{appris} = shift if @_;
+  return $self->{appris};
+}
+
+sub tsl {
+  my $self = shift;
+  $self->{tsl} = shift if @_;
+  return $self->{tsl};
+}
+
+sub mane {
+  my $self = shift;
+  $self->{mane} = shift if @_;
+  return $self->{mane};
+}
 
 1;
