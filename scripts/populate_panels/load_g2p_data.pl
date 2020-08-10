@@ -114,8 +114,9 @@ foreach my $row (@rows) {
       -adaptor => $gfd_adaptor,
     );
     $gfd = $gfd_adaptor->store($gfd, $user);
-    add_genomic_feature_disease_action($gfd, $allelic_requirement_attrib, $mutation_consequence_attrib);
   }
+
+  add_genomic_feature_disease_action($gfd, $allelic_requirement_attrib, $mutation_consequence_attrib);
 
   add_publications($gfd, $pmids); 
 
