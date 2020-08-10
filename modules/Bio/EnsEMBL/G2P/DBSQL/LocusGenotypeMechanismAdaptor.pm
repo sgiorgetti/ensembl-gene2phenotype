@@ -16,6 +16,8 @@ use warnings;
 
 package Bio::EnsEMBL::G2P::DBSQL::LocusGenotypeMechanismAdaptor;
 
+use Bio::EnsEMBL::G2P::LocusGenotypeMechanism;
+
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
@@ -110,7 +112,22 @@ sub fetch_by_locus_id_locus_type_genotype_mechanism {
   return $result->[0];
 }
 
-
+sub fetch_all_by_GeneFeature {
+  my $self = shift;
+  my $gene_feature = shift;
+  my $cols = join ",", $self->_columns();
+  my $sth = $self->prepare(qq{
+    SELECT DISTINCT $cols
+    FROM locus_genotype_mechanism lgm, allele_feature af, transcript_allele ta, gene_feature gf
+    WHERE gf.gene_feature_id = ta.gene_feature_id
+    AND ta.allele_feature_id = af.allele_feature_id
+    AND af.allele_feature_id = lgm.locus_id
+    AND lgm.locus_type = 'allele'
+    AND gf.gene_feature_id = ?;
+  });
+  $sth->execute($gene_feature->dbID);
+  return $self->_objs_from_sth($sth); 
+}
 
 sub _columns {
   my $self = shift;

@@ -114,4 +114,19 @@ sub mechanism_attrib {
   return $self->{mechanism_attrib};
 }
 
+
+sub get_AlleleFeature {
+  my $self = shift;
+  my $allele_feature_adaptor = $self->{adaptor}->db->get_AlleleFeatureAdaptor;
+  return $allele_feature_adaptor->fetch_by_dbID($self->locus_id);
+}
+
+sub get_GeneFeature {
+  my $self = shift;
+
+}
+
+
+
+
 1;

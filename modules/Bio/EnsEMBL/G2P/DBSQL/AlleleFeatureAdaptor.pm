@@ -67,8 +67,8 @@ sub fetch_all {
 
 sub fetch_by_dbID {
   my $self = shift;
-  my $location_feature_id = shift;
-  return $self->SUPER::fetch_by_dbID($location_feature_id);
+  my $allele_feature_id = shift;
+  return $self->SUPER::fetch_by_dbID($allele_feature_id);
 }
 
 sub fetch_by_name_and_hgvs_genomic {

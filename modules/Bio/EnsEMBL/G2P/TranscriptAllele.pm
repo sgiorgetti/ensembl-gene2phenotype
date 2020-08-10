@@ -144,12 +144,6 @@ sub hgvs_protein {
   return $self->{hgvs_protein};
 }
 
-sub hgvs_protein {
-  my $self = shift;
-  $self->{hgvs_protein} = shift if @_;
-  return $self->{hgvs_protein};
-}
-
 sub cadd {
   my $self = shift;
   $self->{cadd} = shift if @_;

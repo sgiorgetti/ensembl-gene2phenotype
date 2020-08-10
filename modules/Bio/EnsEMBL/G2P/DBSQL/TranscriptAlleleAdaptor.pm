@@ -17,7 +17,7 @@ use warnings;
 package Bio::EnsEMBL::G2P::DBSQL::TranscriptAlleleAdaptor;
 
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
-
+use Bio::EnsEMBL::G2P::TranscriptAllele;
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
@@ -96,6 +96,13 @@ sub fetch_by_allele_feature_id_and_transcript_stable_id {
   my $constraint = "ta.allele_feature_id=$allele_feature_id AND ta.transcript_stable_id='$transcript_stable_id';";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];
+}
+
+sub fetch_all_by_AlleleFeature {
+  my ($self, $allele_feature) = @_;
+  my $allele_feature_id = $allele_feature->dbID;
+  my $constraint = "ta.allele_feature_id=$allele_feature_id;";
+  return $self->generic_fetch($constraint);
 }
 
 sub _columns {

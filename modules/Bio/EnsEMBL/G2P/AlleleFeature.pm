@@ -104,4 +104,10 @@ sub hgvs_genomic {
   return $self->{hgvs_genomic};
 }
 
+sub get_all_TranscriptAlleles {
+  my $self = shift;
+  my $transcript_allele_adaptor = $self->{adaptor}->db->get_TranscriptAlleleAdaptor;
+  return $transcript_allele_adaptor->fetch_all_by_AlleleFeature($self);
+}
+
 1;
