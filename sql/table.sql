@@ -463,16 +463,38 @@ CREATE TABLE locus_genotype_mechanism (
   UNIQUE KEY genotype_mechanism_idx (locus_type, locus_id, genotype_attrib, mechanism_attrib)
 );  
 
-CREATE TABLE lgm_panel (
-  lgm_panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE LGM_panel (
+  LGM_panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   locus_genotype_mechanism_id int(10) unsigned NOT NULL,
   panel_id int(10) unsigned NOT NULL,
-  confidence_category_id set('31','32','33','34','35') DEFAULT NULL,
+  confidence_category_attrib set('31','32','33','34','35') DEFAULT NULL,
   user_id int(10) unsigned NOT NULL,
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (lgm_panel_id),
+  PRIMARY KEY (LGM_panel_id),
   UNIQUE KEY lgm_panel_idx (locus_genotype_mechanism_id, panel_id),
   KEY lgm_idx (locus_genotype_mechanism_id),
   KEY panel_idx (panel_id)
+);
+
+CREATE TABLE LGM_panel_disease (
+  LGM_panel_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  LGM_panel_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  user_id int(10) unsigned NOT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (LGM_panel_disease_id),
+  UNIQUE KEY lgm_panel_disease_idx (LGM_panel_id, disease_id),
+  KEY lgm_panel_idx (LGM_panel_id)
+);
+
+CREATE TABLE LGM_publication (
+  LGM_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  locus_genotype_mechanism_id int(10) unsigned NOT NULL,
+  publication_id int(10) unsigned NOT NULL,
+  user_id int(10) unsigned NOT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (LGM_publication_id),
+  UNIQUE KEY lgm_publication_idx (locus_genotype_mechanism_id, publication_id),
+  KEY lgm_idx (locus_genotype_mechanism_id)
 );
 
