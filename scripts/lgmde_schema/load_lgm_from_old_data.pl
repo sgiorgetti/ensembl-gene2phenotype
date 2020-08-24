@@ -76,8 +76,8 @@ foreach my $row (@rows) {
     my $gfd_actions = $gfd_action_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
     if (scalar @{$gfd_actions} == 1) {
       my $gfd_action = $gfd_actions->[0];
-      my $allelic_requirement = $gfd_action->allelic_requirement || 'NA';
-      my $mutation_consequence = $gfd_action->mutation_consequence || 'NA';
+      my $allelic_requirement = $gfd_action->allelic_requirement || '';
+      my $mutation_consequence = $gfd_action->mutation_consequence || '';
       foreach my $allele_feature (@{$allele_features}) {
         my $allele_feature_id = $allele_feature->dbID();
         my $locus_genotype_mechanism = $locus_genotype_mechanism_adaptor->fetch_by_locus_id_locus_type_genotype_mechanism($allele_feature_id, 'allele', $allelic_requirement, $mutation_consequence);
