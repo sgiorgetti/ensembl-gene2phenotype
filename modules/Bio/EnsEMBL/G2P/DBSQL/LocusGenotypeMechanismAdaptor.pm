@@ -70,7 +70,7 @@ sub store {
   $sth->finish();
   
   my $dbID = $dbh->last_insert_id(undef, undef, 'locus_genotype_mechanism', 'locus_genotype_mechanism_id'); 
-  $lgm->{locus_genotype_mechanism_id} = $dbID;
+  $lgm->{dbID} = $dbID;
 
   return $lgm;
 }
@@ -84,6 +84,22 @@ sub fetch_by_dbID {
 sub fetch_all {
   my $self = shift;
   return $self->generic_fetch();
+}
+
+sub fetch_all_by_Disease {
+  my $self = shift;
+  my $disease = shift;
+  my $cols = join ",", $self->_columns();
+  my $sth = $self->prepare(qq{
+    SELECT DISTINCT $cols
+    FROM locus_genotype_mechanism lgm, lgm_panel lgmp, lgm_panel_disease lgmpd, disease d
+    WHERE d.disease_id = lgmpd.disease_id
+    AND lgmpd.LGM_panel_id = lgmp.LGM_panel_id
+    AND lgmp.locus_genotype_mechanism_id = lgm.locus_genotype_mechanism_id 
+    AND d.disease_id = ?;
+  });
+  $sth->execute($disease->dbID);
+  return $self->_objs_from_sth($sth);
 }
 
 sub fetch_by_locus_id_locus_type_genotype_mechanism {
@@ -116,6 +132,7 @@ sub fetch_all_by_GeneFeature {
   my $self = shift;
   my $gene_feature = shift;
   my $cols = join ",", $self->_columns();
+  my @lgms = ();
   my $sth = $self->prepare(qq{
     SELECT DISTINCT $cols
     FROM locus_genotype_mechanism lgm, allele_feature af, transcript_allele ta, gene_feature gf
@@ -126,7 +143,19 @@ sub fetch_all_by_GeneFeature {
     AND gf.gene_feature_id = ?;
   });
   $sth->execute($gene_feature->dbID);
-  return $self->_objs_from_sth($sth); 
+  push @lgms, @{$self->_objs_from_sth($sth)}; 
+
+  $sth = $self->prepare(qq{
+    SELECT DISTINCT $cols
+    FROM locus_genotype_mechanism lgm, gene_feature gf
+    WHERE gf.gene_feature_id = lgm.locus_id
+    AND lgm.locus_type = 'gene'
+    AND gf.gene_feature_id = ?;
+  });
+  $sth->execute($gene_feature->dbID);
+  push @lgms, @{$self->_objs_from_sth($sth)}; 
+
+  return \@lgms;
 }
 
 sub _columns {

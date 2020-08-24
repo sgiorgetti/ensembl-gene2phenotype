@@ -84,6 +84,12 @@ sub fetch_all_by_name {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_all_by_hgvs_protein {
+  my ($self, $name) = @_;
+  my $constraint = "af.name='$name'";
+  return $self->generic_fetch($constraint);
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
