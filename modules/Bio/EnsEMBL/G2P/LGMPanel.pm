@@ -25,14 +25,15 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($lgm_panel_id, $locus_genotype_mechanism_id, $panel_id, $confidence_category_id, $user_id, $created, $adaptor) =
-    rearrange(['lgm_panel_id', 'locus_genotype_mechanism_id', 'panel_id', 'confidence_category_id', 'user_id', 'created', 'adaptor'], @_);
+  my ($LGM_panel_id, $locus_genotype_mechanism_id, $panel_id, $confidence_category, $confidence_category_attrib, $user_id, $created, $adaptor) =
+    rearrange(['LGM_panel_id', 'locus_genotype_mechanism_id', 'panel_id', 'confidence_category', 'confidence_category_attrib', 'user_id', 'created', 'adaptor'], @_);
 
   my $self = bless {
-    'dbID' => $lgm_panel_id,
-    'lgm_panel_id' => $lgm_panel_id,
+    'dbID' => $LGM_panel_id,
+    'LGM_panel_id' => $LGM_panel_id,
     'locus_genotype_mechanism_id' => $locus_genotype_mechanism_id,
     'panel_id' => $panel_id,
+    'confidence_category' => $confidence_category,
     'confidence_category_attrib' => $confidence_category_attrib,
     'user_id' => $user_id,
     'created' => $created,
@@ -48,10 +49,10 @@ sub dbID {
   return $self->{dbID};
 }
 
-sub lgm_panel_id {
+sub LGM_panel_id {
   my $self = shift;
-  $self->{lgm_panel_id} = shift if @_;
-  return $self->{lgm_panel_id};
+  $self->{LGM_panel_id} = shift if @_;
+  return $self->{LGM_panel_id};
 }
 
 sub locus_genotype_mechanism_id {
@@ -66,26 +67,28 @@ sub panel_id {
   return $self->{panel_id};
 }
 
+sub get_Panel {
+  my $self = shift;
+  my $panel_adaptor = $self->{adaptor}->db->get_PanelAdaptor;
+  return $panel_adaptor->fetch_by_dbID($self->panel_id);
+}
+
+
 sub confidence_category {
   my $self = shift;
   my $confidence_category = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
 
   if ($confidence_category) {
-    my $confidence_category_attrib = $attribute_adaptor->attrib_id_for_type_value('confidence_category', $value);
+    my $confidence_category_attrib = $attribute_adaptor->attrib_id_for_type_value('confidence_category', $confidence_category);
     $self->{confidence_category_attrib} = $confidence_category_attrib;
     $self->{confidence_category} = $confidence_category;
   } else {
-    if (!$self->{confidence_category } && $self->{genotype_attrib} ) {
-      my @ids = split(',', $self->{genotype_attrib});
-      my @values = ();
-      foreach my $id (@ids) {
-        push @values, $attribute_adaptor->attrib_value_for_id($id);
-      }
-      $self->{genotype} = join(',', sort @values);
+    if (!$self->{confidence_category } && $self->{confidence_category_attrib} ) {
+      $self->{confidence_category} = $attribute_adaptor->attrib_value_for_id($self->{confidence_category_attrib});
     }
   }
-  return $self->{genotype};
+  return $self->{confidence_category};
 }
 
 sub confidence_category_attrib {
@@ -104,6 +107,25 @@ sub created {
   my $self = shift;
   $self->{created} = shift if @_;
   return $self->{created};
+}
+
+sub get_disease_name {
+  my $self = shift;
+  my $lgm_panel_disease_adaptor = $self->{adaptor}->db->get_LGMPanelDiseaseAdaptor;
+  my $lgm_panel_diseases = $lgm_panel_disease_adaptor->fetch_all_by_LGMPanel($self); 
+  return $lgm_panel_diseases->[0]->get_Disease->name;
+}
+
+sub get_default_LGMPanelDisease {
+  my $self = shift;
+  my $lgm_panel_diseases = $self->get_all_LGMPanelDiseases;
+  return $lgm_panel_diseases->[0]; 
+}
+
+sub get_all_LGMPanelDiseases {
+  my $self = shift;
+  my $lgm_panel_disease_adaptor = $self->{adaptor}->db->get_LGMPanelDiseaseAdaptor;
+  return $lgm_panel_disease_adaptor->fetch_all_by_LGMPanel($self); 
 }
 
 1;
