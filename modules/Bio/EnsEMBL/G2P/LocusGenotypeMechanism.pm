@@ -123,10 +123,21 @@ sub get_AlleleFeature {
 
 sub get_GeneFeature {
   my $self = shift;
-
+  my $gene_feature_adaptor = $self->{adaptor}->db->get_GeneFeatureAdaptor;
+  return $gene_feature_adaptor->fetch_by_dbID($self->locus_id);
 }
 
+sub get_all_LGMPanels{
+  my $self = shift;
+  my $lgm_panel_adaptor = $self->{adaptor}->db->get_LGMPanelAdaptor;
+  return $lgm_panel_adaptor->fetch_all_by_LocusGenotypeMechanism($self);
+}
 
+sub get_all_LGMPublications {
+  my $self = shift;
+  my $lgm_publication_adaptor = $self->{adaptor}->db->get_LGMPublicationAdaptor;
+  return $lgm_publication_adaptor->fetch_all_by_LocusGenotypeMechanism($self); 
+}
 
 
 1;
