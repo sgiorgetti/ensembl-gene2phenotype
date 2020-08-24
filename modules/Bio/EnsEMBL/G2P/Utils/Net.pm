@@ -21,9 +21,9 @@ eval {
 };
 
 sub do_GET {
-  my ($url, $total_attempts, $sleep) = @_;
+  my ($url, $http_proxy, $proxy, $total_attempts, $sleep) = @_;
   return _retry_sleep(sub {
-    return _get_http_tiny($url);
+    return _get_http_tiny($url, $http_proxy, $proxy);
   }, $total_attempts, $sleep);
 }
 
@@ -68,14 +68,17 @@ sub _retry_sleep {
 }
 
 sub _get_http_tiny {
-  my ($url) = @_;
-  my $response = HTTP::Tiny->new->get($url);
-
-#  my $http = HTTP::Tiny->new(
-#    http_proxy => 'http://10.7.48.163:3128',
-#    proxy => 'http://10.7.48.163:3128',
-#  );
-#  my $response = $http->get($url);
+  my ($url, $http_proxy, $proxy) = @_;
+  my $response;
+  if ($http_proxy && $proxy) {
+    my $http = HTTP::Tiny->new(
+      http_proxy => $http_proxy,
+      proxy => $proxy,
+    );
+    $response = $http->get($url);
+  } else {
+    $response = HTTP::Tiny->new->get($url);
+  }
   return unless $response->{success};
   return $response->{content} if length $response->{content};
   return;
