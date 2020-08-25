@@ -83,6 +83,7 @@ foreach my $panel (sort {$a->name cmp $b->name} @$panels) {
           -genotype => $allelic_requirement,
           -mechanism => $mutation_consequence,
         );
+        $locus_genotype_mechanism = $locus_genotype_mechanism_adaptor->store($locus_genotype_mechanism);
       }
 
       foreach my $gfd_publication (@{$gfd_publications}) {
