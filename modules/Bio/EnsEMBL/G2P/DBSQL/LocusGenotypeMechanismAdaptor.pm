@@ -92,7 +92,7 @@ sub fetch_all_by_Disease {
   my $cols = join ",", $self->_columns();
   my $sth = $self->prepare(qq{
     SELECT DISTINCT $cols
-    FROM locus_genotype_mechanism lgm, lgm_panel lgmp, lgm_panel_disease lgmpd, disease d
+    FROM locus_genotype_mechanism lgm, LGM_panel lgmp, LGM_panel_disease lgmpd, disease d
     WHERE d.disease_id = lgmpd.disease_id
     AND lgmpd.LGM_panel_id = lgmp.LGM_panel_id
     AND lgmp.locus_genotype_mechanism_id = lgm.locus_genotype_mechanism_id 
