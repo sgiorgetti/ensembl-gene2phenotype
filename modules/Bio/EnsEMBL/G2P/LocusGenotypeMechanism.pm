@@ -45,8 +45,8 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  $self->{locus_genotype_mechanism_id} = shift if @_;
-  return $self->{locus_genotype_mechanism_id};
+  $self->{dbID} = shift if @_;
+  return $self->{dbID};
 }
 
 sub locus_type {
