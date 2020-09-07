@@ -7,8 +7,8 @@ use Bio::EnsEMBL::Registry;
 use DBI;
 use Getopt::Long;
 use FileHandle;
-my $config = {};
 
+my $config = {};
 GetOptions(
   $config,
   'registry_file=s',
@@ -58,12 +58,28 @@ die "Data file $file doesn't exist" if (!-e $file);
 my $book  = ReadData($file);
 my $sheet = $book->[1];
 my @rows = Spreadsheet::Read::rows($sheet);
+my @header = ();
 foreach my $row (@rows) {
-  if (scalar @$row != 14) {
-    die "Number of columns is not 14\n";
-  }   
-  my ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $DDD_category, $allelic_requirement, $mutation_consequence, $phenotypes,  $organs,  $pmids,  $panel,  $prev_symbols, $hgnc_id, $comments) = @$row;
-  next if ($gene_symbol =~ /^gene/);
+  if ($row->[0] =~ /^gene symbol/) {
+    @header = @$row;
+    next;
+  }
+  my %data = map {$header[$_] => $row->[$_]} (0..$#header);
+
+  my $gene_symbol = $data{'gene symbol'}; 
+  my $gene_mim = $data{'gene mim'};
+  my $disease_name = $data{'disease name'};
+  my $disease_mim = $data{'disease mim'};
+  my $DDD_category = $data{'DDD category'};
+  my $allelic_requirement = $data{'allelic requirement'};
+  my $mutation_consequence = $data{'mutation consequence'};
+  my $phenotypes = $data{'phenotypes'};
+  my $organs = $data{'organ specificity list'};
+  my $pmids = $data{'pmids'};
+  my $panel = $data{'panel'};
+  my $prev_symbols = $data{'prev symbols'};
+  my $hgnc_id = $data{'hgnc id'};
+  my $comments = $data{'comments'};
 
   if (!$panel) {
     warn "No panel for gene $gene_symbol\n";
