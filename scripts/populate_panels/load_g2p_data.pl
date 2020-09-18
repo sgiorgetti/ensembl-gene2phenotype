@@ -86,6 +86,7 @@ foreach my $row (@rows) {
     next;
   }
   next if (!add_to_panel($panel));  
+
   my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
 
   my $disease_confidence_attrib = get_disease_confidence_attrib($DDD_category);
@@ -99,7 +100,7 @@ foreach my $row (@rows) {
 
   my $gfd = undef;
   # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence 
-  my @gfds_with_matched_ar_and_mc = @{get_gfd_by_allelic_requirement_mutation_consequence($gf, $panel, $allelic_requirement_attrib, $mutation_consequence_attrib)};
+  my @gfds_with_matched_ar_and_mc = @{get_gfd_by_allelic_requirement_mutation_consequence($gf, $g2p_panel, $allelic_requirement_attrib, $mutation_consequence_attrib)};
   if (scalar  @gfds_with_matched_ar_and_mc > 1) {
     warn "Found more than one GFD for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
   } elsif (scalar  @gfds_with_matched_ar_and_mc == 0) {
