@@ -5,7 +5,7 @@ use Bio::EnsEMBL::Registry;
 use Data::Dumper;
 use FileHandle;
 
-my $registry_file = '/Users/anja/Documents/G2P/ensembl.registry.nov2019';
+my $registry_file = '/Users/anja/Documents/G2P/ensembl.registry.sep2020';
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_all($registry_file);
 my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
@@ -17,10 +17,10 @@ my $panel_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'Panel');
 my $panels = $panel_adaptor->fetch_all;
 
 # locus-genotype-mechanism-disease-evidence
-# print_entries_with_more_than_one_action();
+print_entries_with_more_than_one_action();
 
 #create_lgmde_threads();
-
+if (0) {
 foreach my $panel (sort {$a->name cmp $b->name} @$panels) {
   my $gfds = $gfda->fetch_all_by_panel($panel->name);
   my $gene_disease_threads = scalar @$gfds;
@@ -34,7 +34,7 @@ my $gene_disease_threads = scalar @$all_gfds;
 my ($unique_lgmd_threads, $duplicated_lgmd_threads, $more_than_one_action, $no_gm) = get_lgmd_threads($all_gfds);  
 my $total_lgmd_threads = $unique_lgmd_threads + $duplicated_lgmd_threads;
 print "ALL $gene_disease_threads $total_lgmd_threads ($duplicated_lgmd_threads), $more_than_one_action, $no_gm\n";
-
+}
 
 
 sub get_lgmd_threads {
@@ -82,16 +82,17 @@ sub get_lgmd_threads {
 
 sub print_entries_with_more_than_one_action {
 
-  my $fh = FileHandle->new("/Users/anja/Documents/G2P/lgmd/entries_with_more_than_one_action_DD", 'w');
-
+  my $fh = FileHandle->new("/Users/anja/Documents/G2P/lgmd/entries_with_more_than_one_action_Ear_202009", 'w');
+  my $count_duplicates = 0;
   foreach my $panel (@$panels) {
     my $name = $panel->name;
-    next if ($name ne 'DD');
+    next if ($name ne 'Ear');
     my $gfds = $gfda->fetch_all_by_panel($name);
     print $fh $name, ' Entries: ', scalar @$gfds, "\n";
     foreach my $gfd (sort { $a->get_GenomicFeature->gene_symbol cmp $b->get_GenomicFeature->gene_symbol } @$gfds) {
       my $actions = $gfd->get_all_GenomicFeatureDiseaseActions; 
       if (scalar @$actions > 1) {
+        $count_duplicates++;
         my $gene = $gfd->get_GenomicFeature->gene_symbol;
         my $disease = $gfd->get_Disease->name;
         print $fh "    $gene $disease\n";
@@ -104,4 +105,5 @@ sub print_entries_with_more_than_one_action {
     }
   }
   $fh->close;
+  print $count_duplicates, "\n";
 }
