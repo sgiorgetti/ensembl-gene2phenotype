@@ -150,7 +150,7 @@ foreach my $row (@rows) {
 
   add_publications($gfd, $pmids); 
 
-  add_phenotypes($gfd, $phenotypes);
+  add_phenotypes($gfd, $phenotypes, $user);
 
   add_organ_specificity($gfd, $organs);
   
@@ -341,6 +341,7 @@ sub add_publications {
 sub add_phenotypes {
   my $gfd = shift;
   my $phenotypes = shift;
+  my $user = shift;
   return if (!$phenotypes);
   my $gfd_id = $gfd->dbID;
   my $new_gfd_phenotypes = $gfd_phenotype_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
@@ -364,7 +365,7 @@ sub add_phenotypes {
           -adaptor => $gfd_phenotype_adaptor,
         );
         print "add_phenotypes $gfd_id $hpo_id\n";
-        $gfd_phenotype_adaptor->store($new_gfd_phenotype);
+        $gfd_phenotype_adaptor->store($new_gfd_phenotype, $user);
       }
     }
   }
