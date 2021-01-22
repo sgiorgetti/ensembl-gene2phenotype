@@ -34,20 +34,26 @@ sub store {
 
   my $dbh = $self->dbc->db_handle;
 
-  my $sth = $dbh->prepare(q{
+  my $default_name = $lgm_panel_disease->default_name || 0;
+
+  my @import_values = ($lgm_panel_disease->LGM_panel_id, $lgm_panel_disease->disease_id, $default_name, $lgm_panel_disease->user_id);
+  my $created =  'CURRENT_TIMESTAMP';
+  if (defined $lgm_panel_disease->created) {
+    push  @import_values, $lgm_panel_disease->created;
+    $created = '?';
+  }
+
+  my $sth = $dbh->prepare(qq{
     INSERT INTO LGM_panel_disease(
       LGM_panel_id,
       disease_id,
+      default_name,
       user_id,
       created
-    ) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+    ) VALUES (?, ?, ?, ?, $created)
   });
 
-  $sth->execute(
-    $lgm_panel_disease->LGM_panel_id,
-    $lgm_panel_disease->disease_id,
-    $lgm_panel_disease->user_id
-  );
+  $sth->execute( @import_values );
 
   $sth->finish();
   
@@ -76,6 +82,15 @@ sub fetch_all_by_LGMPanel {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_default_by_LGMPanel {
+  my $self = shift;
+  my $lgm_panel = shift;
+  my $lgm_panel_id = $lgm_panel->dbID;
+  my $constraint = "LGM_panel_id=$lgm_panel_id AND default_name=1;";
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
+}
+
 sub fetch_by_LGMPanel_Disease {
   my $self = shift;
   my $LGM_panel = shift;
@@ -87,12 +102,22 @@ sub fetch_by_LGMPanel_Disease {
   return $result->[0];
 }
 
+sub fetch_by_lgm_panel_id_disease_id {
+  my $self = shift;
+  my $LGM_panel_id = shift;
+  my $disease_id = shift;
+  my $constraint = "LGM_panel_id=$LGM_panel_id AND disease_id=$disease_id;";
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
     'LGM_panel_disease_id',
     'LGM_panel_id',
     'disease_id',
+    'default_name',
     'user_id',
     'created',
   );
@@ -109,8 +134,8 @@ sub _tables {
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
-  my ($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $user_id, $created);
-  $sth->bind_columns(\($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $user_id, $created));
+  my ($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $default_name, $user_id, $created);
+  $sth->bind_columns(\($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $default_name, $user_id, $created));
 
   my @objs;
 
@@ -119,6 +144,7 @@ sub _objs_from_sth {
       -LGM_panel_disease_id => $LGM_panel_disease_id,
       -LGM_panel_id => $LGM_panel_id,
       -disease_id => $disease_id,
+      -default_name => $default_name,
       -user_id => $user_id,
       -created => $created,
       -adaptor => $self,
