@@ -122,14 +122,14 @@ sub get_disease_name {
 
 sub get_default_LGMPanelDisease {
   my $self = shift;
-  my $lgm_panel_diseases = $self->get_all_LGMPanelDiseases;
-  return $lgm_panel_diseases->[0]; 
+  my $lgm_panel_disease_adaptor = $self->{adaptor}->db->get_LGMPanelDiseaseAdaptor;
+  return $lgm_panel_disease_adaptor->fetch_default_by_LGMPanel($self);
 }
 
 sub get_all_LGMPanelDiseases {
   my $self = shift;
   my $lgm_panel_disease_adaptor = $self->{adaptor}->db->get_LGMPanelDiseaseAdaptor;
-  return $lgm_panel_disease_adaptor->fetch_all_by_LGMPanel($self); 
+  return $lgm_panel_disease_adaptor->fetch_all_by_LGMPanel($self);
 }
 
 1;
