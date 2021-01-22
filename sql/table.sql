@@ -75,6 +75,7 @@ CREATE TABLE genomic_feature_disease (
   confidence_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
   is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
   panel_attrib tinyint(1) DEFAULT NULL,
+  restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (genomic_feature_disease_id),
   UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id, panel_attrib),
   KEY genomic_feature_idx (genomic_feature_id),
@@ -432,10 +433,10 @@ CREATE TABLE  allele_feature (
   name varchar(255) DEFAULT NULL,
   ref_allele varchar(255) DEFAULT NULL,
   alt_allele varchar(255) DEFAULT NULL,
-  hgvs_genomic text  DEFAULT NULL,
+  hgvs_genomic varchar(128) DEFAULT NULL,
   PRIMARY KEY (allele_feature_id),
   UNIQUE KEY unique_allele_idx (seq_region_name, seq_region_start, seq_region_end, seq_region_strand, alt_allele),
-  KEY hgvs_genomic_idx (hgvs_genomic(255))
+  KEY hgvs_genomic_idx (hgvs_genomic)
 );
 
 CREATE TABLE transcript_allele (
@@ -450,10 +451,10 @@ CREATE TABLE transcript_allele (
   cdna_end int(11) unsigned DEFAULT NULL,
   translation_start int(11) unsigned DEFAULT NULL,
   translation_end int(11) unsigned DEFAULT NULL,
-  codon_allele_string text,
-  pep_allele_string text,
-  hgvs_transcript text,
-  hgvs_protein text,
+  codon_allele_string varchar(128) DEFAULT NULL,
+  pep_allele_string varchar(128) DEFAULT NULL,
+  hgvs_transcript varchar(128) DEFAULT NULL,
+  hgvs_protein varchar(128) DEFAULT NULL,
   cadd int(11) unsigned DEFAULT NULL,
   sift_prediction enum('tolerated','deleterious','tolerated - low confidence','deleterious - low confidence') DEFAULT NULL,
   polyphen_prediction enum('unknown','benign','possibly damaging','probably damaging') DEFAULT NULL,,
@@ -468,7 +469,7 @@ CREATE TABLE transcript_allele (
 
 CREATE TABLE locus_genotype_mechanism (
   locus_genotype_mechanism_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  locus_type enum('location','gene','allele') DEFAULT NULL,
+  locus_type enum('location','gene','allele','placeholder') DEFAULT NULL,
   locus_id int(10) unsigned NOT NULL,
   genotype_attrib set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') NOT NULL,
   mechanism_attrib set('21','22','23','24','25','26','27','28','29','30','44') NOT NULL,
@@ -493,11 +494,23 @@ CREATE TABLE LGM_panel_disease (
   LGM_panel_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   LGM_panel_id int(10) unsigned NOT NULL,
   disease_id int(10) unsigned NOT NULL,
+  default tinyint(1) unsigned NOT NULL DEFAULT '0',
   user_id int(10) unsigned NOT NULL,
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (LGM_panel_disease_id),
   UNIQUE KEY lgm_panel_disease_idx (LGM_panel_id, disease_id),
   KEY lgm_panel_idx (LGM_panel_id)
+);
+
+CREATE TABLE LGM_phenotype (
+  LGM_phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  locus_genotype_mechanism_id int(10) unsigned NOT NULL,
+  phenotype_id int(10) unsigned NOT NULL,
+  user_id int(10) unsigned NOT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (LGM_phenotype_id),
+  UNIQUE KEY lgm_phenotype_idx (locus_genotype_mechanism_id, phenotype_id),
+  KEY lgm_idx (locus_genotype_mechanism_id)
 );
 
 CREATE TABLE LGM_publication (
@@ -509,5 +522,21 @@ CREATE TABLE LGM_publication (
   PRIMARY KEY (LGM_publication_id),
   UNIQUE KEY lgm_publication_idx (locus_genotype_mechanism_id, publication_id),
   KEY lgm_idx (locus_genotype_mechanism_id)
+);
+
+CREATE TABLE  placeholder_feature (
+  placeholder_feature_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  placeholder_name varchar(255) DEFAULT NULL,
+  gene_symbol varchar(255) DEFAULT NULL,
+  gene_feature_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  panel_id int(10) unsigned NOT NULL,
+  seq_region_name varchar(255) DEFAULT NULL,
+  seq_region_start int(10) unsigned DEFAULT NULL,
+  seq_region_end int(10) unsigned DEFAULT NULL,
+  seq_region_strand tinyint(2) DEFAULT NULL,
+  PRIMARY KEY (placeholder_feature_id),
+  UNIQUE KEY unique_placeholder_idx (gene_feature_id, disease_id, panel_id),
+  KEY gene_feature_idx (gene_feature_id)
 );
 
