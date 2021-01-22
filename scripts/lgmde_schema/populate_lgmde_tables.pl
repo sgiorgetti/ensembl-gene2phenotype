@@ -36,10 +36,14 @@ my $panel_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'Panel');
 my $gfd_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDisease');
 my $gfd_log_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseLog');
 my $gfda_log_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseActionLog');
+my $gfd_phenotype_log_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'GFDPhenotypeLog');
 
+my $placeholder_feature_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'PlaceholderFeature');
 my $locus_genotype_mechanism_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'LocusGenotypeMechanism');
 my $LGM_panel_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'LGMPanel'); 
 my $LGM_panel_disease_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'LGMPanelDisease');
+my $LGM_phenotype_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'LGMPhenotype');
+my $LGM_publication_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'LGMPublication');
 
 # Populate tables:
 #  - locus_genotype_mechanism
@@ -50,14 +54,25 @@ my $LGM_panel_disease_adaptor = $registry->get_adaptor($species, 'gene2phenotype
 
 # 1) truncate tables: locus_genotype_mechanism, allele_feature, placeholder_feature, LGM_panel, LGM_panel_disease 
 truncate_tables();
-# 2) populate locus_genotype_mechanism from old schema tables: genomic_feature_disease, genomic_feature_disease, genomic_feature_disease_action_log
+
+# 2) populate gene_feature
+
+populate_gene_feature();
+
+# 3) populate locus_genotype_mechanism from old schema tables: genomic_feature_disease, genomic_feature_disease, genomic_feature_disease_action_log
 populate_lgmde_tables();
 
 sub truncate_tables {
   my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
-  foreach my $table (qw/locus_genotype_mechanism allele_feature placeholder_feature LGM_panel LGM_panel_disease/) {
+  foreach my $table (qw/locus_genotype_mechanism allele_feature gene_feature placeholder_feature LGM_panel LGM_panel_disease LGM_phenotype LGM_publication/) {
     $dbh->do(qq{TRUNCATE TABLE $table;}) or die $dbh->errstr;
   }
+}
+
+sub populate_gene_feature {
+  my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
+  $dbh->do(qq{INSERT INTO gene_feature(gene_feature_id, gene_symbol, hgnc_id, mim, ensembl_stable_id) SELECT genomic_feature_id, gene_symbol, hgnc_id, mim, ensembl_stable_id FROM genomic_feature;}) or die $dbh->errstr;
+
 }
 
 sub populate_lgmde_tables {
@@ -66,10 +81,10 @@ sub populate_lgmde_tables {
 
   foreach my $panel (sort {$a->name cmp $b->name} @$panels) {
     my $panel_name = $panel->name;
+    my $panel_id = $panel->dbID;
     next if ($panel_name eq 'Demo');
     my $gfds = $gfd_adaptor->fetch_all_by_panel($panel->name);
     foreach my $gfd (@$gfds) {
-      next if ($gfd->restricted_mutation_set);
       my $gene_symbol = $gfd->get_GenomicFeature->gene_symbol;
       my $genomic_feature_id = $gfd->get_GenomicFeature->dbID;
       my $disease = $gfd->get_Disease;
@@ -77,6 +92,8 @@ sub populate_lgmde_tables {
       my $disease_id = $disease->dbID;
 
       my $gfd_disease_synonyms = $gfd->get_all_GFDDiseaseSynonyms;
+      my $gfd_publications = $gfd->get_all_GFDPublications;
+      my $gfd_phenotypes = $gfd->get_all_GFDPhenotypes;
 
       my $actions = $gfd->get_all_GenomicFeatureDiseaseActions;
       my $confidence_category = $gfd->confidence_category;
@@ -97,12 +114,32 @@ sub populate_lgmde_tables {
         my $user_id = $gfda_log->user_id;
         my $created = $gfda_log->created;
 
-        my $locus_genotype_mechanism = $locus_genotype_mechanism_adaptor->fetch_by_locus_id_locus_type_genotype_mechanism($genomic_feature_id, 'gene', $allelic_requirement, $mutation_consequence);
+        my $locus_type = 'gene';
+        my $locus_feature_id = $genomic_feature_id;
+
+        # if restricted mutation set add a placeholder
+        if ($gfd->restricted_mutation_set) {
+          $locus_type = 'placeholder';
+          my $placeholder_feature = $placeholder_feature_adaptor->fetch_by_gene_feature_id_disease_id_panel_id($genomic_feature_id, $disease_id, $panel_id);
+          if (!defined $placeholder_feature) {
+            $placeholder_feature = Bio::EnsEMBL::G2P::PlaceholderFeature->new(
+              -adaptor => $placeholder_feature_adaptor,
+              -gene_feature_id => $genomic_feature_id,
+              -disease_id => $disease_id,
+              -panel_id => $panel_id
+            );
+            $placeholder_feature = $placeholder_feature_adaptor->store($placeholder_feature);
+          }
+          $locus_feature_id = $placeholder_feature->dbID;
+        }
+
+        my $locus_genotype_mechanism = $locus_genotype_mechanism_adaptor->fetch_by_locus_id_locus_type_genotype_mechanism($locus_feature_id, $locus_type, $allelic_requirement, $mutation_consequence);
+
         if (!defined  $locus_genotype_mechanism) {
           $locus_genotype_mechanism = Bio::EnsEMBL::G2P::LocusGenotypeMechanism->new(
             -adaptor => $locus_genotype_mechanism_adaptor,
-            -locus_type => 'gene',
-            -locus_id => $genomic_feature_id,
+            -locus_type => $locus_type,
+            -locus_id => $locus_feature_id,
             -genotype => $allelic_requirement,
             -mechanism => $mutation_consequence,
           );
@@ -149,8 +186,45 @@ sub populate_lgmde_tables {
             $lgm_panel_disease = $LGM_panel_disease_adaptor->store($lgm_panel_disease);
           }
         }
+
+        foreach my $gfd_publication (@{$gfd_publications}) {
+          my $publication = $gfd_publication->get_Publication;
+          my $lgm_publication = $LGM_publication_adaptor->fetch_by_LocusGenotypeMechanism_Publication($locus_genotype_mechanism, $publication);
+          if (!defined $lgm_publication) {
+            $lgm_publication = Bio::EnsEMBL::G2P::LGMPublication->new(
+              -adaptor => $LGM_publication_adaptor,
+              -locus_genotype_mechanism_id => $locus_genotype_mechanism->dbID,
+              -publication_id => $publication->dbID,
+              -user_id => $user_id,
+              -created => $created,
+            );
+            $lgm_publication = $LGM_publication_adaptor->store($lgm_publication);
+          }
+        }
+        foreach my $gfd_phenotype (@{$gfd_phenotypes}) {
+          my $phenotype = $gfd_phenotype->get_Phenotype;
+          my $lgm_phenotype = $LGM_phenotype_adaptor->fetch_by_LocusGenotypeMechanism_Phenotype($locus_genotype_mechanism, $phenotype);
+          if (!defined $lgm_phenotype) {
+            my $phenotype_created_time = $created;
+            my $phenotype_created_user_id = $user_id;
+            my $gfd_phenotype_logs = $gfd_phenotype_log_adaptor->fetch_all_by_GenomicFeatureDiseasePhenotype($gfd_phenotype);
+            my @gfd_phenotype_created = grep {$_->action eq 'create'} @{$gfd_phenotype_logs};
+            if (scalar @gfd_phenotype_created > 1) {
+              my $gfd_phenotype_log = $gfd_phenotype_created[0];
+              $phenotype_created_user_id = $gfd_phenotype_log->user_id;
+              $phenotype_created_time = $gfd_phenotype_log->created;
+            }
+            $lgm_phenotype = Bio::EnsEMBL::G2P::LGMPhenotype->new(
+              -adaptor => $LGM_phenotype_adaptor,
+              -locus_genotype_mechanism_id => $locus_genotype_mechanism->dbID,
+              -phenotype_id => $phenotype->dbID,
+              -user_id => $phenotype_created_user_id,
+              -created => $phenotype_created_time,
+            );
+            $lgm_phenotype = $LGM_phenotype_adaptor->store($lgm_phenotype);
+          }
+        }
       }
-      #my $gfd_publications = $gfd->get_all_GFDPublications;
     }
   }
 }
