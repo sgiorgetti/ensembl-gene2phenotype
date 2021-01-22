@@ -29,14 +29,15 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $user_id, $created, $adaptor) =
-    rearrange(['LGM_panel_disease_id', 'LGM_panel_id', 'disease_id', 'user_id', 'created', 'adaptor'], @_);
+  my ($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $default_name, $user_id, $created, $adaptor) =
+    rearrange(['LGM_panel_disease_id', 'LGM_panel_id', 'disease_id', 'default_name', 'user_id', 'created', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $LGM_panel_disease_id,
     'LGM_panel_disease_id' => $LGM_panel_disease_id,
     'LGM_panel_id' => $LGM_panel_id,
     'disease_id' => $disease_id,
+    'default_name' => $default_name,
     'user_id' => $user_id,
     'created' => $created,
     'adaptor' => $adaptor,
@@ -67,6 +68,12 @@ sub disease_id {
   my $self = shift;
   $self->{disease_id} = shift if @_;
   return $self->{disease_id};
+}
+
+sub default_name {
+  my $self = shift;
+  $self->{default_name} = shift if ( @_ );
+  return $self->{default_name};
 }
 
 sub user_id {
