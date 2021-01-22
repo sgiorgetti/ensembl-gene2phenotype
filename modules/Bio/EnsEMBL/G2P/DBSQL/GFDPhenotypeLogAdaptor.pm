@@ -81,6 +81,14 @@ sub fetch_all_by_GenomicFeatureDisease {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_all_by_GenomicFeatureDiseasePhenotype {
+  my $self = shift;
+  my $gfd_phenotype = shift;
+  my $gfd_phenotype_id = $gfd_phenotype->dbID;
+  my $constraint = "gfdpl.genomic_feature_disease_phenotype_id=$gfd_phenotype_id";
+  return $self->generic_fetch($constraint);
+}
+
 sub fetch_latest_updates {
   my $self = shift;
   my $panel = shift;
@@ -115,7 +123,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-    ['gfd_phenotype_log', 'gfdpl'],
+    ['GFD_phenotype_log', 'gfdpl'],
     ['genomic_feature_disease', 'gfd']
   );
   return @tables;

@@ -70,4 +70,13 @@ sub get_Publication {
   return $publication_adaptor->fetch_by_dbID($self->publication_id);
 }
 
+sub get_User {
+  my $self = shift;
+  my $user_adaptor = $self->{adaptor}->db->get_UserAdaptor;
+  return $user_adaptor->fetch_by_dbID($self->user_id);
+}
+
+
+
+
 1;

@@ -159,6 +159,16 @@ sub fetch_all_by_GeneFeature {
   $sth->execute($gene_feature->dbID);
   push @lgms, @{$self->_objs_from_sth($sth)}; 
 
+  $sth = $self->prepare(qq{
+    SELECT DISTINCT $cols
+    FROM locus_genotype_mechanism lgm, placeholder_feature pf
+    WHERE pf.placeholder_feature_id = lgm.locus_id
+    AND lgm.locus_type = 'placeholder'
+    AND pf.gene_feature_id = ?;
+  });
+  $sth->execute($gene_feature->dbID);
+  push @lgms, @{$self->_objs_from_sth($sth)};
+
   return \@lgms;
 }
 

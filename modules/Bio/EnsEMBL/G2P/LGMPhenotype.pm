@@ -1,24 +1,24 @@
 =head1 LICENSE
- 
+
 See the NOTICE file distributed with this work for additional information
 regarding copyright ownership.
- 
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 http://www.apache.org/licenses/LICENSE-2.0
- 
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 =cut
 use strict;
 use warnings;
 
-package Bio::EnsEMBL::G2P::LGMPanelDisease;
+package Bio::EnsEMBL::G2P::LGMPhenotype;
 
 use Bio::EnsEMBL::Storable;
 use Bio::EnsEMBL::Utils::Argument qw(rearrange);
@@ -29,15 +29,14 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($LGM_panel_disease_id, $LGM_panel_id, $disease_id, $default_name, $user_id, $created, $adaptor) =
-    rearrange(['LGM_panel_disease_id', 'LGM_panel_id', 'disease_id', 'default_name', 'user_id', 'created', 'adaptor'], @_);
+  my ($LGM_phenotype_id, $locus_genotype_mechanism_id, $phenotype_id, $user_id, $created, $adaptor) =
+    rearrange(['LGM_phenotype_id', 'locus_genotype_mechanism_id', 'phenotype_id', 'user_id', 'created', 'adaptor'], @_);
 
   my $self = bless {
-    'dbID' => $LGM_panel_disease_id,
-    'LGM_panel_disease_id' => $LGM_panel_disease_id,
-    'LGM_panel_id' => $LGM_panel_id,
-    'disease_id' => $disease_id,
-    'default_name' => $default_name,
+    'dbID' => $LGM_phenotype_id,
+    'LGM_phenotype_id' => $LGM_phenotype_id,
+    'locus_genotype_mechanism_id' => $locus_genotype_mechanism_id,
+    'phenotype_id' => $phenotype_id,
     'user_id' => $user_id,
     'created' => $created,
     'adaptor' => $adaptor,
@@ -52,28 +51,22 @@ sub dbID {
   return $self->{dbID};
 }
 
-sub LGM_panel_disease_id {
+sub LGM_phenotype_id {
   my $self = shift;
-  $self->{LGM_panel_disease_id} = shift if @_;
-  return $self->{LGM_panel_disease_id};
+  $self->{LGM_phenotype_id} = shift if @_;
+  return $self->{LGM_phenotype_id};
 }
 
-sub LGM_panel_id {
+sub locus_genotype_mechanism_id {
   my $self = shift;
-  $self->{LGM_panel_id} = shift if @_;
-  return $self->{LGM_panel_id};
+  $self->{locus_genotype_mechanism_id} = shift if @_;
+  return $self->{locus_genotype_mechanism_id};
 }
 
-sub disease_id {
+sub phenotype_id {
   my $self = shift;
-  $self->{disease_id} = shift if @_;
-  return $self->{disease_id};
-}
-
-sub default_name {
-  my $self = shift;
-  $self->{default_name} = shift if ( @_ );
-  return $self->{default_name};
+  $self->{phenotype_id} = shift if @_;
+  return $self->{phenotype_id};
 }
 
 sub user_id {
@@ -88,10 +81,16 @@ sub created {
   return $self->{created};
 }
 
-sub get_Disease {
+sub get_Phenotype {
   my $self = shift;
-  my $disease_adaptor = $self->{adaptor}->db->get_DiseaseAdaptor;
-  return $disease_adaptor->fetch_by_dbID($self->disease_id);
+  my $phenotype_adaptor = $self->{adaptor}->db->get_PhenotypeAdaptor;
+  return $phenotype_adaptor->fetch_by_dbID($self->phenotype_id);
+}
+
+sub get_User {
+  my $self = shift;
+  my $user_adaptor = $self->{adaptor}->db->get_UserAdaptor;
+  return $user_adaptor->fetch_by_dbID($self->user_id);
 }
 
 1;

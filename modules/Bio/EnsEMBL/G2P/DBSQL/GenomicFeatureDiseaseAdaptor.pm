@@ -68,8 +68,9 @@ sub store {
       disease_id,
       confidence_category_attrib,
       is_visible,
-      panel_attrib
-    ) VALUES (?, ?, ?, ?, ?)
+      panel_attrib,
+      restricted_mutation_set
+    ) VALUES (?, ?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -78,6 +79,7 @@ sub store {
     $gfd->{confidence_category_attrib},
     $gfd->is_visible || 1,
     $gfd->{panel_attrib},
+    $gfd->restricted_mutation_set || 0
   );
 
   $sth->finish();
@@ -184,7 +186,8 @@ sub update {
         disease_id = ?,
         confidence_category_attrib = ?,
         is_visible = ?,
-        panel_attrib = ?
+        panel_attrib = ?,
+        restricted_mutation_set = ?
       WHERE genomic_feature_disease_id = ? 
   });
   $sth->execute(
@@ -193,6 +196,7 @@ sub update {
     $gfd->confidence_category_attrib,
     $gfd->is_visible,
     $gfd->panel_attrib,
+    $gfd->restricted_mutation_set,
     $gfd->dbID
   );
   $sth->finish();
@@ -626,6 +630,7 @@ sub _columns {
     'gfd.confidence_category_attrib',
     'gfd.is_visible',
     'gfd.panel_attrib',
+    'gfd.restricted_mutation_set',
   );
   return @cols;
 }
@@ -641,8 +646,8 @@ sub _tables {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib);
-  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib));
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set);
+  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set));
 
   my @objs;
 
@@ -667,6 +672,7 @@ sub _objs_from_sth {
       -is_visible => $is_visible,
       -panel => $panel,
       -panel_attrib => $panel_attrib,
+      -restricted_mutation_set => $restricted_mutation_set,
       -adaptor => $self,
     );
     push(@objs, $obj);

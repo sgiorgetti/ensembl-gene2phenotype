@@ -43,22 +43,24 @@ sub store {
 
   my $dbh = $self->dbc->db_handle;
 
-  my $sth = $dbh->prepare(q{
+  my @import_values = ($lgm_panel->locus_genotype_mechanism_id, $lgm_panel->panel_id, $lgm_panel->{confidence_category_attrib}, $lgm_panel->user_id);
+  my $created =  'CURRENT_TIMESTAMP';
+  if (defined $lgm_panel->created) {
+    push @import_values, $lgm_panel->created;
+    $created = '?';
+  }
+
+  my $sth = $dbh->prepare(qq{
     INSERT INTO LGM_panel(
       locus_genotype_mechanism_id,
       panel_id,
       confidence_category_attrib,
       user_id,
       created
-    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ) VALUES (?, ?, ?, ?, $created)
   });
 
-  $sth->execute(
-    $lgm_panel->locus_genotype_mechanism_id,
-    $lgm_panel->panel_id,
-    $lgm_panel->{confidence_category_attrib},
-    $lgm_panel->user_id
-  );
+  $sth->execute(@import_values);
 
   $sth->finish();
   
