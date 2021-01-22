@@ -28,8 +28,8 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $adaptor) =
-    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $restricted_mutation_set, $adaptor) =
+    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'restricted_mutation_set', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
@@ -42,6 +42,7 @@ sub new {
     'is_visible' => $is_visible,
     'panel' => $panel,
     'panel_attrib' => $panel_attrib,
+    'restricted_mutation_set' => $restricted_mutation_set,
   }, $class;
   return $self;
 }
@@ -135,6 +136,12 @@ sub panel_attrib {
   return $self->{panel_attrib};
 }
 
+sub restricted_mutation_set {
+  my $self = shift;
+  $self->{restricted_mutation_set} = shift if ( @_ );
+  return $self->{restricted_mutation_set};
+}
+
 sub get_all_GenomicFeatureDiseaseActions {
   my $self = shift;
   my $GFDA_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseActionAdaptor;
@@ -186,6 +193,5 @@ sub get_all_GFDDiseaseSynonyms {
   my $GFD_disease_synonym_adaptor = $self->{adaptor}->db->get_GFDDiseaseSynonymAdaptor;
   return $GFD_disease_synonym_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
-
 
 1;
