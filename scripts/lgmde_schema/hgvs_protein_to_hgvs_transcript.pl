@@ -118,6 +118,11 @@ sub _load {
         }
         my $transcript_id = $tc->{transcript_id};
         my $transcript_allele = $transcript_allele_adaptor->fetch_by_allele_feature_id_and_transcript_stable_id($allele_feature_id, $transcript_id);
+        my $polyphen_prediction = $tc->{polyphen_prediction};
+        my $sift_prediction = $tc->{sift_prediction};
+        $polyphen_prediction =~ s/_/ /g;
+        $sift_prediction =~ s/_/ /g;
+
         if (! defined $transcript_allele) {
           $transcript_allele = Bio::EnsEMBL::G2P::TranscriptAllele->new(
             -allele_feature_id => $allele_feature_id,
@@ -135,8 +140,8 @@ sub _load {
             -hgvs_transcript => $tc->{hgvsc},
             -hgvs_protein => $tc->{hgvsp},
             -cadd => $tc->{cadd_phred},
-            -sift_prediction => $tc->{sift_prediction},
-            -polyphen_prediction => $tc->{polyphen_prediction},
+            -sift_prediction => $sift_prediction,
+            -polyphen_prediction => $polyphen_prediction,
             -appris => $tc->{appris},
             -tsl => $tc->{tsl},
             -mane => $tc->{mane},
