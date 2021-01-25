@@ -407,7 +407,7 @@ CREATE TABLE gene_feature (
   seq_region_name  varchar(255) DEFAULT NULL,
   seq_region_start int(10) unsigned DEFAULT NULL,
   seq_region_end int(10) unsigned DEFAULT NULL,
-  seq_region_strand tinyint(2) NOT NULL,
+  seq_region_strand tinyint(2) DEFAULT NULL,
   gene_symbol varchar(128) DEFAULT NULL,
   hgnc_id int(10) unsigned DEFAULT NULL,
   mim int(10) unsigned DEFAULT NULL,
