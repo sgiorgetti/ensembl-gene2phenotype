@@ -65,6 +65,12 @@ sub locus_genotype_mechanism_id {
   return $self->{locus_genotype_mechanism_id};
 }
 
+sub get_LocusGenotypeMechanism {
+  my $self = shift;
+  my $LGM_adaptor = $self->{adaptor}->db->get_LocusGenotypeMechanismAdaptor;
+  return $LGM_adaptor->fetch_by_dbID($self->locus_genotype_mechanism_id);
+}
+
 sub panel_id {
   my $self = shift;
   $self->{panel_id} = shift if @_;
@@ -76,7 +82,6 @@ sub get_Panel {
   my $panel_adaptor = $self->{adaptor}->db->get_PanelAdaptor;
   return $panel_adaptor->fetch_by_dbID($self->panel_id);
 }
-
 
 sub confidence_category {
   my $self = shift;

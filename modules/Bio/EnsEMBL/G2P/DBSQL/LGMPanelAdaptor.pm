@@ -22,7 +22,7 @@ package Bio::EnsEMBL::G2P::DBSQL::LGMPanelAdaptor;
 
 use DBI qw(:sql_types);
 use Bio::EnsEMBL::G2P::LGMPanel;
-
+use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
 sub store {
