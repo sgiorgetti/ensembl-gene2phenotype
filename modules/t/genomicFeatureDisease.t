@@ -33,6 +33,8 @@ my $dbID = 133;
 my $genomic_feature_id = 59384;
 my $disease_id = 326;
 my $confidence_category_attrib = 32;
+my $allelic_requirement_attrib = 3;
+my $mutation_consequence_attrib = 25;
 my $is_visible = 1;
 my $panel = '38';
 
@@ -40,22 +42,22 @@ my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature_id,
   -disease_id => $disease_id,
   -confidence_category_attrib => $confidence_category_attrib,
+  -allelic_requirement_attrib => $allelic_requirement_attrib,
+  -mutation_consequence_attrib => $mutation_consequence_attrib,
   -is_visible => $is_visible,
   -panel => $panel,
   -adaptor => $gfda,
 );
-
 ok($gfd->genomic_feature_id == $genomic_feature_id, 'genomic_feature_id');
 ok($gfd->disease_id == $disease_id, 'disease_id');
 ok($gfd->confidence_category_attrib == $confidence_category_attrib, 'confidence_category_attrib');
 ok($gfd->confidence_category eq 'confirmed DD gene', 'confidence_category');
+ok($gfd->allelic_requirement eq 'biallelic', 'allelic_requirement');
+ok($gfd->mutation_consequence eq 'loss of function', 'mutation_conseqience');
 ok($gfd->is_visible == 1, 'is_visible');
 ok($gfd->panel eq $panel, 'panel');
 
-
 $gfd = $gfda->fetch_by_dbID($dbID);
-my $GFDAs = $gfd->get_all_GenomicFeatureDiseaseActions();
-ok(scalar @$GFDAs == 1, 'count genomic_feature_disease_actions');
 
 my $gf = $gfd->get_GenomicFeature();
 ok($gf->gene_symbol eq 'KIF1BP', 'get_GenomicFeature');
