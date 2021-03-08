@@ -186,44 +186,16 @@ CREATE TABLE `genomic_feature_disease` (
   `genomic_feature_disease_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `genomic_feature_id` int(10) unsigned NOT NULL,
   `disease_id` int(10) unsigned NOT NULL,
+  `allelic_requirement_attrib` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
+  `mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30') DEFAULT NULL,
   `confidence_category_attrib` set('31','32','33','34','35') DEFAULT NULL,
   `is_visible` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `panel_attrib` tinyint(1) DEFAULT NULL,
+  `restricted_mutation_set` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`genomic_feature_disease_id`),
   UNIQUE KEY `genomic_feature_disease` (`genomic_feature_id`,`disease_id`,`panel_attrib`),
   KEY `genomic_feature_idx` (`genomic_feature_id`),
   KEY `disease_idx` (`disease_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-
-CREATE TABLE `genomic_feature_disease_action` (
-  `genomic_feature_disease_action_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `genomic_feature_disease_id` int(10) unsigned NOT NULL,
-  `allelic_requirement_attrib` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
-  `mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30') DEFAULT NULL,
-  PRIMARY KEY (`genomic_feature_disease_action_id`),
-  KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-
-CREATE TABLE `genomic_feature_disease_action_deleted` (
-  `genomic_feature_disease_action_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `genomic_feature_disease_id` int(10) unsigned NOT NULL,
-  `allelic_requirement_attrib` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
-  `mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30') DEFAULT NULL,
-  PRIMARY KEY (`genomic_feature_disease_action_id`),
-  KEY `genomic_feature_disease_idx` (`genomic_feature_disease_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `genomic_feature_disease_action_log` (
-  `genomic_feature_disease_action_log_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `genomic_feature_disease_action_id` int(10) unsigned NOT NULL,
-  `genomic_feature_disease_id` int(10) unsigned NOT NULL,
-  `allelic_requirement_attrib` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
-  `mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30') DEFAULT NULL,
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `user_id` int(10) unsigned NOT NULL,
-  `action` varchar(128) NOT NULL,
-  PRIMARY KEY (`genomic_feature_disease_action_log_id`),
-  KEY `genomic_feature_disease_action_idx` (`genomic_feature_disease_action_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `genomic_feature_disease_comment` (

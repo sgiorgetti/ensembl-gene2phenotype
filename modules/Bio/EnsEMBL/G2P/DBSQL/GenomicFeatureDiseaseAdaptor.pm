@@ -66,16 +66,20 @@ sub store {
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
       disease_id,
+      allelic_requirement_attrib,
+      mutation_consequence_attrib,
       confidence_category_attrib,
       is_visible,
       panel_attrib,
       restricted_mutation_set
-    ) VALUES (?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   });
 
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
+    $gfd->{allelic_requirement_attrib},
+    $gfd->{mutation_consequence_attrib},
     $gfd->{confidence_category_attrib},
     $gfd->is_visible || 1,
     $gfd->{panel_attrib},
@@ -123,11 +127,6 @@ sub delete {
   foreach my $GFDOrgan (@{$GFD->get_all_GFDOrgans}) {
     $GFDOrganAdaptor->delete($GFDOrgan, $user);
   }   
-    
-  my $GenomicFeatureDiseaseActionAdaptor = $self->db->get_GenomicFeatureDiseaseActionAdaptor; 
-  foreach my $GFDAction (@{$GFD->get_all_GenomicFeatureDiseaseActions}) {
-    $GenomicFeatureDiseaseActionAdaptor->delete($GFDAction, $user);
-  }
 
   my $GenomicFeatureDiseaseLogAdaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor; 
   foreach my $log_entry (@{$GenomicFeatureDiseaseLogAdaptor->fetch_all_by_GenomicFeatureDisease($GFD)}) {
@@ -627,6 +626,8 @@ sub _columns {
     'gfd.genomic_feature_disease_id',
     'gfd.genomic_feature_id',
     'gfd.disease_id',
+    'gfd.allelic_requirement_attrib',
+    'gfd.mutation_consequence_attrib',
     'gfd.confidence_category_attrib',
     'gfd.is_visible',
     'gfd.panel_attrib',
@@ -646,8 +647,8 @@ sub _tables {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set);
-  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set));
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set);
+  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set));
 
   my @objs;
 
@@ -656,6 +657,8 @@ sub _objs_from_sth {
   while ($sth->fetch()) {
     my $confidence_category = undef; 
     my $panel = undef; 
+    my $allelic_requirement = undef;
+    my $mutation_consequence = undef;
     if ($confidence_category_attrib) {
       $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
     }
@@ -663,10 +666,27 @@ sub _objs_from_sth {
       $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
     }
 
+    if ($allelic_requirement_attrib) {
+      my @ids = split(',', $allelic_requirement_attrib);
+      my @values = ();
+      foreach my $id (@ids) {
+        push @values, $attribute_adaptor->attrib_value_for_id($id);
+      }
+      $allelic_requirement = join(',', @values);
+    }
+
+    if ($mutation_consequence_attrib) {
+      $mutation_consequence = $attribute_adaptor->attrib_value_for_id($mutation_consequence_attrib);
+    }
+
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -genomic_feature_id => $genomic_feature_id,
       -disease_id => $disease_id,
+      -allelic_requirement_attrib => $allelic_requirement_attrib,
+      -allelic_requirement => $allelic_requirement,
+      -mutation_consequence_attrib => $mutation_consequence_attrib,
+      -mutation_consequnece => $mutation_consequence,
       -confidence_category => $confidence_category, 
       -confidence_category_attrib => $confidence_category_attrib,
       -is_visible => $is_visible,
