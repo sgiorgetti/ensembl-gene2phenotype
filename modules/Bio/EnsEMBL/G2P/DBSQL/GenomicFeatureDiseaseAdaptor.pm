@@ -72,7 +72,7 @@ sub store {
       is_visible,
       panel_attrib,
       restricted_mutation_set
-    ) VALUES (?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -127,11 +127,6 @@ sub delete {
   foreach my $GFDOrgan (@{$GFD->get_all_GFDOrgans}) {
     $GFDOrganAdaptor->delete($GFDOrgan, $user);
   }   
-    
-  my $GenomicFeatureDiseaseActionAdaptor = $self->db->get_GenomicFeatureDiseaseActionAdaptor; 
-  foreach my $GFDAction (@{$GFD->get_all_GenomicFeatureDiseaseActions}) {
-    $GenomicFeatureDiseaseActionAdaptor->delete($GFDAction, $user);
-  }
 
   my $GenomicFeatureDiseaseLogAdaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor; 
   foreach my $log_entry (@{$GenomicFeatureDiseaseLogAdaptor->fetch_all_by_GenomicFeatureDisease($GFD)}) {
