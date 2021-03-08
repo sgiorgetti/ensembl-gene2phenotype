@@ -39,8 +39,6 @@ sub get_available_adaptors {
     'GenomicFeature'                   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureAdaptor',
     'GenomicFeatureDisease'            => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor',
     'GenomicFeatureDiseaseLog'         => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseLogAdaptor',
-    'GenomicFeatureDiseaseAction'      => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseActionAdaptor',
-    'GenomicFeatureDiseaseActionLog'   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseActionLogAdaptor',
     'GenomicFeatureDiseaseComment'     => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseCommentAdaptor',
     'GenomicFeatureDiseaseOrgan'       => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseOrganAdaptor',
     'GenomicFeatureDiseasePhenotype'   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor',
