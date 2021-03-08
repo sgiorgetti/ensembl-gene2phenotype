@@ -28,8 +28,8 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $disease_name, $disease_mim, $allelic_requirement, $allelic_requirement_attrib, $mutation_consequence, $mutation_consequence_attrib, $confidence_category, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $restricted_mutation_set, $adaptor) =
-    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'disease_name', 'disease_mim', 'allelic_requirement', 'allelic_requirement_attrib', 'mutation_consequence', 'mutation_consequence_attrib', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'restricted_mutation_set', 'adaptor'], @_);
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement, $allelic_requirement_attrib, $mutation_consequence, $mutation_consequence_attrib, $confidence_category, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $restricted_mutation_set, $adaptor) =
+    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'allelic_requirement', 'allelic_requirement_attrib', 'mutation_consequence', 'mutation_consequence_attrib', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'restricted_mutation_set', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
@@ -37,8 +37,6 @@ sub new {
     'genomic_feature_disease_id' => $genomic_feature_disease_id,
     'genomic_feature_id' => $genomic_feature_id,
     'disease_id' => $disease_id,
-    'disease_name' => $disease_name,
-    'disease_mim' => $disease_mim,
     'allelic_requirement_attrib' => $allelic_requirement_attrib,
     'allelic_requirement' => $allelic_requirement,
     'mutation_consequence_attrib' => $mutation_consequence_attrib,
@@ -69,18 +67,6 @@ sub disease_id {
   my $self = shift;
   $self->{disease_id} = shift if ( @_ );
   return $self->{disease_id};
-}
-
-sub disease_name {
-  my $self = shift;
-  $self->{disease_name} = shift if ( @_ );
-  return $self->{disease_name};
-}
-
-sub disease_mim {
-  my $self = shift;
-  $self->{disease_mim} = shift if ( @_ );
-  return $self->{disease_mim};
 }
 
 sub allelic_requirement {
