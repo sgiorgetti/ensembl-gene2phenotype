@@ -126,9 +126,8 @@ sub write_data {
   my $fh = shift;
   my $where = shift;
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfd.confidence_category_attrib, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, a.value, gf.genomic_feature_id
+    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfd.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id
     FROM genomic_feature_disease gfd
-    LEFT JOIN genomic_feature_disease_action gfda ON gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
     LEFT JOIN disease d ON gfd.disease_id = d.disease_id
     LEFT JOIN attrib a ON gfd.panel_attrib = a.attrib_id
