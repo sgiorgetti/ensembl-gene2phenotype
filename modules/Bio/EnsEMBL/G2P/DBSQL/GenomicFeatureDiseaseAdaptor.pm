@@ -66,8 +66,6 @@ sub store {
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
       disease_id,
-      disease_name,
-      disease_mim,
       allelic_requirement_attrib,
       mutation_consequence_attrib,
       confidence_category_attrib,
@@ -80,8 +78,6 @@ sub store {
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
-    $gfd->{disease_name},
-    $gfd->{disease_mim},
     $gfd->{allelic_requirement_attrib},
     $gfd->{mutation_consequence_attrib},
     $gfd->{confidence_category_attrib},
@@ -635,8 +631,6 @@ sub _columns {
     'gfd.genomic_feature_disease_id',
     'gfd.genomic_feature_id',
     'gfd.disease_id',
-    'gfd.disease_name',
-    'gfd.disease_mim',
     'gfd.allelic_requirement_attrib',
     'gfd.mutation_consequence_attrib',
     'gfd.confidence_category_attrib',
@@ -658,8 +652,8 @@ sub _tables {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $disease_name, $disease_mim, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set);
-  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $disease_name, $disease_mim, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set));
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set);
+  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set));
 
   my @objs;
 
@@ -694,8 +688,6 @@ sub _objs_from_sth {
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -genomic_feature_id => $genomic_feature_id,
       -disease_id => $disease_id,
-      -disease_name => $disease_name,
-      -disease_mim => $disease_mim,
       -allelic_requirement_attrib => $allelic_requirement_attrib,
       -allelic_requirement => $allelic_requirement,
       -mutation_consequence_attrib => $mutation_consequence_attrib,
