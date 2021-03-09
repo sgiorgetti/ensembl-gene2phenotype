@@ -27,15 +27,12 @@ our @ISA = ('Bio::EnsEMBL::DBSQL::DBAdaptor');
 sub get_available_adaptors {
 
   my %pairs = (
-    'AlleleFeature'                    => 'Bio::EnsEMBL::G2P::DBSQL::AlleleFeatureAdaptor',
     'Attribute'                        => 'Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor',
     'Disease'                          => 'Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor',
-    'EnsemblVariation'                 => 'Bio::EnsEMBL::G2P::DBSQL::EnsemblVariationAdaptor',
     'GFDDiseaseSynonym'                => 'Bio::EnsEMBL::G2P::DBSQL::GFDDiseaseSynonymAdaptor',
     'GFDPhenotypeComment'              => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor',
     'GFDPhenotypeLog'                  => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeLogAdaptor',
     'GFDPublicationComment'            => 'Bio::EnsEMBL::G2P::DBSQL::GFDPublicationCommentAdaptor',
-    'GeneFeature'                      => 'Bio::EnsEMBL::G2P::DBSQL::GeneFeatureAdaptor',
     'GenomicFeature'                   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureAdaptor',
     'GenomicFeatureDisease'            => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor',
     'GenomicFeatureDiseaseLog'         => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseLogAdaptor',
@@ -44,17 +41,10 @@ sub get_available_adaptors {
     'GenomicFeatureDiseasePhenotype'   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor',
     'GenomicFeatureDiseasePublication' => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor',   
     'GenomicFeatureStatistic'          => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureStatisticAdaptor', 
-    'LGMPanel'                         => 'Bio::EnsEMBL::G2P::DBSQL::LGMPanelAdaptor', 
-    'LGMPanelDisease'                  => 'Bio::EnsEMBL::G2P::DBSQL::LGMPanelDiseaseAdaptor', 
-    'LGMPhenotype'                     => 'Bio::EnsEMBL::G2P::DBSQL::LGMPhenotypeAdaptor',
-    'LGMPublication'                   => 'Bio::EnsEMBL::G2P::DBSQL::LGMPublicationAdaptor', 
-    'LocusGenotypeMechanism'           => 'Bio::EnsEMBL::G2P::DBSQL::LocusGenotypeMechanismAdaptor', 
     'Organ'                            => 'Bio::EnsEMBL::G2P::DBSQL::OrganAdaptor',
     'Panel'                            => 'Bio::EnsEMBL::G2P::DBSQL::PanelAdaptor',
     'Phenotype'                        => 'Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor',
-    'PlaceholderFeature'               => 'Bio::EnsEMBL::G2P::DBSQL::PlaceholderFeatureAdaptor',
     'Publication'                      => 'Bio::EnsEMBL::G2P::DBSQL::PublicationAdaptor',
-    'TranscriptAllele'                 => 'Bio::EnsEMBL::G2P::DBSQL::TranscriptAlleleAdaptor',
     'User'                             => 'Bio::EnsEMBL::G2P::DBSQL::UserAdaptor',
   );
 
