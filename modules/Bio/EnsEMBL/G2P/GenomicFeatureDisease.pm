@@ -199,6 +199,13 @@ sub restricted_mutation_set {
   return $self->{restricted_mutation_set};
 }
 
+sub add_gfd_disease_synonym_id {
+  my $self = shift;
+  my $gfd_disease_synonym_id = shift;
+  throw("id is required") if(!$gfd_disease_synonym_id);
+  push @{$self->{gfd_disease_synonym_id}}, $gfd_disease_synonym_id;
+}
+
 sub get_all_GenomicFeatureDiseaseActions {
   my $self = shift;
   my $GFDA_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseActionAdaptor;
@@ -215,10 +222,6 @@ sub get_Disease {
   my $self = shift;
   my $disease_adaptor = $self->{adaptor}->db->get_DiseaseAdaptor;
   return $disease_adaptor->fetch_by_dbID($self->disease_id);
-}
-
-sub get_all_Variations {
-  my $self = shift;
 }
 
 sub get_all_GFDPublications {
