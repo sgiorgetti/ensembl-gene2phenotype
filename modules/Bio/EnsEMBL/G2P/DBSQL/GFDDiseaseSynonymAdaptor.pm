@@ -70,6 +70,15 @@ sub fetch_all_by_GenomicFeatureDisease {
   return $self->generic_fetch($constraint);
 }
 
+sub fetch_by_GFD_id_disease_id {
+  my $self = shift;
+  my $GFD_id = shift;
+  my $disease_id = shift;
+  my $constraint = "gfdds.genomic_feature_disease_id=$GFD_id AND gfdds.disease_id=$disease_id";
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
+}
+
 sub _columns {
   my $self = shift;
   my @cols = (
