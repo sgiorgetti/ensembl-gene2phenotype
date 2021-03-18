@@ -13,4 +13,5 @@
 -- limitations under the License.
 
 
-ALTER TABLE genomic_feature_disease DROP INDEX genomic_feature_disease ADD UNIQUE KEY `genomic_feature_disease` (`genomic_feature_id`, `allelic_requirement_attrib`, `mutation_consequence_attrib`, `disease_id`,`panel_attrib`), 
+ALTER TABLE genomic_feature_disease DROP INDEX genomic_feature_disease;
+ALTER TABLE genomic_feature_disease ADD CONSTRAINT genomic_feature_disease UNIQUE (genomic_feature_id, allelic_requirement_attrib, mutation_consequence_attrib, disease_id, panel_attrib); 
