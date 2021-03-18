@@ -92,6 +92,7 @@ foreach my $row (@rows) {
   my $prev_symbols = $data{'prev symbols'};
   my $hgnc_id = $data{'hgnc id'};
   my $comments = $data{'comments'};
+  my $restricted_mutation_set = $data{'restricted mutation set'};
 
   if (!$panel) {
     warn "No panel for gene $gene_symbol\n";
@@ -133,23 +134,24 @@ foreach my $row (@rows) {
     foreach my $gfd (@gfds_matched_ar_and_mc) {
       warn("Entry with same gene symbol, allelic requirement and mutation consequence exists: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
     }
-    die "More than one GFD with the same allelic requirement and mutation consequence for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+    if ($restricted_mutation_set eq 'y') {
+      warn("Create new entry with restricted mutation set for: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
+    } else {
+      next;
+    }
   }
 
-  # Try to get existing GFD from database by genomic_feature, disease name. fetch_all_by_GenomicFeature_Disease_panel also considers disease name synonyms.
-  
+  # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence and disease name. fetch_all_by_GenomicFeature_Disease_panel also considers disease name synonyms.
+  # In two steps:
+  # 1) get all GFD by gene and disease  
   $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $panel);
- 
-  @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
-
-  if (scalar @gfds_matched_ar_and_mc > 0) {
-    die "More than one GFD with the same allelic requirement and mutation consequence for $gene_symbol, $allelic_requirement, $mutation_consequence, $disease_name\n";
-  }
-
-  my $gfd = $gfds_matched_ar_and_mc[0];
+  # 2) then compare by allelic requirement and mutation consequence
+  my ($gfd) = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
 
   if ($gfd) {
     # only update confidence:
+    # TODO is confidence value different and does it need to be updated:
+    # If yes:
     $gfd->confidence_category_attrib($disease_confidence_attrib);
     $gfd_adaptor->update($gfd, $user);
   } else {
