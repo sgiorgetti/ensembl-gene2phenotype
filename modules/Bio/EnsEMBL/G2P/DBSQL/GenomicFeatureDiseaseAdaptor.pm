@@ -363,12 +363,11 @@ sub _get_all_duplicated_LGM_entries_by_panel {
   my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
 
   my $sth = $self->prepare(qq{
-    select gf.gene_symbol, gfd.genomic_feature_id, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, count(*) as count
+    select gf.gene_symbol, gfd.genomic_feature_id, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, count(*) as count
     from genomic_feature_disease gfd
-    left join genomic_feature_disease_action gfda on gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
     left join genomic_feature gf on gfd.genomic_feature_id = gf.genomic_feature_id
     where gfd.panel_attrib = $panel_id
-    group by gfd.genomic_feature_id, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib
+    group by gfd.genomic_feature_id, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib
     having count > 1;
   });
   $sth->execute;
