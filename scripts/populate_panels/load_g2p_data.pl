@@ -122,13 +122,13 @@ foreach my $row (@rows) {
 
   my $disease = get_disease($disease_name, $disease_mim);
 
-  # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence, disease name, disease name synonyms
+  # Try to get existing GFD from database by genomic_feature, disease name and disease name synonyms
   
   my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $panel);
  
   my @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
 
-  if (scalar @gfds_matched_ar_and_mc > 1) {
+  if (scalar @gfds_matched_ar_and_mc > 0) {
     die "More than one GFD with the same allelic requirement and mutation consequence for $gene_symbol, $allelic_requirement, $mutation_consequence, $disease_name\n";
   }
 
