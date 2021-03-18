@@ -122,11 +122,25 @@ foreach my $row (@rows) {
 
   my $disease = get_disease($disease_name, $disease_mim);
 
-  # Try to get existing GFD from database by genomic_feature, disease name and disease name synonyms
-  
-  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $panel);
- 
+
+  # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
+
+  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $panel);
+
   my @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
+
+  if (scalar @gfds_matched_ar_and_mc > 0) {
+    foreach my $gfd (@gfds_matched_ar_and_mc) {
+      warn("Entry with same gene symbol, allelic requirement and mutation consequence exists: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
+    }
+    die "More than one GFD with the same allelic requirement and mutation consequence for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+  }
+
+  # Try to get existing GFD from database by genomic_feature, disease name. fetch_all_by_GenomicFeature_Disease_panel also considers disease name synonyms.
+  
+  $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $panel);
+ 
+  @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
 
   if (scalar @gfds_matched_ar_and_mc > 0) {
     die "More than one GFD with the same allelic requirement and mutation consequence for $gene_symbol, $allelic_requirement, $mutation_consequence, $disease_name\n";
