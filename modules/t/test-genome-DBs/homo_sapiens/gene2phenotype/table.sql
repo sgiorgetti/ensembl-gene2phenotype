@@ -68,6 +68,14 @@ CREATE TABLE `GFD_publication_comment_deleted` (
   KEY `GFD_publication_idx` (`genomic_feature_disease_publication_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE GFD_disease_synonym (
+  GFD_disease_synonym_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (GFD_disease_synonym_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
 CREATE TABLE `attrib` (
   `attrib_id` int(11) unsigned NOT NULL,
   `attrib_type_id` smallint(5) unsigned NOT NULL,

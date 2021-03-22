@@ -18,6 +18,7 @@ use Bio::EnsEMBL::Registry;
 use FileHandle;
 use DBI;
 use Getopt::Long;
+use Data::Dumper;
 my $config = {};
 GetOptions(
   $config,
@@ -37,7 +38,6 @@ my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attri
 
 my $panel = $config->{panel};
 my $merge_list = $gfda->_get_all_duplicated_LGM_entries_by_panel($panel);
-
 my $fh = FileHandle->new($config->{output_file}, 'w');
 print $fh join("\t", qw/locus genotype-mechanism disease publication_list publication_count phenotype_list phenotype_count/), "\n";
 foreach my $list (@{$merge_list}) {
@@ -79,7 +79,7 @@ sub get_sets {
 
   my $genomic_feature = $GF_adaptor->fetch_by_dbID($gf_id);
   my $gene_symbol = $genomic_feature->gene_symbol;
-  my $gfds = $gfda->fetch_all_by_GenomicFeature_panel($genomic_feature, 'DD');
+  my $gfds = $gfda->fetch_all_by_GenomicFeature_panel($genomic_feature, $panel);
 
   my @entries = ();
   my @all_disease_names = ();
@@ -91,8 +91,8 @@ sub get_sets {
   my $disease_name_2_gfd_id = {};
 
   foreach my $gfd (@$gfds) {
-    my $gfd_actions = $gfd->get_all_GenomicFeatureDiseaseActions;
-    next unless (grep {$_->allelic_requirement_attrib == $allelic_requirement_attrib && $_->mutation_consequence_attrib == $mutation_consequence_attrib} @$gfd_actions);
+    
+    next unless ($gfd->allelic_requirement_attrib eq $allelic_requirement_attrib && $gfd->mutation_consequence_attrib eq $mutation_consequence_attrib);
 
     my $gene_symbol = $gfd->get_GenomicFeature->gene_symbol;
     my $disease_name = $gfd->get_Disease->name;
@@ -104,11 +104,9 @@ sub get_sets {
     $disease_name_2_gfd_id->{$disease_name} = $gfd_id;
 
     my @actions = ();
-    foreach my $gfd_action (@$gfd_actions) {
-      my $allelic_requirement = $gfd_action->allelic_requirement;
-      my $mutation_consequence = $gfd_action->mutation_consequence;
-      push @actions, "$allelic_requirement $mutation_consequence";
-    }
+    my $allelic_requirement = $gfd->allelic_requirement;
+    my $mutation_consequence = $gfd->mutation_consequence;
+    push @actions, "$allelic_requirement $mutation_consequence";
 
     my @publications = ();
     my $gfd_publications = $gfd->get_all_GFDPublications;

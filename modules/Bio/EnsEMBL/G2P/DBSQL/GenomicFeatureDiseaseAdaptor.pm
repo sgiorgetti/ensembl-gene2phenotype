@@ -363,12 +363,11 @@ sub _get_all_duplicated_LGM_entries_by_panel {
   my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
 
   my $sth = $self->prepare(qq{
-    select gf.gene_symbol, gfd.genomic_feature_id, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib, count(*) as count
+    select gf.gene_symbol, gfd.genomic_feature_id, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, count(*) as count
     from genomic_feature_disease gfd
-    left join genomic_feature_disease_action gfda on gfd.genomic_feature_disease_id = gfda.genomic_feature_disease_id
     left join genomic_feature gf on gfd.genomic_feature_id = gf.genomic_feature_id
     where gfd.panel_attrib = $panel_id
-    group by gfd.genomic_feature_id, gfda.allelic_requirement_attrib, gfda.mutation_consequence_attrib
+    group by gfd.genomic_feature_id, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib
     having count > 1;
   });
   $sth->execute;
@@ -401,6 +400,18 @@ sub fetch_by_dbID {
   return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
 }
 
+sub fetch_all_by_GenomicFeature_Disease_panel {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $disease = shift;
+  my $panel = shift;
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $disease_id = $disease->dbID;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
+  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id ) AND gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id;";
+  my $result = $self->generic_fetch($constraint);
+} 
 
 sub _fetch_by_genomic_feature_id_disease_id_panel_id {
   my $self = shift;
@@ -626,6 +637,7 @@ sub _columns {
     'gfd.genomic_feature_disease_id',
     'gfd.genomic_feature_id',
     'gfd.disease_id',
+    'gfdds.GFD_disease_synonym_id AS gfd_disease_synonym_id',
     'gfd.allelic_requirement_attrib',
     'gfd.mutation_consequence_attrib',
     'gfd.confidence_category_attrib',
@@ -640,34 +652,59 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['genomic_feature_disease', 'gfd'],
+    ['GFD_disease_synonym', 'gfdds'],
   );
   return @tables;
 }
 
+sub _left_join {
+  my $self = shift;
+
+  my @left_join = (
+    ['GFD_disease_synonym', 'gfd.genomic_feature_disease_id = gfdds.genomic_feature_disease_id'],
+  );
+
+return @left_join;
+}
+
 sub _objs_from_sth {
   my ($self, $sth) = @_;
+  my %row;
+  $sth->bind_columns( \( @row{ @{$sth->{NAME_lc} } } ));
+  while ($sth->fetch) {
+    # we don't actually store the returned object because
+    # the _obj_from_row method stores them in a temporary
+    # hash _temp_objs in $self
+    $self->_obj_from_row(\%row);
+  }
+  # Get the created objects from the temporary hash
+  my @objs = values %{ $self->{_temp_objs} };
+  delete $self->{_temp_objs};
+  return \@objs;
+}
 
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set);
-  $sth->bind_columns(\($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $confidence_category_attrib, $is_visible, $panel_attrib, $restricted_mutation_set));
-
-  my @objs;
+sub _obj_from_row {
+  my ($self, $row) = @_;
 
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
-  while ($sth->fetch()) {
-    my $confidence_category = undef; 
-    my $panel = undef; 
-    my $allelic_requirement = undef;
-    my $mutation_consequence = undef;
-    if ($confidence_category_attrib) {
-      $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
+  my $obj = $self->{_temp_objs}{$row->{genomic_feature_disease_id}};
+
+  unless (defined($obj)) {
+    my $confidence_category;
+    my $panel;
+    my $allelic_requirement;
+    my $mutation_consequence;
+
+    if (defined $row->{confidence_category_attrib}) {
+      $confidence_category = $attribute_adaptor->attrib_value_for_id($row->{confidence_category_attrib});
     }
-    if ($panel_attrib) {
-      $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
+    if (defined $row->{panel_attrib}) {
+      $panel = $attribute_adaptor->attrib_value_for_id($row->{panel_attrib});
     }
 
-    if ($allelic_requirement_attrib) {
-      my @ids = split(',', $allelic_requirement_attrib);
+    if (defined $row->{allelic_requirement_attrib}) {
+      my @ids = split(',', $row->{allelic_requirement_attrib});
       my @values = ();
       foreach my $id (@ids) {
         push @values, $attribute_adaptor->attrib_value_for_id($id);
@@ -675,29 +712,35 @@ sub _objs_from_sth {
       $allelic_requirement = join(',', @values);
     }
 
-    if ($mutation_consequence_attrib) {
-      $mutation_consequence = $attribute_adaptor->attrib_value_for_id($mutation_consequence_attrib);
+    if (defined $row->{mutation_consequence_attrib}) {
+      $mutation_consequence = $attribute_adaptor->attrib_value_for_id($row->{mutation_consequence_attrib});
     }
 
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
-      -genomic_feature_disease_id => $genomic_feature_disease_id,
-      -genomic_feature_id => $genomic_feature_id,
-      -disease_id => $disease_id,
-      -allelic_requirement_attrib => $allelic_requirement_attrib,
+      -genomic_feature_disease_id => $row->{genomic_feature_disease_id},
+      -genomic_feature_id => $row->{genomic_feature_id},
+      -disease_id => $row->{disease_id},
+      -allelic_requirement_attrib => $row->{allelic_requirement_attrib},
       -allelic_requirement => $allelic_requirement,
-      -mutation_consequence_attrib => $mutation_consequence_attrib,
+      -mutation_consequence_attrib => $row->{mutation_consequence_attrib},
       -mutation_consequnece => $mutation_consequence,
       -confidence_category => $confidence_category, 
-      -confidence_category_attrib => $confidence_category_attrib,
-      -is_visible => $is_visible,
+      -confidence_category_attrib => $row->{confidence_category_attrib},
+      -is_visible => $row->{is_visible},
       -panel => $panel,
-      -panel_attrib => $panel_attrib,
-      -restricted_mutation_set => $restricted_mutation_set,
+      -panel_attrib => $row->{panel_attrib},
+      -restricted_mutation_set => $row->{restricted_mutation_set},
       -adaptor => $self,
     );
-    push(@objs, $obj);
+    $self->{_temp_objs}{$row->{genomic_feature_disease_id}} = $obj;
+    if (defined $row->{gfd_disease_synonym_id}) {
+      $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
+    }
+  } else {
+    if (defined $row->{gfd_disease_synonym_id}) {
+      $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
+    }
   }
-  return \@objs;
 }
 
 1;

@@ -152,6 +152,16 @@ $gfda->delete($gfd, $user);
 
 #fetch_all
 
+#fetch_all_by_GenomicFeature_Disease_panel
+$gene_symbol = 'KIF1BP';
+$genomic_feature = $gfa->fetch_by_gene_symbol($gene_symbol);
+$disease_name = 'GOLDBERG-SHPRINTZEN MEGACOLON SYNDROME';
+$disease = $da->fetch_by_name($disease_name);
+$panel = 'DD';
+$gfds = $gfda->fetch_all_by_GenomicFeature_Disease_panel($genomic_feature, $disease, $panel);
+ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature_Disease_panel with disease synonym name');
+
+
 done_testing();
 1;
 

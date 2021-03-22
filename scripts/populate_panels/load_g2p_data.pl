@@ -39,7 +39,6 @@ my $species = 'human';
 my $gf_adaptor               = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeature');
 my $disease_adaptor          = $registry->get_adaptor($species, 'gene2phenotype', 'Disease');
 my $gfd_adaptor              = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDisease');
-my $gfd_action_adaptor       = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseAction');
 my $gfd_publication_adaptor  = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePublication');
 my $gfd_organ_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseOrgan');
 my $gfd_phenotype_adaptor    = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePhenotype');
@@ -93,6 +92,7 @@ foreach my $row (@rows) {
   my $prev_symbols = $data{'prev symbols'};
   my $hgnc_id = $data{'hgnc id'};
   my $comments = $data{'comments'};
+  my $restricted_mutation_set = $data{'restricted mutation set'};
 
   if (!$panel) {
     warn "No panel for gene $gene_symbol\n";
@@ -101,52 +101,72 @@ foreach my $row (@rows) {
   next if (!add_to_panel($panel));  
 
   my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
+  if (!$gf) {
+    die "No genomic feature for $gene_symbol\n";
+  }
 
   my $disease_confidence_attrib = get_disease_confidence_attrib($DDD_category);
 
   my $allelic_requirement_attrib = get_allelic_requirement_attrib($allelic_requirement);
+  if (!$allelic_requirement_attrib) {
+    die "No allelic requirement for $gene_symbol\n";
+  }
 
   my $mutation_consequence_attrib = get_mutation_consequence_attrib($mutation_consequence);
   if (!$mutation_consequence_attrib) {
     die "No mutation consequence for $gene_symbol\n";
   }
 
-  my $gfd = undef;
-  # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence 
-  my @gfds_with_matched_ar_and_mc = @{get_gfd_by_allelic_requirement_mutation_consequence($gf, $g2p_panel, $allelic_requirement_attrib, $mutation_consequence_attrib)};
-  if (scalar  @gfds_with_matched_ar_and_mc > 1) {
-    warn "Found more than one GFD for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
-  } elsif (scalar  @gfds_with_matched_ar_and_mc == 0) {
-    warn "Found no GFD for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
-  } else {
-    $gfd = $gfds_with_matched_ar_and_mc[0];
-    $gfd->confidence_category_attrib($disease_confidence_attrib);
-    $gfd_adaptor->update($gfd, $user);
+  if (!$disease_name) {
+    die "No disease name for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
   }
 
-  if (!$gfd) {  
-    if (!$disease_name) {
-      warn "Disease name is missing for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+  my $disease = get_disease($disease_name, $disease_mim);
+
+
+  # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
+
+  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $panel);
+
+  my @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
+
+  if (scalar @gfds_matched_ar_and_mc > 0) {
+    foreach my $gfd (@gfds_matched_ar_and_mc) {
+      warn("Entry with same gene symbol, allelic requirement and mutation consequence exists: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
+    }
+    if ($restricted_mutation_set eq 'y') {
+      warn("Create new entry with restricted mutation set for: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
+    } else {
       next;
     }
-    my $disease = get_disease($disease_name, $disease_mim);
-    $gfd = $gfd_adaptor->fetch_by_GenomicFeature_Disease_panel_id($gf, $disease, $panel_attrib_id);
   }
 
-  if (!$gfd) {
-    my $disease = get_disease($disease_name, $disease_mim);
-    print "Add new GFD $gene_symbol $disease_name ", $disease->dbID, "\n";
+  # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence and disease name. fetch_all_by_GenomicFeature_Disease_panel also considers disease name synonyms.
+  # In two steps:
+  # 1) get all GFD by gene and disease  
+  $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $panel);
+  # 2) then compare by allelic requirement and mutation consequence
+  my ($gfd) = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
+
+  if ($gfd) {
+    # only update confidence:
+    # TODO is confidence value different and does it need to be updated:
+    # If yes:
+    $gfd->confidence_category_attrib($disease_confidence_attrib);
+    $gfd_adaptor->update($gfd, $user);
+  } else {
+    # create new GFD
     $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
       -panel_attrib => $panel_attrib_id,
       -confidence_category_attrib => $disease_confidence_attrib,
+      -allelic_requirement_attrib => $allelic_requirement_attrib,
+      -mutation_consequence_attrib => $mutation_consequence_attrib,
       -adaptor => $gfd_adaptor,
     );
     $gfd = $gfd_adaptor->store($gfd, $user);
   }
-
-  add_genomic_feature_disease_action($gfd, $allelic_requirement_attrib, $mutation_consequence_attrib);
 
   add_publications($gfd, $pmids); 
 
@@ -188,7 +208,6 @@ sub get_genomic_feature {
     }
     return $gf if (defined $gf);
   }
-  print STDERR "No genomic_feature for $gene_symbol \n";
   return undef;
 }
 
@@ -261,53 +280,6 @@ sub get_mutation_consequence_attrib {
   return $mc_attrib;
 }
 
-sub get_gfd_by_allelic_requirement_mutation_consequence {
-  my ($gf, $panel, $allelic_requirement_attrib, $mutation_consequence_attrib) = @_;
-  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $panel);
-  my @gfds_with_matching_ar_and_mc = ();
-  foreach my $gfd (@{$gfds}) {
-    my $gfd_actions = $gfd_action_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
-    my $is_match = 0;
-    foreach my $gfd_action (@$gfd_actions) {
-      my $ar_attrib = $gfd_action->allelic_requirement_attrib || '';
-      my $mc_attrib = $gfd_action->mutation_consequence_attrib || '';
-      if ($allelic_requirement_attrib eq $ar_attrib && $mutation_consequence_attrib eq $mc_attrib) {
-        $is_match = 1;
-      }
-    }
-    if ($is_match) {
-      push @gfds_with_matching_ar_and_mc, $gfd;
-    }
-  }
-  return \@gfds_with_matching_ar_and_mc;
-}
-
-sub add_genomic_feature_disease_action {
-  my $gfd = shift;
-  my $allelic_requirement_attrib = shift;
-  my $mutation_consequence_attrib = shift;
-
-  my $gfd_id = $gfd->dbID;
-  my $gfd_actions = $gfd_action_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
-  my $gfd_actions_lookup = {};
-  foreach my $gfd_action (@$gfd_actions) {
-    my $allelic_requirement_attrib = $gfd_action->allelic_requirement_attrib || '';
-    my $mutation_consequence_attrib = $gfd_action->mutation_consequence_attrib || '';
-    $gfd_actions_lookup->{"$gfd_id\t$allelic_requirement_attrib\t$mutation_consequence_attrib"} = 1;
-  }
-
-  if (!$gfd_actions_lookup->{"$gfd_id\t$allelic_requirement_attrib\t$mutation_consequence_attrib"}) {
-    print "add_genomic_feature_disease_action $gfd_id $allelic_requirement_attrib $mutation_consequence_attrib\n";
-    my $new_gfd_action = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseAction->new(
-      -genomic_feature_disease_id => $gfd_id,
-      -allelic_requirement_attrib => $allelic_requirement_attrib,
-      -mutation_consequence_attrib => $mutation_consequence_attrib,
-      -user_id => undef,
-    );
-    $new_gfd_action = $gfd_action_adaptor->store($new_gfd_action, $user);
-  }
-}
-
 sub add_publications {
   my $gfd = shift;
   my $pmids = shift;
@@ -332,7 +304,6 @@ sub add_publications {
         -publication_id => $publication->dbID,
         -adaptor => $gfd_publication_adaptor,
       );
-      print "add_publications $gfd_id $pmid\n";
       $gfd_publication_adaptor->store($gfd_publication);
     }
   }
@@ -424,5 +395,4 @@ sub add_comments {
     $gfd_comment_adaptor->store($gfd_comment, $user);
   }
 }
-
 
