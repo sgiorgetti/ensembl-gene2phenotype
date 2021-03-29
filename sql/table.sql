@@ -68,20 +68,90 @@ CREATE TABLE genomic_feature (
   KEY ensembl_stable_id_idx (ensembl_stable_id)
 );
 
+CREATE TABLE genomic_feature_synonym (
+  genomic_feature_id int(10) unsigned NOT NULL,
+  name varchar(255) NOT NULL,
+  UNIQUE KEY name (genomic_feature_id, name),
+  KEY genomic_feature_idx (genomic_feature_id)
+);
+
 CREATE TABLE genomic_feature_disease (
   genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
   disease_id int(10) unsigned NOT NULL,
   allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
   mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
-  confidence_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  panel_attrib tinyint(1) DEFAULT NULL,
   restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (genomic_feature_disease_id),
   UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id, panel_attrib),
   KEY genomic_feature_idx (genomic_feature_id),
   KEY disease_idx (disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_log (
+  genomic_feature_disease_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  genomic_feature_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
+  mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
+  restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  action varchar(128) NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_log_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_panel (
+  genomic_feature_disease_panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  confidence_category_attrib set('31','32','33','34','35') DEFAULT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  panel_attrib tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (genomic_feature_disease_panel_id),
+  UNIQUE KEY gfd_panel_idx (genomic_feature_disease_id, panel_attrib),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_panel (
+  genomic_feature_disease_panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  confidence_category_attrib set('31','32','33','34','35') DEFAULT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  panel_attrib tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (genomic_feature_disease_panel_id),
+  UNIQUE KEY gfd_panel_idx (genomic_feature_disease_id, panel_attrib),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_panel_log (
+  genomic_feature_disease_panel_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_panel_id int(10) unsigned NOT NULL,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  confidence_category_attrib set('31','32','33','34','35') DEFAULT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  panel_attrib tinyint(1) DEFAULT NULL,
+  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  user_id int(10) unsigned NOT NULL,
+  action varchar(128) NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_panel_log_id),
+  KEY genomic_feature_disease_panel_idx (genomic_feature_disease_panel_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_panel_deleted (
+  genomic_feature_disease_panel_deleted_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_panel_id int(10) unsigned NOT NULL,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  confidence_category_attrib set('31','32','33','34','35') DEFAULT NULL,
+  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
+  panel_attrib tinyint(1) DEFAULT NULL,
+  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  deleted_by_user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_panel_deleted_id),
+  UNIQUE KEY gfd_panel_idx (genomic_feature_disease_id, panel_attrib),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
 CREATE TABLE genomic_feature_disease_comment (
@@ -106,81 +176,6 @@ CREATE TABLE GFD_comment_deleted (
   KEY GFD_idx (genomic_feature_disease_id)
 );
 
-CREATE TABLE genomic_feature_disease_deleted (
-  genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_id int(10) unsigned NOT NULL,
-  disease_id int(10) unsigned NOT NULL,
-  confidence_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  panel_attrib tinyint(1) DEFAULT NULL,
-  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  deleted_by_user_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_id),
-  KEY genomic_feature_idx (genomic_feature_id),
-  KEY disease_idx (disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_action (
-  genomic_feature_disease_action_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
-  mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
-  PRIMARY KEY (genomic_feature_disease_action_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_action_deleted (
-  genomic_feature_disease_action_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
-  mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
-  PRIMARY KEY (genomic_feature_disease_action_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_action_log (
-  genomic_feature_disease_action_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_action_id int(10) unsigned NOT NULL,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
-  mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
-  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  user_id int(10) unsigned NOT NULL, 
-  action varchar(128) NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_action_log_id),
-  KEY genomic_feature_disease_action_idx (genomic_feature_disease_action_id)
-);
-
-CREATE TABLE genomic_feature_disease_log (
-  genomic_feature_disease_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  genomic_feature_id int(10) unsigned NOT NULL,
-  disease_id int(10) unsigned NOT NULL,
-  confidence_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  panel_attrib tinyint(1) DEFAULT NULL,
-  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  user_id int(10) unsigned NOT NULL,
-  action varchar(128) NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_log_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_log_deleted (
-  genomic_feature_disease_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  genomic_feature_id int(10) unsigned NOT NULL,
-  disease_id int(10) unsigned NOT NULL,
-  confidence_category_attrib set('31', '32', '33', '34', '35') DEFAULT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  panel_attrib tinyint(1) DEFAULT NULL,
-  created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  user_id int(10) unsigned NOT NULL,
-  action varchar(128) NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_log_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
 CREATE TABLE genomic_feature_disease_organ (
   genomic_feature_disease_organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
@@ -203,37 +198,6 @@ CREATE TABLE genomic_feature_disease_phenotype (
   phenotype_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_phenotype_id),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_phenotype_deleted (
-  genomic_feature_disease_phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  phenotype_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_phenotype_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_publication (
-  genomic_feature_disease_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  publication_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_publication_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_publication_deleted (
-  genomic_feature_disease_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  publication_id int(10) unsigned NOT NULL,
-  PRIMARY KEY (genomic_feature_disease_publication_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_synonym (
-  genomic_feature_id int(10) unsigned NOT NULL,
-  name varchar(255) NOT NULL,
-  UNIQUE KEY name (genomic_feature_id, name),
-  KEY genomic_feature_idx (genomic_feature_id)
 );
 
 CREATE TABLE GFD_phenotype_log (
@@ -272,6 +236,22 @@ CREATE TABLE GFD_phenotype_comment_deleted (
   KEY GFD_phenotype_idx (genomic_feature_disease_phenotype_id)
 );
 
+CREATE TABLE genomic_feature_disease_phenotype_deleted (
+  genomic_feature_disease_phenotype_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  phenotype_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_phenotype_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
+CREATE TABLE genomic_feature_disease_publication (
+  genomic_feature_disease_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  publication_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_publication_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
+);
+
 CREATE TABLE GFD_publication_comment (
   GFD_publication_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_publication_id int(10) unsigned NOT NULL,
@@ -292,6 +272,14 @@ CREATE TABLE GFD_publication_comment_deleted (
   deleted_by_user_id int(10) unsigned NOT NULL, 
   PRIMARY KEY (GFD_publication_comment_id),
   KEY GFD_publication_idx (genomic_feature_disease_publication_id)
+);
+
+CREATE TABLE genomic_feature_disease_publication_deleted (
+  genomic_feature_disease_publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_disease_id int(10) unsigned NOT NULL,
+  publication_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_publication_id),
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
 CREATE TABLE GFD_disease_synonym (
