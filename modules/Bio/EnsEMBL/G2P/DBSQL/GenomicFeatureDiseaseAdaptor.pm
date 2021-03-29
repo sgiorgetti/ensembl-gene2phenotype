@@ -41,26 +41,7 @@ sub store {
     die('Bio::EnsEMBL::G2P::User arg expected');
   }
 
-  if (! (defined $gfd->{panel} || defined $gfd->{panel_attrib})) {
-    die "panel or panel_attrib is required\n";
-  }
-
-  if (! (defined $gfd->{confidence_category} || defined $gfd->{confidence_category_attrib})) {
-    die "confidence_category or confidence_category_attrib is required\n";
-  }
-
   my $aa = $self->db->get_AttributeAdaptor;
-  if ( defined $gfd->{panel} ) {
-    my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $gfd->{panel});
-    die "Could not get panel attrib id for value ", $gfd->{panel}, "\n" unless ($panel_attrib);
-    $gfd->{panel_attrib} = $panel_attrib;
-  }
-
-  if ( defined $gfd->{confidence_category} ) {
-    my $confidence_category_attrib = $aa->attrib_id_for_type_value('confidence_category', $gfd->{confidence_category});
-    die "Could not get confidence category attrib id for value ", $gfd->{confidence_category}, "\n" unless ($confidence_category_attrib);
-    $gfd->{confidence_category_attrib} = $confidence_category_attrib;
-  }
 
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease(
@@ -68,11 +49,8 @@ sub store {
       disease_id,
       allelic_requirement_attrib,
       mutation_consequence_attrib,
-      confidence_category_attrib,
-      is_visible,
-      panel_attrib,
       restricted_mutation_set
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -80,9 +58,6 @@ sub store {
     $gfd->{disease_id},
     $gfd->{allelic_requirement_attrib},
     $gfd->{mutation_consequence_attrib},
-    $gfd->{confidence_category_attrib},
-    $gfd->is_visible || 1,
-    $gfd->{panel_attrib},
     $gfd->restricted_mutation_set || 0
   );
 
@@ -95,74 +70,6 @@ sub store {
   $self->update_log($gfd, $user, 'create');
 
   return $gfd;
-}
-
-sub delete {
- my $self = shift;
-  my $GFD = shift;
-  my $user = shift;
-  my $dbh = $self->dbc->db_handle;
-
-  if (!ref($GFD) || !$GFD->isa('Bio::EnsEMBL::G2P::GenomicFeatureDisease')) {
-    die ('Bio::EnsEMBL::G2P::GenomicFeatureDisease arg expected');
-  }
-
-  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
-    die ('Bio::EnsEMBL::G2P::User arg expected');
-  }
-
-  my $GFD_id = $GFD->dbID; 
-
-  my $GFDPublicationAdaptor = $self->db->get_GenomicFeatureDiseasePublicationAdaptor;
-  foreach my $GFDPublication (@{$GFD->get_all_GFDPublications}) {
-    $GFDPublicationAdaptor->delete($GFDPublication, $user);
-  }
-
-  my $GFDPhenotypeAdaptor = $self->db->get_GenomicFeatureDiseasePhenotypeAdaptor;
-  foreach my $GFDPhenotype (@{$GFD->get_all_GFDPhenotypes}) {
-    $GFDPhenotypeAdaptor->delete($GFDPhenotype, $user);
-  }     
-  
-  my $GFDOrganAdaptor = $self->db->get_GenomicFeatureDiseaseOrganAdaptor;
-  foreach my $GFDOrgan (@{$GFD->get_all_GFDOrgans}) {
-    $GFDOrganAdaptor->delete($GFDOrgan, $user);
-  }   
-
-  my $GenomicFeatureDiseaseLogAdaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor; 
-  foreach my $log_entry (@{$GenomicFeatureDiseaseLogAdaptor->fetch_all_by_GenomicFeatureDisease($GFD)}) {
-    $GenomicFeatureDiseaseLogAdaptor->delete($log_entry, $user);
-  }
-
-  my $sth = $dbh->prepare(q{
-    INSERT INTO genomic_feature_disease_deleted (
-      genomic_feature_disease_id,
-      genomic_feature_id,
-      disease_id,
-      confidence_category_attrib,
-      is_visible,
-      panel_attrib,
-      deleted,
-      deleted_by_user_id
-    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
-  });
-
-  $sth->execute(
-    $GFD->dbID,
-    $GFD->genomic_feature_id,
-    $GFD->disease_id,
-    $GFD->confidence_category_attrib,
-    $GFD->is_visible,
-    $GFD->panel_attrib,
-    $user->user_id
-  );
-  $sth->finish();
-
-  $sth = $dbh->prepare(q{
-    DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id = ?;
-  });
-
-  $sth->execute($GFD->dbID);
-  $sth->finish();
 }
 
 sub update {
@@ -181,20 +88,16 @@ sub update {
 
   my $sth = $dbh->prepare(q{
     UPDATE genomic_feature_disease
-      SET genomic_feature_id = ?,
-        disease_id = ?,
-        confidence_category_attrib = ?,
-        is_visible = ?,
-        panel_attrib = ?,
-        restricted_mutation_set = ?
-      WHERE genomic_feature_disease_id = ? 
+    SET
+      genomic_feature_id = ?,
+      disease_id = ?,
+      restricted_mutation_set = ?
+    WHERE genomic_feature_disease_id = ? 
   });
+
   $sth->execute(
     $gfd->genomic_feature_id,
     $gfd->disease_id,
-    $gfd->confidence_category_attrib,
-    $gfd->is_visible,
-    $gfd->panel_attrib,
     $gfd->restricted_mutation_set,
     $gfd->dbID
   );
@@ -214,11 +117,8 @@ sub update_log {
   my $GFD_log_adaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor;
   my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
     -genomic_feature_disease_id => $gfd->dbID,
-    -is_visible => $gfd->is_visible,
-    -panel_attrib => $gfd->panel_attrib,
     -disease_id => $gfd->disease_id,
     -genomic_feature_id => $gfd->genomic_feature_id,
-    -confidence_category_attrib => $gfd->confidence_category_attrib,
     -user_id => $user->dbID,
     -action => $action, 
     -adaptor => $GFD_log_adaptor,
@@ -640,9 +540,6 @@ sub _columns {
     'gfdds.GFD_disease_synonym_id AS gfd_disease_synonym_id',
     'gfd.allelic_requirement_attrib',
     'gfd.mutation_consequence_attrib',
-    'gfd.confidence_category_attrib',
-    'gfd.is_visible',
-    'gfd.panel_attrib',
     'gfd.restricted_mutation_set',
   );
   return @cols;
@@ -691,17 +588,8 @@ sub _obj_from_row {
   my $obj = $self->{_temp_objs}{$row->{genomic_feature_disease_id}};
 
   unless (defined($obj)) {
-    my $confidence_category;
-    my $panel;
     my $allelic_requirement;
     my $mutation_consequence;
-
-    if (defined $row->{confidence_category_attrib}) {
-      $confidence_category = $attribute_adaptor->attrib_value_for_id($row->{confidence_category_attrib});
-    }
-    if (defined $row->{panel_attrib}) {
-      $panel = $attribute_adaptor->attrib_value_for_id($row->{panel_attrib});
-    }
 
     if (defined $row->{allelic_requirement_attrib}) {
       my @ids = split(',', $row->{allelic_requirement_attrib});
@@ -724,11 +612,6 @@ sub _obj_from_row {
       -allelic_requirement => $allelic_requirement,
       -mutation_consequence_attrib => $row->{mutation_consequence_attrib},
       -mutation_consequnece => $mutation_consequence,
-      -confidence_category => $confidence_category, 
-      -confidence_category_attrib => $row->{confidence_category_attrib},
-      -is_visible => $row->{is_visible},
-      -panel => $panel,
-      -panel_attrib => $row->{panel_attrib},
       -restricted_mutation_set => $row->{restricted_mutation_set},
       -adaptor => $self,
     );
