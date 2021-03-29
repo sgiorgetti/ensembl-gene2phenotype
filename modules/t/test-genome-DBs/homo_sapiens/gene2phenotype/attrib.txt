@@ -1,14 +1,14 @@
-1	1	monoallelic (autosome)
-2	1	monoallelic (autosome; obligate mosaic)
+1	5	monoallelic (autosome)
+2	5	monoallelic (autosome; obligate mosaic)
 3	1	biallelic
-4	1	monoallelic (X; heterozygous)
-5	1	monoallelic (X; hemizygous)
+4	5	monoallelic (X; heterozygous)
+5	5	monoallelic (X; hemizygous)
 6	1	monoallelic (Y)
-7	1	mtDNA (homoplasmic)
-8	1	mtDNA (heteroplasmic)
-9	1	digenic (biallelic)
-10	1	digenic (triallelic)
-11	1	digenic (tetra-allelic)
+7	5	mtDNA (homoplasmic)
+8	5	mtDNA (heteroplasmic)
+9	5	digenic (biallelic)
+10	5	digenic (triallelic)
+11	5	digenic (tetra-allelic)
 12	1	imprinted
 13	1	uncertain
 14	1	monoallelic
@@ -29,9 +29,9 @@
 29	2	part of contiguous gene duplication
 30	2	part of contiguous genomic interval deletion
 31	3	both RD and IF
-32	3	confirmed DD gene
-33	3	possible DD gene
-34	3	probable DD gene
+32	3	confirmed
+33	3	possible
+34	3	probable
 35	3	child IF
 36	4	ALL
 37	4	Cardiac
@@ -39,3 +39,18 @@
 39	4	Ear
 40	4	Eye
 41	4	Skin
+42	4	Cancer
+43	4	Prenatal
+44	2	gain of function
+45	4	NeonatalRespiratory
+46	4	Demo
+47	4	Rapid_PICU_NICU
+48	4	PaedNeuro
+437	6	Data source
+438	6	OLS exact
+439	6	OLS partial
+440	6	Zooma exact
+441	6	Zooma partial
+442	6	Manual
+443	6	HPO
+444	6	Orphanet

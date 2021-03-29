@@ -1,0 +1,6 @@
+1	30748	Leber congenital amaurosis, juvenile retinitis pigments, cone-rod dystrophy 	2017-05-10 15:50:28	10	2017-05-10 16:11:40	10
+2	32263	Galactosyltransferase I deficiency in fibroblasts.	2017-08-13 18:04:45	10	2017-08-13 18:05:01	10
+3	32263	Galactosyltransferase I deficiency in fibroblasts.	2017-08-13 18:04:42	10	2017-08-13 18:05:10	10
+4	32263	Galactosyltransferase I deficiency in fibroblasts.	2017-08-13 18:04:49	10	2017-08-13 18:05:40	10
+5	32334	PMID: 27899449, 27799409.	2017-08-14 12:21:02	10	2017-08-14 12:21:22	10
+7	51708	phenotype resembles choroideremia	2019-10-30 14:50:31	15	2019-10-30 14:51:13	15
