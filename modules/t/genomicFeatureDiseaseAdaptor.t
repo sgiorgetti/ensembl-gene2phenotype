@@ -34,132 +34,107 @@ my $ua = $g2pdb->get_UserAdaptor;
 
 ok($gfda && $gfda->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor'), 'isa GenomicFeatureDiseaseAdaptor');
 
-# store and update
-my $disease_name = 'KABUKI SYNDROME (KABS)';
+
+# fetch_all
+# fetch_all_by_GenomicFeature_Disease
+# fetch_all_by_GenomicFeatureDisease --> backwards compatible
+# fetch_by_GenomicFeatureDisease
+# fetch_all_by_GenomicFeature
+# fetch_all_by_constraints(hash)
+# fetch_all_by_GenomicFeature_constraints
+# add, store
+# update
+
+# store
+my $disease_name = 'KABUKI SYNDROME';
 my $disease = $da->fetch_by_name($disease_name);
 ok($disease->name eq $disease_name, 'disease object');
 my $gene_symbol = 'P3H1';
 my $genomic_feature = $gfa->fetch_by_gene_symbol($gene_symbol); 
 ok($genomic_feature->gene_symbol eq $gene_symbol, 'genomic_feature object');
+
 my $username = 'user1';
 my $user = $ua->fetch_by_username($username);
 ok($user->username eq $username, 'user object');
 
-my $confidence_category = 'both RD and IF';
-my $panel = 'DD';
+my $allelic_requirement = 'monoallelic';
+my $mutation_consequence = 'all missense/in frame';
 
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -category => $confidence_category, # use wrong key name
-  -is_visible => 1,
-  -panel => $panel,
+  -allelic_requirement => $allelic_requirement,
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/confidence_category or confidence_category_attrib is required/, 'Die on missing confidence category';
+throws_ok { $gfda->store($gfd, $user); } qr/mutation_consequence or mutation_consequence_attrib is required/, 'Die on missing mutation consequence';
 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -confidence_category => $confidence_category,
-  -is_visible => 1,
-  -panels => $panel,
+  -mutation_consequence => $mutation_consequence,
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/panel or panel_attrib is required/, 'Die on missing panel';
+throws_ok { $gfda->store($gfd, $user); } qr/allelic_requirement or allelic_requirement_attrib is required/, 'Die on missing allelic requirement';
 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -confidence_category => 'both',
-  -is_visible => 1,
-  -panel => $panel,
+  -allelic_requirement => $allelic_requirement,
+  -mutation_consequence => 'cis-regulatory or promotor',
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/Could not get confidence category attrib id for value/, 'Die on wrong value for confidence_category_attrib';
+throws_ok { $gfda->store($gfd, $user); } qr/Could not get mutation_consequence attrib id for value cis-regulatory or promotor/, 'Die on wrong mutation consequence value';
 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -confidence_category => $confidence_category,
-  -is_visible => 1,
-  -panel => 'DDD',
+  -allelic_requirement => 'monoallelic,x-linked',
+  -mutation_consequence => 'cis-regulatory or promotor mutation',
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/Could not get panel attrib id for value/, 'Die on wrong value for panel_attrib';
+throws_ok { $gfda->store($gfd, $user); } qr/Could not get attrib for value: x-linked/, 'Die on wrong allelic requirement value';
 
-$gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
-  -genomic_feature_id => $genomic_feature->dbID,
-  -disease_id => $disease->dbID,
-  -confidence_category => $confidence_category,
-  -is_visible => 1,
-  -panel => $panel,
-  -adaptor => $gfda,
-);
-
-ok($gfda->store($gfd, $user), 'store');
-
-my $GFD_id = $gfd->{genomic_feature_disease_id};
-
-$gfd = $gfda->fetch_by_dbID($GFD_id);
-$gfd->confidence_category('possible DD gene');
-ok($gfda->update($gfd, $user), 'update');
-
-$gfd = $gfda->fetch_by_dbID($GFD_id);
-ok($gfd->confidence_category eq 'possible DD gene', 'test update');
-
-my $dbh = $gfda->dbc->db_handle;
-$dbh->do(qq{DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr;
+# store and delete 
+#ok($gfda->store($gfd, $user), 'store');
+#my $GFD_id = $gfd->{genomic_feature_disease_id};
+#$gfd = $gfda->fetch_by_dbID($GFD_id);
+#$gfd->confidence_category('possible DD gene');
+#ok($gfda->update($gfd, $user), 'update');
+#$gfd = $gfda->fetch_by_dbID($GFD_id);
+#ok($gfd->confidence_category eq 'possible DD gene', 'test update');
+#my $dbh = $gfda->dbc->db_handle;
+#$dbh->do(qq{DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr;
 
 #fetch_by_dbID
 my $dbID = 1797; 
 $gfd = $gfda->fetch_by_dbID($dbID);
 ok($gfd->dbID == $dbID, 'fetch_by_dbID');
+ok($gfd->allelic_requirement eq 'biallelic', 'fetch_by_dbID allelic_requirement');
+ok($gfd->mutation_consequence eq 'all missense/in frame', 'fetch_by_dbID mutation_consequence');
+ok($gfd->get_Disease->name eq 'AUTOSOMAL RECESSIVE MENTAL RETARDATION', 'fetch_by_dbID disease name');
+ok($gfd->get_GenomicFeature->gene_symbol eq 'PRMT9', 'fetch_by_dbID gene symbol');
 
-#fetch_by_GenomicFeature_Disease
+#fetch_all_by_GenomicFeature_Disease
 $gene_symbol = 'PRMT9';
 $genomic_feature = $gfa->fetch_by_gene_symbol($gene_symbol);
 $disease_name = 'AUTOSOMAL RECESSIVE MENTAL RETARDATION';
 $disease = $da->fetch_by_name($disease_name);
-
-$gfd = $gfda->fetch_by_GenomicFeature_Disease($genomic_feature, $disease);
-ok($gfd->dbID == $dbID, 'fetch_by_GenomicFeature_Disease');
-
-#fetch_by_GenomicFeature_Disease_panel_id
-$gfd = $gfda->fetch_by_GenomicFeature_Disease_panel_id($genomic_feature, $disease, 38);
-ok($gfd->dbID == $dbID, 'fetch_by_GenomicFeature_Disease_panel_id');
+my $gfds = $gfda->fetch_all_by_GenomicFeature_Disease($genomic_feature, $disease);
+ok($gfd->dbID == $gfds->[0]->dbID, 'fetch_all_by_GenomicFeature_Disease');
 
 #fetch_all_by_GenomicFeature
-my $gfds = $gfda->fetch_all_by_GenomicFeature($genomic_feature); 
+$gfds = $gfda->fetch_all_by_GenomicFeature($genomic_feature); 
 ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature');
-
-#fetch_all_by_GenomicFeature_panel
-$gfds = $gfda->fetch_all_by_GenomicFeature_panel($genomic_feature, 'DD'); 
-ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature_panel');
 
 #fetch_all_by_Disease
 $gfds = $gfda->fetch_all_by_Disease($disease); 
-ok(scalar @$gfds == 1, 'fetch_all_by_Disease');
+ok(scalar @$gfds == 47, 'fetch_all_by_Disease');
 
-#fetch_all_by_Disease_panel
-$gfds = $gfda->fetch_all_by_Disease_panel($disease, 'DD'); 
-ok(scalar @$gfds == 1, 'fetch_all_by_Disease_panel');
-
-$gfd = $gfds->[0];
-$gfda->delete($gfd, $user);
-
-#fetch_all_by_disease_id
-
-#fetch_all
-
-#fetch_all_by_GenomicFeature_Disease_panel
-$gene_symbol = 'KIF1BP';
+#fetch_all_by_GenomicFeature_constraints
+$gene_symbol = 'CACNA1G';
 $genomic_feature = $gfa->fetch_by_gene_symbol($gene_symbol);
-$disease_name = 'GOLDBERG-SHPRINTZEN MEGACOLON SYNDROME';
-$disease = $da->fetch_by_name($disease_name);
-$panel = 'DD';
-$gfds = $gfda->fetch_all_by_GenomicFeature_Disease_panel($genomic_feature, $disease, $panel);
-ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature_Disease_panel with disease synonym name');
+$gfds = $gfda->fetch_all_by_GenomicFeature_constraints($genomic_feature, {'allelic_requirement' => 'biallelic', 'mutation_consequence' => 'loss of function'});
+ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature_constraints');
 
 
 done_testing();
