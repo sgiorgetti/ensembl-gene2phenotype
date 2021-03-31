@@ -23,6 +23,43 @@ package Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor'); 
 
+
+sub get_attrib {
+  my $self = shift;
+  my $type = shift;
+  my $value = shift;
+
+  if ($type eq 'allelic_requirement') {
+    my @ids = ();
+    foreach my $v (split(',', $value)) {
+      my $id = $self->attrib_id_for_type_value($type, $v);
+      if (!$id) {
+        die "Could not get attrib for value: $v\n";
+      }
+      push @ids, $self->attrib_id_for_type_value($type, $v);
+    }        
+    return join(',', sort @ids);
+  } else {
+    return $self->attrib_id_for_type_value($type, $value);
+  }
+}
+
+sub get_value {
+  my $self = shift;
+  my $type = shift;
+  my $attrib = shift;
+
+  if ($type eq 'allelic_requirement') {
+    my @values = ();
+    foreach my $id (split(',', $attrib)) {
+      push @values, $self->attrib_value_for_type_id($type, $id);
+    }
+    return sort join(',', sort @values);
+  } else {
+    return $self->attrib_value_for_type_id($type, $attrib);
+  }
+}
+
 sub attrib_id_for_value {
   my ($self, $attrib_value) = @_;
   my $sql = qq{
@@ -75,8 +112,17 @@ sub attrib_id_for_type_value {
     # call this method to populate the attrib hash
     $self->attrib_value_for_id;
   }
-
   return $self->{attrib_ids}->{$type}->{$value};
+}
+
+sub attrib_value_for_type_id {
+  my ($self, $type, $attrib_id) = @_;
+  unless ($self->{attrib_types}) {
+    # call this method to populate the attrib hash
+    $self->attrib_id_for_type_code;
+  }
+
+  return $self->{attrib_types}->{$type}->{attrib_type_id};
 }
 
 sub get_attribs_by_type_value {
