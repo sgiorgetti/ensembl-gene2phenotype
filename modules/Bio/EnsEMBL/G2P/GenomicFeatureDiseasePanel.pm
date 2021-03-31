@@ -33,6 +33,7 @@ sub new {
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_panel_id,
+    'genomic_feature_disease_panel_id' => $genomic_feature_disease_panel_id,
     'adaptor' => $adaptor,
     'genomic_feature_disease_id' => $genomic_feature_disease_id,
     'confidence_category' => $confidence_category,
@@ -60,18 +61,22 @@ sub confidence_category {
   my $self = shift;
   my $confidence_category = shift;
   if ($confidence_category) {
+
     my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
     my $confidence_category_attrib = $attribute_adaptor->attrib_id_for_value($confidence_category);
     die "Could not get confidence category attrib id for value $confidence_category\n" unless ($confidence_category_attrib);
     $self->{confidence_category} = $confidence_category;
     $self->{confidence_category_attrib} = $confidence_category_attrib;
+
   } else {
+
     if ($self->{confidence_category_attrib} && !$self->{confidence_category}) {
       my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
       my $confidence_category = $attribute_adaptor->attrib_value_for_id($self->{confidence_category_attrib});
       $self->{confidence_category} = $confidence_category;
     }   
     die "No confidence_category" unless ($self->{confidence_category} );
+
   }
   return $self->{confidence_category};
 }
@@ -81,12 +86,18 @@ sub confidence_category_attrib {
   my $confidence_category_attrib = shift;
   if ($confidence_category_attrib) {
     my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
-    die "Could not get confidence category for value $confidence_category_attrib\n" unless ($confidence_category);
+    my $confidence_category = $attribute_adaptor->get_value('confidence_category', $confidence_category_attrib);
     $self->{confidence_category} = $confidence_category;
     $self->{confidence_category_attrib} = $confidence_category_attrib;
   } else {
-    die "No confidence_category_attrib" unless ($self->{confidence_category_attrib});
+    if (!defined $self->{confidence_category_attrib} && defined $self->{confidence_category}) {
+      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+      my $confidence_category_attrib = $attribute_adaptor->get_attrib('confidence_category', $self->{confidence_category});
+      $self->{confidence_category_attrib} = $confidence_category_attrib;
+    } 
+  }
+  if (!defined $self->{confidence_category_attrib}) {
+    die "Confidence category attrib not set\n";
   }
   return $self->{confidence_category_attrib};
 }
@@ -117,12 +128,18 @@ sub panel_attrib {
   my $panel_attrib = shift;
   if ($panel_attrib) {
     my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
-    die "Could not get panel for value $panel_attrib\n" unless ($panel);
+    my $panel = $attribute_adaptor->get_value('g2p_panel', $panel_attrib);
     $self->{panel} = $panel;
     $self->{panel_attrib} = $panel_attrib;
   } else {
-    die "No panel_attrib" unless ($self->{panel_attrib});
+    if (!defined $self->{panel_attrib} && defined $self->{panel}) {
+      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+      my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $self->{panel});
+      $self->{panel_attrib} = $panel_attrib;
+    } 
+  }
+  if (!defined $self->{panel_attrib}) {
+    die "Panel attrib not set\n";
   }
   return $self->{panel_attrib};
 }
