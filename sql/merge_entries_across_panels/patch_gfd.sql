@@ -14,5 +14,4 @@
 
 
 ALTER TABLE genomic_feature_disease DROP INDEX genomic_feature_disease;
-ALTER TABLE genomic_feature_disease DROP COLUMN confidence_category_attrib, DROP COLUMN is_visible;
-ALTER TABLE genomic_feature_disease ADD CONSTRAINT genomic_feature_disease UNIQUE (genomic_feature_id, allelic_requirement_attrib, mutation_consequence_attrib, disease_id, panel_attrib);
+ALTER TABLE genomic_feature_disease DROP COLUMN confidence_category_attrib, DROP COLUMN is_visible, DROP COLUMN panel_attrib;
