@@ -48,17 +48,25 @@ sub store {
     die "confidence_category or confidence_category_attrib is required\n";
   }
 
-  my $aa = $self->db->get_AttributeAdaptor;
-  if ( defined $gfd_panel->{panel} ) {
-    my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $gfd_panel->{panel});
-    die "Could not get panel attrib id for value ", $gfd_panel->{panel}, "\n" unless ($panel_attrib);
-    $gfd_panel->{panel_attrib} = $panel_attrib;
-  }
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
-  if ( defined $gfd_panel->{confidence_category} ) {
-    my $confidence_category_attrib = $aa->attrib_id_for_type_value('confidence_category', $gfd_panel->{confidence_category});
-    die "Could not get confidence category attrib id for value ", $gfd_panel->{confidence_category}, "\n" unless ($confidence_category_attrib);
-    $gfd_panel->{confidence_category_attrib} = $confidence_category_attrib;
+  foreach my $key (qw/confidence_category panel/)  {
+
+    if (defined $gfd_panel->{$key} && ! defined $gfd_panel->{"$key\_attrib"}) {
+      my $attrib = $attribute_adaptor->get_attrib($key, $gfd_panel->{$key});
+      if (!$attrib) {
+        die "Could not get $key attrib id for value ", $gfd_panel->{$key}, "\n";
+      }
+      $gfd_panel->{"$key\_attrib"} = $attrib;
+    }
+
+    if (defined $gfd_panel->{"$key\_attrib"} && ! defined $gfd_panel->{$key}) {
+      my $value = $attribute_adaptor->get_value($key, $gfd_panel->{"$key\_attrib"});
+      if (!$value) {
+        die "Could not get $key value for attrib id ", $gfd_panel->{"$key\_attrib"}, "\n";
+      }
+      $gfd_panel->{$key} = $value;
+    }
   }
 
   my $sth = $dbh->prepare(q{
@@ -183,9 +191,38 @@ sub update_log {
     -confidence_category_attrib => $gfd_panel->confidence_category_attrib,
     -user_id => $user->dbID,
     -action => $action, 
-    -adaptor => $GFD_panel_log_adaptor,
+    -adaptor => $gfd_panel_log_adaptor,
   );
   $gfd_panel_log_adaptor->store($gfd_panel_log);
+}
+
+sub fetch_all {
+  my $self = shift;
+  return $self->generic_fetch();
+}
+
+sub fetch_all_by_panel {
+  my $self = shift;
+  my $panel = shift;
+  if ($panel eq 'ALL') {
+    return $self->fetch_all();
+  } 
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel);
+  my $constraint = "gfd_panel.panel_attrib=$panel_attrib";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_panel_restricted {
+  my $self = shift;
+  my $panel = shift;
+  if ($panel eq 'ALL') {
+    return $self->fetch_all();
+  } 
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel);
+  my $constraint = "gfd_panel.panel_attrib=$panel_attrib AND gfd_panel.is_visible = 0";
+  return $self->generic_fetch($constraint);
 }
 
 sub fetch_by_dbID {
@@ -204,174 +241,20 @@ sub fetch_all_by_GenomicFeatureDisease {
 
 sub fetch_by_GenomicFeatureDisease_panel {
   my $self = shift;
-}
-
-sub fetch_all_by_GenomicFeature_panel {
-  my $self = shift;
-  my $genomic_feature = shift;
+  my $genomic_feature_disease = shift;
   my $panel = shift;
-
   if ($panel eq 'ALL') {
-    return $self->fetch_all_by_GenomicFeature($genomic_feature);
+    warn "fetch_by_GenomicFeatureDisease_panel cannot be used with panel ALL\n";
+    return undef;
   }
+  my $gfd_id = $genomic_feature_disease->dbID;
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-
-  my $genomic_feature_id = $genomic_feature->dbID;
-  my $constraint = "gfd_panel.genomic_feature_id=$genomic_feature_id AND gfd_panel.panel_attrib=$panel_id";
-  return $self->generic_fetch($constraint);
+  my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel);
+  my $constraint = "gfd_panel.panel_attrib=$panel_attrib AND gfd_panel.genomic_feature_disease_id=$gfd_id;";
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
 }
 
-sub fetch_all_by_GenomicFeature_panels {
-  my $self = shift;
-  my $genomic_feature = shift;
-  my $panels = shift;
-
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my @panel_ids = ();
-  foreach my $panel (@$panels) {
-    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-    push @panel_ids, $panel_id;
-  } 
-  my $genomic_feature_id = $genomic_feature->dbID;
-  my $constraint = "gfd_panel.genomic_feature_id=$genomic_feature_id AND gfd_panel.panel_attrib IN (" . join(',', @panel_ids) . ")";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_Disease {
-  my $self = shift;
-  my $disease = shift;
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd_panel.disease_id=$disease_id";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_Disease_panel {
-  my $self = shift;
-  my $disease = shift;
-  my $panel = shift;
-  if ($panel eq 'ALL') {
-    return $self->fetch_all_by_Disease($disease);
-  } 
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd_panel.disease_id=$disease_id AND gfd_panel.panel_attrib=$panel_id";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_Disease_panels {
-  my $self = shift;
-  my $disease = shift;
-  my $panels = shift;
-
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my @panel_ids = ();
-  foreach my $panel (@$panels) {
-    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-    push @panel_ids, $panel_id;
-  } 
-
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd_panel.disease_id=$disease_id AND gfd_panel.panel_attrib IN (" . join(',', @panel_ids) . ")";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_disease_id {
-  my $self = shift;
-  my $disease_id = shift;
-  my $constraint = qq{gfd_panel.disease_id = ?};
-  $self->bind_param_generic_fetch($disease_id, SQL_INTEGER);
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_panel {
-  my $self = shift;
-  my $panel = shift;
-  if ($panel eq 'ALL') {
-    return $self->fetch_all();
-  } 
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  my $constraint = "gfd_panel.panel_attrib=$panel_id";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_panel_restricted {
-  my $self = shift;
-  my $panel = shift;
-  if ($panel eq 'ALL') {
-    return $self->fetch_all();
-  } 
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  my $constraint = "gfd_panel.panel_attrib=$panel_id AND gfd_panel.is_visible = 0";
-  return $self->generic_fetch($constraint);
-}
-
-sub get_statistics {
-  my $self = shift;
-  my $panels = shift;
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $confidence_categories = $attribute_adaptor->get_attribs_by_type_value('confidence_category');
-  %$confidence_categories = reverse %$confidence_categories;
-  my $panel_attrib_ids = join(',', @$panels);
-  my $sth = $self->prepare(qq{
-    select a.value, gfd_panel.confidence_category_attrib, count(*)
-    from genomic_feature_disease gfd_panel, attrib a
-    where a.attrib_id = gfd_panel.panel_attrib
-    AND gfd_panel.panel_attrib IN ($panel_attrib_ids)
-    group by a.value, gfd_panel.confidence_category_attrib;
-  });
-  $sth->execute;
-
-  my $hash = {};
-  while (my ($panel, $confidence_category_attrib_id, $count) = $sth->fetchrow_array) {
-    my $confidence_category_value = $confidence_categories->{$confidence_category_attrib_id};
-    $hash->{$panel}->{$confidence_category_value} = $count;
-  }
-  my @results = ();
-  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both RD and IF', 'child IF'); 
-  push @results, \@header;
-  foreach my $panel (sort keys %$hash) {
-    my @row = ();
-    push @row, $panel;
-    for (my $i = 1; $i <= $#header; $i++) {
-      push @row, ($hash->{$panel}->{$header[$i]} || 0) + 0;
-    }
-    push @results, \@row;
-  }
-
-  return \@results;
-}
-
-sub fetch_all_by_panel_without_publications {
-  my $self = shift;
-  my $panel = shift;
-  my $constraint = '';
-  if ($panel ne 'ALL') {
-    my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-    $constraint = "AND gfd_panel.panel_attrib=$panel_id";
-  } 
-  my $cols = join ",", $self->_columns();
-  my $sth = $self->prepare(qq{
-    SELECT $cols FROM genomic_feature_disease gfd_panel
-    LEFT JOIN genomic_feature_disease_publication gfd_panelp
-    ON gfd_panel.genomic_feature_disease_id = gfd_panelp.genomic_feature_disease_id
-    WHERE gfd_panelp.genomic_feature_disease_id IS NULL
-    $constraint;
-  });
-
-  $sth->execute;
-  return $self->_objs_from_sth($sth);
-}
-
-sub fetch_all {
-  my $self = shift;
-  return $self->generic_fetch();
-}
 
 sub _columns {
   my $self = shift;
@@ -410,7 +293,6 @@ sub _objs_from_sth {
     $confidence_category_attrib,
     $is_visible,
     $panel_attrib,
-    $restricted_mutation_set
   ));
 
   my @objs;
