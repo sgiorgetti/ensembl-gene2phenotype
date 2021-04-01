@@ -128,14 +128,17 @@ ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature');
 
 #fetch_all_by_Disease
 $gfds = $gfda->fetch_all_by_Disease($disease); 
-ok(scalar @$gfds == 47, 'fetch_all_by_Disease');
+ok(scalar @$gfds == 48, 'fetch_all_by_Disease');
+
+#fetch_all_by_Disease_panels
+$gfds = $gfda->fetch_all_by_Disease_panels($disease, ['DD']);
+ok(scalar @$gfds == 48, 'fetch_all_by_Disease_panels');
 
 #fetch_all_by_GenomicFeature_constraints
 $gene_symbol = 'CACNA1G';
 $genomic_feature = $gfa->fetch_by_gene_symbol($gene_symbol);
 $gfds = $gfda->fetch_all_by_GenomicFeature_constraints($genomic_feature, {'allelic_requirement' => 'biallelic', 'mutation_consequence' => 'loss of function'});
 ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature_constraints');
-
 
 done_testing();
 1;
