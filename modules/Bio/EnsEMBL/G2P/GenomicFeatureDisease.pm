@@ -130,6 +130,18 @@ sub add_gfd_disease_synonym_id {
   push @{$self->{gfd_disease_synonym_id}}, $gfd_disease_synonym_id;
 }
 
+sub add_panel {
+  my $self = shift;
+  my $panel = shift;
+  throw("panel is required") if(!$panel);
+  push @{$self->{panels}}, $panel;
+}
+
+sub panels {
+  my $self = shift;
+  return $self->{panels};
+}
+
 sub get_GenomicFeature {
   my $self = shift;
   my $GF_adaptor = $self->{adaptor}->db->get_GenomicFeatureAdaptor;
@@ -140,6 +152,12 @@ sub get_Disease {
   my $self = shift;
   my $disease_adaptor = $self->{adaptor}->db->get_DiseaseAdaptor;
   return $disease_adaptor->fetch_by_dbID($self->disease_id);
+}
+
+sub get_all_GFDPanels {
+  my $self = shift;
+  my $GFD_panel_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseasePanelAdaptor;
+  return $GFD_panel_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
 sub get_all_GFDPublications {
