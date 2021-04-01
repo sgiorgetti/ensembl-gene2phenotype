@@ -167,7 +167,21 @@ sub fetch_all_by_Disease {
   my $self = shift;
   my $disease = shift;
   my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id";
+  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id);";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_Disease_panels {
+  my $self = shift;
+  my $disease = shift;
+  my $panels = shift;
+  my $disease_id = $disease->dbID;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my @panel_attribs = ();
+  foreach my $panel (@$panels) {
+    push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+  }
+  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id) AND gfdp.panel_attrib IN (". join(',', @panel_attribs) . ");";
   return $self->generic_fetch($constraint);
 }
 
@@ -176,6 +190,20 @@ sub fetch_all_by_GenomicFeature {
   my $genomic_feature = shift;
   my $genomic_feature_id = $genomic_feature->dbID;
   my $constraint = "gfd.genomic_feature_id=$genomic_feature_id";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_GenomicFeature_panels {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $panels = shift;
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my @panel_attribs = ();
+  foreach my $panel (@$panels) {
+    push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+  }
+  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfdp.panel_attrib IN (". join(',', @panel_attribs) . ");";
   return $self->generic_fetch($constraint);
 }
 
@@ -264,6 +292,7 @@ sub _columns {
     'gfd.allelic_requirement_attrib',
     'gfd.mutation_consequence_attrib',
     'gfd.restricted_mutation_set',
+    'gfdp.panel_attrib',
   );
   return @cols;
 }
@@ -272,6 +301,7 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['genomic_feature_disease', 'gfd'],
+    ['genomic_feature_disease_panel', 'gfdp'],
     ['GFD_disease_synonym', 'gfdds'],
   );
   return @tables;
@@ -282,9 +312,10 @@ sub _left_join {
 
   my @left_join = (
     ['GFD_disease_synonym', 'gfd.genomic_feature_disease_id = gfdds.genomic_feature_disease_id'],
+    ['genomic_feature_disease_panel', 'gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id'],
   );
 
-return @left_join;
+  return @left_join;
 }
 
 sub _objs_from_sth {
@@ -337,9 +368,17 @@ sub _obj_from_row {
     if (defined $row->{gfd_disease_synonym_id}) {
       $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
     }
+    if (defined $row->{panel_attrib}) {
+      my $panel = $attribute_adaptor->get_value('g2p_panel', $row->{panel_attrib});
+      $obj->add_panel($panel);
+    }
   } else {
     if (defined $row->{gfd_disease_synonym_id}) {
       $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
+    }
+    if (defined $row->{panel_attrib}) {
+      my $panel = $attribute_adaptor->get_value('g2p_panel', $row->{panel_attrib});
+      $obj->add_panel($panel);
     }
   }
 }
