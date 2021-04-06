@@ -97,7 +97,7 @@ sub fetch_all {
   return $self->generic_fetch();
 }
 
-sub fetch_all_visible_Panels {
+sub fetch_all_visible {
   my $self = shift;
   my $constraint = "p.is_visible=1";
   return $self->generic_fetch($constraint);

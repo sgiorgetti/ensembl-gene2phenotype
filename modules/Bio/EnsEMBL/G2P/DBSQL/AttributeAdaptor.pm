@@ -40,6 +40,7 @@ sub get_attrib {
     }        
     return join(',', sort @ids);
   } else {
+    print STDERR "get_attrib $type, $value\n";
     return $self->attrib_id_for_type_value($type, $value);
   }
 }
@@ -54,34 +55,19 @@ sub get_value {
     foreach my $id (split(',', $attrib)) {
       push @values, $self->attrib_value_for_type_id($type, $id);
     }
-    return sort join(',', sort @values);
+    return join(',', sort @values);
   } else {
     return $self->attrib_value_for_type_id($type, $attrib);
   }
 }
 
-sub attrib_id_for_value {
-  my ($self, $attrib_value) = @_;
-  my $sql = qq{
-    SELECT attrib_id FROM attrib WHERE value=?;
-  };
-  my $dbh = $self->dbc->db_handle;
-  my $sth = $dbh->prepare($sql);
-  $sth->execute($attrib_value);
-  my $attrib_id;
-  $sth->bind_columns(\$attrib_id);
-  $sth->fetch;
-  $sth->finish;
-  return $attrib_id;  
-}
-
-sub attrib_value_for_id {
-  my ($self, $attrib_id) = @_;
+sub set_attribs {
+  my $self = shift;
 
   unless ($self->{attribs}) {
     my $attribs;
     my $attrib_ids;
-
+    my $attrib_values;
     my $sql = qq{
       SELECT  a.attrib_id, t.code, a.value
       FROM    attrib a, attrib_type t
@@ -90,39 +76,34 @@ sub attrib_value_for_id {
 
     my $dbh = $self->dbc->db_handle;
     my $sth = $dbh->prepare($sql);
-
     $sth->execute;
 
     while (my ($attrib_id, $type, $value) = $sth->fetchrow_array) {
       $attribs->{$attrib_id}->{type}  = $type;
       $attribs->{$attrib_id}->{value} = $value;
       $attrib_ids->{$type}->{$value} = $attrib_id;
+      $attrib_values->{$type}->{$attrib_id} = $value;
     }
-
     $self->{attribs}    = $attribs;
     $self->{attrib_ids} = $attrib_ids;
-
+    $self->{attrib_values} = $attrib_values;
   }
-  return defined $attrib_id ? $self->{attribs}->{$attrib_id}->{value} : undef;
 }
 
 sub attrib_id_for_type_value {
   my ($self, $type, $value) = @_;
   unless ($self->{attrib_ids}) {
-    # call this method to populate the attrib hash
-    $self->attrib_value_for_id;
+    $self->set_attribs;
   }
   return $self->{attrib_ids}->{$type}->{$value};
 }
 
 sub attrib_value_for_type_id {
   my ($self, $type, $attrib_id) = @_;
-  unless ($self->{attrib_types}) {
-    # call this method to populate the attrib hash
-    $self->attrib_id_for_type_code;
+  unless ($self->{attrib_values}) {
+    $self->set_attribs;
   }
-
-  return $self->{attrib_types}->{$type}->{attrib_type_id};
+  return $self->{attrib_values}->{$type}->{$attrib_id};
 }
 
 sub get_attribs_by_type_value {
@@ -146,35 +127,6 @@ sub get_attribs_by_type_value {
   return $attribs;
 }
 
-sub attrib_id_for_type_code {
-  my ($self, $type) = @_;
-
-  unless ($self->{attrib_types}) {
-
-    my $attrib_types;
-
-    my $sql = qq{
-      SELECT  t.attrib_type_id, t.code, t.name, t.description
-      FROM    attrib_type t
-    };
-
-    my $sth = $self->prepare($sql);
-
-    $sth->execute;
-
-    while (my ($attrib_type_id, $code, $name, $description ) = $sth->fetchrow_array) {
-      $attrib_types->{$code}->{attrib_type_id} = $attrib_type_id;
-      $attrib_types->{$code}->{name}           = ($name eq '') ? $code : $name;
-      $attrib_types->{$code}->{description}    = $description;
-    }
-
-    $self->{attrib_types}  = $attrib_types;
-  }
-
-  return defined $type ? 
-    $self->{attrib_types}->{$type}->{attrib_type_id} :
-      undef;
-}
 
 
 1;

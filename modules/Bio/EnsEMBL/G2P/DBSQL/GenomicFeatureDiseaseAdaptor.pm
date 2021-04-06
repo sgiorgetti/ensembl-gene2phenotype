@@ -157,10 +157,30 @@ sub update_log {
   $GFD_log_adaptor->store($gfdl);
 }
 
+sub _get_constraints {
+  
+
+}
+
 sub fetch_by_dbID {
   my $self = shift;
   my $genomic_feature_disease_id = shift;
   return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
+}
+
+sub fetch_all_by_GenomicFeatureDisease {
+  my $self = shift;
+  my $gfd = shift;  
+  my @constraints = ();
+  my $genomic_feature = $gfd->get_GenomicFeature;
+  my $disease_id = $gfd->get_Disease->dbID;
+  my $allelic_requirement = $gfd->allelic_requirement;
+  my $mutation_consequence = $gfd->mutation_consequence;
+  return $self->fetch_all_by_GenomicFeature_constraints($genomic_feature, {
+    allelic_requirement => $allelic_requirement,
+    mutation_consequence => $mutation_consequence,
+    disease_id => $disease_id,
+  });
 }
 
 sub fetch_all_by_Disease {
@@ -175,11 +195,18 @@ sub fetch_all_by_Disease_panels {
   my $self = shift;
   my $disease = shift;
   my $panels = shift;
+  my $is_authorised = shift;
   my $disease_id = $disease->dbID;
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
   my @panel_attribs = ();
   foreach my $panel (@$panels) {
     push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+  }
+  if (!defined $is_authorised) {
+    $is_authorised = 0;
+  }
+  if (!$is_authorised) {
+    push @panel_attribs, "gfdp.is_visible=1"; 
   }
   my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id) AND gfdp.panel_attrib IN (". join(',', @panel_attribs) . ");";
   return $self->generic_fetch($constraint);
@@ -197,11 +224,18 @@ sub fetch_all_by_GenomicFeature_panels {
   my $self = shift;
   my $genomic_feature = shift;
   my $panels = shift;
+  my $is_authorised = shift;
   my $genomic_feature_id = $genomic_feature->dbID;
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
   my @panel_attribs = ();
   foreach my $panel (@$panels) {
     push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+  }
+  if (!defined $is_authorised) {
+    $is_authorised = 0;
+  }
+  if (!$is_authorised) {
+    push @panel_attribs, "gfdp.is_visible=1"; 
   }
   my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfdp.panel_attrib IN (". join(',', @panel_attribs) . ");";
   return $self->generic_fetch($constraint);
@@ -216,13 +250,28 @@ sub fetch_all_by_GenomicFeature_constraints {
 
   while ( my ($key, $value) = each (%$constraints_hash)) {
     if ($key eq 'allelic_requirement') {
-      my $allelic_requriement_attrib = $attribute_adaptor->get_attrib('allelic_requirement', $value); 
-      push @constraints, "gfd.allelic_requirement_attrib='$allelic_requriement_attrib'";
+      # we can have more than one allelic_requirement
+      foreach my $v (split(',', $value)) {
+        my $allelic_requriement_attrib = $attribute_adaptor->get_attrib('allelic_requirement', $v);
+        push @constraints, "gfd.allelic_requirement_attrib='$allelic_requriement_attrib'";
+      }
+    } elsif ($key eq 'allelic_requirement_attrib') {
+      foreach my $v (split(',', $value)) {
+        # test that value exists
+        my $allelic_requirement = $attribute_adaptor->get_value('allelic_requirement', $v);
+        push @constraints, "gfd.allelic_requirement_attrib='$v'";
+      }
     } elsif ($key eq 'mutation_consequence') {
       my $mutation_consequence_attrib = $attribute_adaptor->get_attrib('mutation_consequence', $value); 
       push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
+    } elsif ($key eq 'mutation_consequence_attrib') {
+      # test that value exists
+      my $mutation_consequence = $attribute_adaptor->get_value('mutation_consequence', $value); 
+      push @constraints, "gfd.mutation_consequence_attrib='$value'";
+    } elsif ($key eq 'disease_id') {
+      push @constraints, "(gfd.disease_id=$value OR gfdds.disease_id=$value)";
     } else {
-      die "Did not recognise constraint: $key. Supported constraints are: allelic_requirement and mutation_consequence\n";
+      die "Did not recognise constraint: $key. Supported constraints are: allelic_requirement, allelic_requirement_attrib, mutation_consequence, mutation_consequence_attrib, disease_id\n";
     }
   }
 
@@ -369,7 +418,9 @@ sub _obj_from_row {
       $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
     }
     if (defined $row->{panel_attrib}) {
+      print STDERR "fetch ",  $row->{panel_attrib}, "\n";
       my $panel = $attribute_adaptor->get_value('g2p_panel', $row->{panel_attrib});
+      print STDERR "fetch ", $panel, "\n";
       $obj->add_panel($panel);
     }
   } else {

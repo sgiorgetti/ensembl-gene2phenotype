@@ -50,23 +50,12 @@ sub store {
 
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
-  foreach my $key (qw/confidence_category panel/)  {
+  if (defined $gfd_panel->{panel} && ! defined $gfd_panel->{panel_attrib}) {
+    $gfd_panel->{panel_attrib} = $attribute_adaptor->get_attrib('g2p_panel', $gfd_panel->{panel});
+  }
 
-    if (defined $gfd_panel->{$key} && ! defined $gfd_panel->{"$key\_attrib"}) {
-      my $attrib = $attribute_adaptor->get_attrib($key, $gfd_panel->{$key});
-      if (!$attrib) {
-        die "Could not get $key attrib id for value ", $gfd_panel->{$key}, "\n";
-      }
-      $gfd_panel->{"$key\_attrib"} = $attrib;
-    }
-
-    if (defined $gfd_panel->{"$key\_attrib"} && ! defined $gfd_panel->{$key}) {
-      my $value = $attribute_adaptor->get_value($key, $gfd_panel->{"$key\_attrib"});
-      if (!$value) {
-        die "Could not get $key value for attrib id ", $gfd_panel->{"$key\_attrib"}, "\n";
-      }
-      $gfd_panel->{$key} = $value;
-    }
+  if (defined $gfd_panel->{confidence_category} && ! defined $gfd_panel->{confidence_category_attrib}) {
+    $gfd_panel->{confidence_category_attrib} = $attribute_adaptor->get_attrib('confidence_category', $gfd_panel->{confidence_category});
   }
 
   my $sth = $dbh->prepare(q{
@@ -196,6 +185,49 @@ sub update_log {
   $gfd_panel_log_adaptor->store($gfd_panel_log);
 }
 
+sub get_statistics {
+  my $self = shift;
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_adaptor = $self->db->get_PanelAdaptor;
+  my @panel_names = map {$_->name} @{$panel_adaptor->fetch_all_visible};
+  my @panel_attribs = ();
+  foreach my $panel_name (@panel_names) {
+    next if ($panel_name eq 'ALL');
+    my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel_name);
+    push @panel_attribs, $panel_attrib;
+  }
+  my $confidence_categories = $attribute_adaptor->get_attribs_by_type_value('confidence_category');
+  %$confidence_categories = reverse %$confidence_categories;
+  my $panel_attrib_ids = join(',', @panel_attribs);
+  my $sth = $self->prepare(qq{
+    select a.value, gfdp.confidence_category_attrib, count(*)
+    from genomic_feature_disease_panel gfdp, attrib a
+    where a.attrib_id = gfdp.panel_attrib
+    AND gfdp.panel_attrib IN ($panel_attrib_ids)
+    group by a.value, gfdp.confidence_category_attrib;
+  });
+  $sth->execute;
+
+  my $hash = {};
+  while (my ($panel, $confidence_category_attrib_id, $count) = $sth->fetchrow_array) {
+    my $confidence_category_value = $confidence_categories->{$confidence_category_attrib_id};
+    $hash->{$panel}->{$confidence_category_value} = $count;
+  }
+  my @results = ();
+  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both RD and IF', 'child IF');
+  push @results, \@header;
+  foreach my $panel (sort keys %$hash) {
+    my @row = ();
+    push @row, $panel;
+    for (my $i = 1; $i <= $#header; $i++) {
+      push @row, ($hash->{$panel}->{$header[$i]} || 0) + 0;
+    }
+    push @results, \@row;
+  }
+
+  return \@results;
+}
+
 sub fetch_all {
   my $self = shift;
   return $self->generic_fetch();
@@ -303,10 +335,10 @@ sub _objs_from_sth {
     my $confidence_category = undef; 
     my $panel = undef; 
     if ($confidence_category_attrib) {
-      $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
+      $confidence_category = $attribute_adaptor->get_value('confidence_category', $confidence_category_attrib);
     }
     if ($panel_attrib) {
-      $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
+      $panel = $attribute_adaptor->get_value('g2p_panel', $panel_attrib);
     }
 
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
