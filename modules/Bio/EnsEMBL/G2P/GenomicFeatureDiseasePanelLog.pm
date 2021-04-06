@@ -30,35 +30,30 @@ sub new {
   my $class = ref($caller) || $caller;
   my (
     $genomic_feature_disease_panel_log_id,
-    $genomic_feature_id,
-    $disease_id,
+    $genomic_feature_disease_panel_id,
+    $genomic_feature_disease_id,
     $confidence_category_attrib,
     $is_visible,
-    $panel,
     $panel_attrib,
     $created,
     $user_id,
     $action,
     $adaptor,
-    $confidence_category,
   ) = rearrange([
     'genomic_feature_disease_panel_log_id',
-    'genomic_feature_id',
-    'disease_id',
+    'genomic_feature_disease_panel_id',
+    'genomic_feature_disease_id',
     'confidence_category_attrib',
     'is_visible',
-    'panel',
     'panel_attrib',
     'created',
     'user_id',
     'action',
     'adaptor',
-    'confidence_category',
-    'gene_symbol',
-    'disease_name',
-    'genomic_feature_disease_id'
   ], @_);
   my $self = $class->SUPER::new(@_);
+  $self->{created} =  $created;
+  return $self;
 }
 
 sub dbID {
@@ -144,5 +139,22 @@ sub panel_attrib {
   return $self->{panel_attrib};
 }
 
+sub created {
+  my $self = shift;
+  $self->{created} = shift if ( @_ );
+  return $self->{created};
+}
+
+sub user_id {
+  my $self = shift;
+  $self->{user_id} = shift if ( @_ );
+  return $self->{user_id};
+}
+
+sub action {
+  my $self = shift;
+  $self->{action} = shift if ( @_ );
+  return $self->{action};
+}
 
 1;

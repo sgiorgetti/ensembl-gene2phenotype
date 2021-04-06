@@ -82,7 +82,7 @@ sub allelic_requirement {
       my @ids = split(',', $self->{allelic_requirement_attrib});
       my @values = ();
       foreach my $id (@ids) {
-        push @values, $attribute_adaptor->attrib_value_for_id($id);
+        push @values, $attribute_adaptor->get_value('allelic_requirement', $id);
       }
       $self->{allelic_requirement} = join(',', sort @values);
     }
@@ -105,7 +105,7 @@ sub mutation_consequence {
     $self->{mutation_consequence} = $mutation_consequence;
   } else { 
     if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
-      $self->{mutation_consequence} = $attribute_adaptor->attrib_value_for_id($self->{mutation_consequence_attrib});
+      $self->{mutation_consequence} = $attribute_adaptor->get_value('mutation_consequence', $self->{mutation_consequence_attrib});
     }
   }
   return $self->{mutation_consequence};

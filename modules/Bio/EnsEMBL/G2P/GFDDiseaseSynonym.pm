@@ -60,9 +60,9 @@ sub disease_id {
   return $self->{'disease_id'};
 }
 
-sub synonym {
+sub get_Disease {
   my $self = shift;
-  $self->{'synonym'} = shift if ( @_);
-  return $self->{'synonym'};
+  my $disease_adaptor = $self->{adaptor}->db->get_DiseaseAdaptor;
+  return $disease_adaptor->fetch_by_dbID($self->disease_id);
 }
 1;
