@@ -28,33 +28,36 @@ use base qw(Bio::EnsEMBL::G2P::GenomicFeatureDisease);
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_disease_log_id, $genomic_feature_id, $disease_id, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $created, $user_id, $action, $adaptor, $confidence_category, $gene_symbol, $disease_name, $genomic_feature_disease_id) = rearrange(['genomic_feature_disease_log_id', 'genomic_feature_id', 'disease_id', 'created', 'user_id', 'action', 'adaptor', 'gene_symbol', 'disease_name', 'genomic_feature_disease_id'], @_);
+  my (
+    $genomic_feature_disease_log_id,
+    $genomic_feature_disease_id,
+    $genomic_feature_id,
+    $disease_id,
+    $allelic_requirement_attrib,
+    $mutation_consequence_attrib,
+    $created,
+    $user_id,
+    $action,
+    $adaptor,
+  ) = rearrange([
+    'genomic_feature_disease_log_id',
+    'genomic_feature_disease_id',
+    'genomic_feature_id',
+    'disease_id',
+    'allelic_requirement_attrib',
+    'mutation_consequence_attrib',
+    'created',
+    'user_id',
+    'action',
+    'adaptor',
+  ], @_);
+
   my $self = $class->SUPER::new(@_);
-  $self->{'genomic_feature_disease_log_id'} = $genomic_feature_disease_log_id;
-  $self->{'genomic_feature_id'} = $genomic_feature_id;
-  $self->{'disease_id'} = $disease_id;
-  $self->{'is_visible'} = $is_visible;
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
   $self->{'adaptor'} = $adaptor;
-  $self->{'gene_symbol'} = $gene_symbol;
-  $self->{'disease_name'} = $disease_name;
-  $self->{'genomic_feature_disease_id'} = $genomic_feature_disease_id;
-
   return $self;
-}
-
-sub dbID {
-  my $self = shift;
-  $self->{genomic_feature_disease_log_id} = shift if @_;
-  return $self->{genomic_feature_disease_log_id};
-}
-
-sub genomic_feature_disease_id {
-  my $self = shift;
-  $self->{'genomic_feature_disease_id'} = shift if ( @_);
-  return $self->{'genomic_feature_disease_id'};
 }
 
 sub created {
@@ -74,18 +77,5 @@ sub action {
   $self->{action} = shift if ( @_ );
   return $self->{action};
 }
-
-sub gene_symbol {
-  my $self = shift;
-  $self->{gene_symbol} = shift if ( @_ );
-  return $self->{gene_symbol};
-}
-
-sub disease_name {
-  my $self = shift;
-  $self->{disease_name} = shift if ( @_ );
-  return $self->{disease_name};
-}
-
 
 1;
