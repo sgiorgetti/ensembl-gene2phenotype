@@ -28,6 +28,7 @@ my $multi = Bio::EnsEMBL::Test::MultiTestDB->new('homo_sapiens');
 my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePanelAdaptor;
+my $gfd_panel_log_adaptor = $g2pdb->get_GenomicFeatureDiseasePanelLogAdaptor;
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePanelAdaptor'), 'isa GenomicFeatureDiseasePanelAdaptor');
@@ -79,7 +80,7 @@ $gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
   -is_visible => 1,
   -adaptor => $gfdpa,
 );
-throws_ok { $gfdpa->store($gfd_panel, $user); } qr/Could not get confidence_category attrib id for value maybe/, 'Die on wrong confidence category';
+throws_ok { $gfdpa->store($gfd_panel, $user); } qr/Could not get attrib for value: maybe/, 'Die on wrong confidence category';
 
 $gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
   -genomic_feature_disease_id => $genomic_feature_disease_id,
@@ -88,20 +89,46 @@ $gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
   -is_visible => 1,
   -adaptor => $gfdpa,
 );
-throws_ok { $gfdpa->store($gfd_panel, $user); } qr/Could not get panel attrib id for value Brain/, 'Die on wrong panel';
+throws_ok { $gfdpa->store($gfd_panel, $user); } qr/Could not get attrib for value: Brain/, 'Die on wrong panel';
 
+# store, update, delete
+$multi->hide('gene2phenotype', 'genomic_feature_disease_panel', 'genomic_feature_disease_panel_log', 'genomic_feature_disease_panel_deleted');
 
+$gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
+  -genomic_feature_disease_id => $genomic_feature_disease_id,
+  -confidence_category => 'confirmed',
+  -panel => 'DD',
+  -is_visible => 1,
+  -adaptor => $gfdpa,
+);
+$gfd_panel = $gfdpa->store($gfd_panel, $user);
+ok($gfd_panel->genomic_feature_disease_id == $genomic_feature_disease_id, 'store genomic_feature_disease_id');
+ok($gfd_panel->confidence_category eq 'confirmed', 'store confidence_category');
+ok($gfd_panel->panel eq 'DD', 'store panel');
+ok($gfd_panel->is_visible == 1, 'store is_visible');
+my $gfd_panel_logs = $gfd_panel_log_adaptor->fetch_all_by_GenomicFeatureDiseasePanel($gfd_panel);
+my ($gfd_panel_log) = grep {$_->action eq 'create'} @$gfd_panel_logs;
+ok($gfd_panel_log->genomic_feature_disease_id == $genomic_feature_disease_id, 'from log table: genomic_feature_disease_id');
+ok($gfd_panel_log->confidence_category eq 'confirmed', 'from log table: confidence_category');
+ok($gfd_panel_log->panel eq 'DD', 'from log table: panel');
+ok($gfd_panel_log->is_visible == 1, 'from log table: is_visible');
 
-# store and delete 
-#ok($gfda->store($gfd, $user), 'store');
-#my $GFD_id = $gfd->{genomic_feature_disease_id};
-#$gfd = $gfda->fetch_by_dbID($GFD_id);
-#$gfd->confidence_category('possible DD gene');
-#ok($gfda->update($gfd, $user), 'update');
-#$gfd = $gfda->fetch_by_dbID($GFD_id);
-#ok($gfd->confidence_category eq 'possible DD gene', 'test update');
-#my $dbh = $gfda->dbc->db_handle;
-#$dbh->do(qq{DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr;
+$gfd_panel->confidence_category('possible');
+$gfd_panel = $gfdpa->update($gfd_panel, $user);
+$gfd_panel = $gfdpa->fetch_by_dbID($gfd_panel->dbID);
+ok($gfd_panel->confidence_category eq 'possible', 'update confidence_category');
+$gfd_panel_logs = $gfd_panel_log_adaptor->fetch_all_by_GenomicFeatureDiseasePanel($gfd_panel);
+($gfd_panel_log) = grep {$_->action eq 'update'} @$gfd_panel_logs;
+ok($gfd_panel_log->confidence_category eq 'possible', 'from log table, after update: confidence_category');
+
+$gfdpa->delete($gfd_panel, $user);
+my $gfd_panel_deleted = $gfdpa->fetch_by_dbID($gfd_panel->dbID);
+ok(!defined $gfd_panel_deleted, 'delete');
+
+$gfd_panel_logs = $gfd_panel_log_adaptor->fetch_all_by_GenomicFeatureDiseasePanel($gfd_panel);
+ok(scalar @$gfd_panel_logs == 0, 'No entries in log table after GenomicFeatureDiseasePanel has been deleted');
+
+$multi->restore('gene2phenotype', 'genomic_feature_disease_panel', 'genomic_feature_disease_panel_log', 'genomic_feature_disease_panel_deleted');
 
 #fetch_by_dbID
 my $dbID = 33; 
@@ -127,8 +154,6 @@ ok(scalar @$gfd_panels == 1, 'fetch_all_by_GenomicFeatureDisease');
 #fetch_by_GenomicFeatureDisease_panel
 $gfd_panel = $gfdpa->fetch_by_GenomicFeatureDisease_panel($gfd, 'DD');
 ok($gfd_panel->dbID == 1907, 'fetch_by_GenomicFeatureDisease_panel');
-
-
 
 done_testing();
 1;
