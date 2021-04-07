@@ -52,6 +52,7 @@ sub new {
     'adaptor',
   ], @_);
   my $self = $class->SUPER::new(@_);
+  $self->{genomic_feature_disease_panel_log_id} = $genomic_feature_disease_panel_log_id;
   $self->{created} = $created;
   $self->{user_id} = $user_id;
   $self->{action}  = $action;
@@ -60,10 +61,11 @@ sub new {
   return $self;
 }
 
-sub genomic_feature_disease_panel_id {
+
+sub dbID {
   my $self = shift;
-  $self->{genomic_feature_disease_panel_id} = shift if ( @_ );
-  return $self->{genomic_feature_disease_panel_id};
+  $self->{genomic_feature_disease_panel_log_id} = shift if ( @_ );
+  return $self->{genomic_feature_disease_panel_log_id};
 }
 
 sub created {
