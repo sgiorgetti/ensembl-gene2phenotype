@@ -40,8 +40,11 @@ sub get_attrib {
     }        
     return join(',', sort @ids);
   } else {
-    print STDERR "get_attrib $type, $value\n";
-    return $self->attrib_id_for_type_value($type, $value);
+    my $attrib = $self->attrib_id_for_type_value($type, $value);
+    if (!$attrib) {
+      die "Could not get attrib for value: $value\n";
+    }
+    return $attrib;
   }
 }
 
@@ -53,11 +56,19 @@ sub get_value {
   if ($type eq 'allelic_requirement') {
     my @values = ();
     foreach my $id (split(',', $attrib)) {
-      push @values, $self->attrib_value_for_type_id($type, $id);
+      my $value =  $self->attrib_value_for_type_id($type, $id);
+      if (!$value) {
+        die "Could not get value for attrib: $id\n";
+      }
+      push @values, $value;
     }
     return join(',', sort @values);
   } else {
-    return $self->attrib_value_for_type_id($type, $attrib);
+    my $value = $self->attrib_value_for_type_id($type, $attrib);
+    if (!$value) {
+      die "Could not get value for attrib: $attrib\n";
+    }
+    return $value;
   }
 }
 
