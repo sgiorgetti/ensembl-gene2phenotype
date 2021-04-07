@@ -107,7 +107,7 @@ sub mutation_consequence {
   my $mutation_consequence = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
   if ($mutation_consequence) {
-    $self->{mutation_consequence_attrib} = $attribute_adaptor->attrib_id_for_value($mutation_consequence);
+    $self->{mutation_consequence_attrib} = $attribute_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
     $self->{mutation_consequence} = $mutation_consequence;
   } else { 
     if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
