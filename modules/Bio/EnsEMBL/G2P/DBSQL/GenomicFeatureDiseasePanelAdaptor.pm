@@ -122,12 +122,11 @@ sub delete {
   );
   $sth->finish();
 
-  $sth = $dbh->prepare(q{
-    DELETE FROM genomic_feature_disease_panel WHERE genomic_feature_disease_panel_id = ?;
-  });
-
-  $sth->execute($gfd_panel->dbID);
-  $sth->finish();
+  foreach my $table (qw/genomic_feature_disease_panel genomic_feature_disease_panel_log/) {
+    $sth = $dbh->prepare(qq{ DELETE FROM $table WHERE genomic_feature_disease_panel_id = ?;});
+    $sth->execute($gfd_panel->dbID);
+    $sth->finish();
+  }
 }
 
 sub update {
@@ -149,15 +148,13 @@ sub update {
     SET
       confidence_category_attrib = ?,
       is_visible = ?,
-      panel_attrib = ?,
-      restricted_mutation_set = ?
-    WHERE genomic_feature_disease_panel_id = ? 
+      panel_attrib = ?
+    WHERE genomic_feature_disease_panel_id = ?;
   });
   $sth->execute(
     $gfd_panel->confidence_category_attrib,
     $gfd_panel->is_visible,
     $gfd_panel->panel_attrib,
-    $gfd_panel->restricted_mutation_set,
     $gfd_panel->dbID
   );
   $sth->finish();
@@ -173,11 +170,13 @@ sub update_log {
   my $user = shift;
   my $action = shift;
 
-  my $gfd_panel_log_adaptor = $self->db->get_GFPPanelLogAdaptor;
-  my $gfd_panel_log = Bio::EnsEMBL::G2P::GFDPanelLog->new(
+  my $gfd_panel_log_adaptor = $self->db->get_GenomicFeatureDiseasePanelLogAdaptor;
+  my $gfd_panel_log = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog->new(
     -genomic_feature_disease_panel_id => $gfd_panel->dbID,
     -genomic_feature_disease_id => $gfd_panel->genomic_feature_disease_id,
     -confidence_category_attrib => $gfd_panel->confidence_category_attrib,
+    -panel_attrib => $gfd_panel->panel_attrib,
+    -is_visible => $gfd_panel->is_visible,
     -user_id => $user->dbID,
     -action => $action, 
     -adaptor => $gfd_panel_log_adaptor,
