@@ -74,9 +74,7 @@ sub store {
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
       disease_id,
-      allelic_requirement,
       allelic_requirement_attrib,
-      mutation_consequence,
       mutation_consequence_attrib,
       restricted_mutation_set
     ) VALUES (?, ?, ?, ?, ?)
@@ -85,9 +83,7 @@ sub store {
   $sth->execute(
     $gfd->{genomic_feature_id},
     $gfd->{disease_id},
-    $gfd->{allelic_requirement},
     $gfd->{allelic_requirement_attrib},
-    $gfd->{mutation_consequence},
     $gfd->{mutation_consequence_attrib},
     $gfd->restricted_mutation_set || 0
   );
@@ -146,20 +142,18 @@ sub update_log {
   my $action = shift;
 
   my $GFD_log_adaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor;
+
   my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
     -genomic_feature_disease_id => $gfd->dbID,
     -disease_id => $gfd->disease_id,
     -genomic_feature_id => $gfd->genomic_feature_id,
+    -allelic_requirement_attrib => $gfd->allelic_requirement_attrib,
+    -mutation_consequence_attrib => $gfd->mutation_consequence_attrib,
     -user_id => $user->dbID,
     -action => $action, 
     -adaptor => $GFD_log_adaptor,
   );
   $GFD_log_adaptor->store($gfdl);
-}
-
-sub _get_constraints {
-  
-
 }
 
 sub fetch_by_dbID {
@@ -418,9 +412,7 @@ sub _obj_from_row {
       $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
     }
     if (defined $row->{panel_attrib}) {
-      print STDERR "fetch ",  $row->{panel_attrib}, "\n";
       my $panel = $attribute_adaptor->get_value('g2p_panel', $row->{panel_attrib});
-      print STDERR "fetch ", $panel, "\n";
       $obj->add_panel($panel);
     }
   } else {
