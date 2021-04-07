@@ -83,7 +83,7 @@ $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -mutation_consequence => 'cis-regulatory or promotor',
   -adaptor => $gfda,
 );
-throws_ok { $gfda->store($gfd, $user); } qr/Could not get mutation_consequence attrib id for value cis-regulatory or promotor/, 'Die on wrong mutation consequence value';
+throws_ok { $gfda->store($gfd, $user); } qr/Could not get attrib for value: cis-regulatory or promotor/, 'Die on wrong mutation consequence value';
 
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
@@ -117,11 +117,16 @@ ok($gfd_log->get_Disease->name eq 'KABUKI SYNDROME', 'from log table: disease na
 ok($gfd_log->get_GenomicFeature->gene_symbol eq 'P3H1', 'from log table: gene symbol');
 
 $gfd->allelic_requirement('hemizygous');
+$gfd->mutation_consequence('uncertain');
 $gfd = $gfda->update($gfd, $user);
+$gfd = $gfda->fetch_by_dbID($gfd->dbID);
 ok($gfd->allelic_requirement eq 'hemizygous', 'update allelic_requirement');
+ok($gfd->mutation_consequence eq 'uncertain', 'update mutation_consequence');
+
 $gfd_logs = $gfd_log_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
 ($gfd_log) = grep {$_->action eq 'update'} @$gfd_logs;
 ok($gfd_log->allelic_requirement eq 'hemizygous', 'from log table, after update: allelic_requirement');
+ok($gfd_log->mutation_consequence eq 'uncertain', 'from log table, after update: mutation_consequence');
 
 $multi->restore('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_disease_log');
 
