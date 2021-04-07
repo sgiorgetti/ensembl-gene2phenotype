@@ -28,6 +28,8 @@ my $multi = Bio::EnsEMBL::Test::MultiTestDB->new('homo_sapiens');
 my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
+my $gfd_log_adaptor = $g2pdb->get_GenomicFeatureDiseaseLogAdaptor;
+
 my $da = $g2pdb->get_DiseaseAdaptor;
 my $gfa = $g2pdb->get_GenomicFeatureAdaptor;
 my $ua = $g2pdb->get_UserAdaptor;
@@ -42,8 +44,6 @@ ok($gfda && $gfda->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor')
 # fetch_all_by_GenomicFeature
 # fetch_all_by_constraints(hash)
 # fetch_all_by_GenomicFeature_constraints
-# add, store
-# update
 
 # store
 my $disease_name = 'KABUKI SYNDROME';
@@ -94,16 +94,36 @@ $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
 );
 throws_ok { $gfda->store($gfd, $user); } qr/Could not get attrib for value: x-linked/, 'Die on wrong allelic requirement value';
 
-# store and delete 
-#ok($gfda->store($gfd, $user), 'store');
-#my $GFD_id = $gfd->{genomic_feature_disease_id};
-#$gfd = $gfda->fetch_by_dbID($GFD_id);
-#$gfd->confidence_category('possible DD gene');
-#ok($gfda->update($gfd, $user), 'update');
-#$gfd = $gfda->fetch_by_dbID($GFD_id);
-#ok($gfd->confidence_category eq 'possible DD gene', 'test update');
-#my $dbh = $gfda->dbc->db_handle;
-#$dbh->do(qq{DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id=$GFD_id;}) or die $dbh->errstr;
+# store, update
+$multi->hide('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_disease_log');
+
+$gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
+  -genomic_feature_id => $genomic_feature->dbID,
+  -disease_id => $disease->dbID,
+  -allelic_requirement => 'monoallelic',
+  -mutation_consequence => 'cis-regulatory or promotor mutation',
+  -adaptor => $gfda,
+);
+$gfd = $gfda->store($gfd, $user);
+ok($gfd->allelic_requirement eq 'monoallelic', 'store allelic_requirement');
+ok($gfd->mutation_consequence eq 'cis-regulatory or promotor mutation', 'store mutation_consequence');
+ok($gfd->get_Disease->name eq 'KABUKI SYNDROME', 'store disease name');
+ok($gfd->get_GenomicFeature->gene_symbol eq 'P3H1', 'store gene symbol');
+my $gfd_logs = $gfd_log_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
+my ($gfd_log) = grep {$_->action eq 'create'} @$gfd_logs;
+ok($gfd_log->allelic_requirement eq 'monoallelic', 'from log table: allelic_requirement');
+ok($gfd_log->mutation_consequence eq 'cis-regulatory or promotor mutation', 'from log table: mutation_consequence');
+ok($gfd_log->get_Disease->name eq 'KABUKI SYNDROME', 'from log table: disease name');
+ok($gfd_log->get_GenomicFeature->gene_symbol eq 'P3H1', 'from log table: gene symbol');
+
+$gfd->allelic_requirement('hemizygous');
+$gfd = $gfda->update($gfd, $user);
+ok($gfd->allelic_requirement eq 'hemizygous', 'update allelic_requirement');
+$gfd_logs = $gfd_log_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
+($gfd_log) = grep {$_->action eq 'update'} @$gfd_logs;
+ok($gfd_log->allelic_requirement eq 'hemizygous', 'from log table, after update: allelic_requirement');
+
+$multi->restore('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_disease_log');
 
 #fetch_by_dbID
 my $dbID = 1797; 
