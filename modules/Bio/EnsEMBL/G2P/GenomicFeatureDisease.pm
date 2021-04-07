@@ -52,6 +52,12 @@ sub dbID {
   return $self->{genomic_feature_disease_id};
 }
 
+sub genomic_feature_disease_id {
+  my $self = shift;
+  $self->{genomic_feature_disease_id} = shift if @_;
+  return $self->{genomic_feature_disease_id};
+}
+
 sub genomic_feature_id {
   my $self = shift;
   $self->{genomic_feature_id} = shift if ( @_ );
@@ -73,7 +79,7 @@ sub allelic_requirement {
     my @values = split(',', $allelic_requirement); 
     my @ids = ();
     foreach my $value (@values) {
-      push @ids, $attribute_adaptor->attrib_id_for_value($value);
+      push @ids, $attribute_adaptor->get_attrib('allelic_requirement', $value);
     }        
     $self->{allelic_requirement_attrib} = join(',', sort @ids);
     $self->{allelic_requirement} = $allelic_requirement;
