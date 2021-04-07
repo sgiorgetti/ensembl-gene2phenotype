@@ -45,7 +45,7 @@ sub store {
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
   });
 
   $sth->execute(
@@ -155,7 +155,6 @@ sub _objs_from_sth {
   my @objs;
 
   while ($sth->fetch()) {
-    my $confidence_category = undef; 
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
       -genomic_feature_disease_log_id => $genomic_feature_disease_log_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
