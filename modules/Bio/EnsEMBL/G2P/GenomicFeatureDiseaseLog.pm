@@ -53,11 +53,18 @@ sub new {
   ], @_);
 
   my $self = $class->SUPER::new(@_);
+  $self->{'genomic_feature_disease_log_id'} = $genomic_feature_disease_log_id;
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
   $self->{'action'} = $action;
   $self->{'adaptor'} = $adaptor;
   return $self;
+}
+
+sub dbID {
+  my $self = shift;
+  $self->{genomic_feature_disease_log_id} = shift if ( @_ );
+  return $self->{genomic_feature_disease_log_id};
 }
 
 sub created {
