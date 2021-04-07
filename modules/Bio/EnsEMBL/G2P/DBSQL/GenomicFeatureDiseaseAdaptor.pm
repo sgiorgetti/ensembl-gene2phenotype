@@ -118,6 +118,8 @@ sub update {
     SET
       genomic_feature_id = ?,
       disease_id = ?,
+      allelic_requirement_attrib = ?,
+      mutation_consequence_attrib = ?,
       restricted_mutation_set = ?
     WHERE genomic_feature_disease_id = ? 
   });
@@ -125,6 +127,8 @@ sub update {
   $sth->execute(
     $gfd->genomic_feature_id,
     $gfd->disease_id,
+    $gfd->allelic_requirement_attrib,
+    $gfd->mutation_consequence_attrib,
     $gfd->restricted_mutation_set,
     $gfd->dbID
   );
