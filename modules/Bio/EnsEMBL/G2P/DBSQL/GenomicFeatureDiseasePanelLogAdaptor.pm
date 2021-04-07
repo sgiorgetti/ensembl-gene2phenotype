@@ -52,7 +52,7 @@ sub store {
     $gfd_panel_log->{genomic_feature_disease_panel_id},
     $gfd_panel_log->genomic_feature_disease_id,
     $gfd_panel_log->{confidence_category_attrib},
-    $gfd_panel_log->{is_visible},
+    $gfd_panel_log->is_visible || 1,
     $gfd_panel_log->{panel_attrib},
     $gfd_panel_log->user_id,
     $gfd_panel_log->action,
@@ -73,14 +73,27 @@ sub fetch_by_dbID {
   return $self->SUPER::fetch_by_dbID($dbID);
 }
 
-sub fetch_latest_updates {
+sub fetch_all_by_GenomicFeatureDiseasePanel {
+  my $self = shift;
+  my $gfd_panel = shift;
+  my $gfd_panel_id = $gfd_panel->dbID;
+  my $constraint = "gfdpl.genomic_feature_disease_panel_id=$gfd_panel_id";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_most_recent {
   my $self = shift;
   my $panel = shift;
-  my $limit = shift; # 10
+  my $limit = shift;
   my $is_visible_only = shift;
-  my $aa = $self->db->get_AttributeAdaptor;
-  my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $panel);
-  my $constraint = "gfdpl.panel_attrib='$panel_attrib' AND gfdpl.action='create'";
+  my $action = shift;
+  $limit ||= 10;
+  $is_visible_only ||= 1;
+  $action ||= 'create';
+
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+  my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel);
+  my $constraint = "gfdpl.panel_attrib='$panel_attrib' AND gfdpl.action='$action'";
   if ($is_visible_only) {
     $constraint .= " AND gfdpl.is_visible = 1";
   }
