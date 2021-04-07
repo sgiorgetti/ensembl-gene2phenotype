@@ -29,32 +29,35 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 
 my $gfdla = $g2pdb->get_GenomicFeatureDiseaseLogAdaptor;
 
-my $dbID = 133;
-my $genomic_feature_id = 59384;
-my $disease_id = 326;
-my $confidence_category_attrib = 32;
-my $is_visible = 1;
-my $panel = '38';
-my $user_id = 1;
+my $dbID = 2222;
+my $genomic_feature_disease_id = 2683;
+my $genomic_feature_id = 907;
+my $allelic_requirement_attrib = '3';
+my $allelic_requirement = 'biallelic';
+my $mutation_consequence_attrib = '22';
+my $mutation_consequence = 'all missense/in frame';
+my $disease_id = 3438;
+my $user_id = 10;
 my $action = 'create';
 
 my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
+  -genomic_feature_disease_id => $genomic_feature_disease_id,
   -genomic_feature_id => $genomic_feature_id,
   -disease_id => $disease_id,
-  -confidence_category_attrib => $confidence_category_attrib,
-  -is_visible => $is_visible,
-  -panel => $panel,
+  -allelic_requirement_attrib => $allelic_requirement_attrib,
+  -mutation_consequence_attrib => $mutation_consequence_attrib,
   -user_id => $user_id,
   -action => $action,
   -adaptor => $gfdla,
 );
 
+ok($gfdl->genomic_feature_disease_id == $genomic_feature_disease_id, 'genomic_feature_disease_id');
 ok($gfdl->genomic_feature_id == $genomic_feature_id, 'genomic_feature_id');
 ok($gfdl->disease_id == $disease_id, 'disease_id');
-ok($gfdl->confidence_category_attrib == $confidence_category_attrib, 'confidence_category_attrib');
-ok($gfdl->confidence_category eq 'confirmed DD gene', 'confidence_category');
-ok($gfdl->is_visible == 1, 'is_visible');
-ok($gfdl->panel eq $panel, 'panel');
+ok($gfdl->allelic_requirement_attrib eq $allelic_requirement_attrib, 'allelic_requirement_attrib');
+ok($gfdl->allelic_requirement eq $allelic_requirement, 'allelic_requirement');
+ok($gfdl->mutation_consequence eq $mutation_consequence, 'mutation_consequence');
+ok($gfdl->disease_id == $disease_id, 'disease_id');
 ok($gfdl->action eq $action, 'action');
 ok($gfdl->user_id == $user_id, 'user_id');
 ok($gfdl->{adaptor} && $gfdl->{adaptor}->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseLogAdaptor'), 'isa GenomicFeatureDiseaseLogAdaptor');
