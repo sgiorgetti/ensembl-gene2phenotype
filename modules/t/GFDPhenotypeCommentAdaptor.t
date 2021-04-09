@@ -34,15 +34,15 @@ my $ua = $g2pdb->get_UserAdaptor;
 ok($gfdpca && $gfdpca->isa('Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor'), 'isa GFDPhenotypeCommentAdaptor');
 
 my $gfdpc = $gfdpca->fetch_by_dbID(1);
-ok($gfdpc->comment_text eq 'comment', 'comment text');
+ok($gfdpc->comment_text eq 'Only in a proportion of cases', 'comment text');
 
-my $gfdp = $gfdpa->fetch_by_dbID(2118);
+my $gfdp = $gfdpa->fetch_by_dbID(30149);
 my $gfdps = $gfdpca->fetch_all_by_GenomicFeatureDiseasePhenotype($gfdp);
 ok(scalar @$gfdps == 1, 'fetch_all_by_GenomicFeatureDiseasePhenotype');
 
 my $user = $ua->fetch_by_dbID(1);
 
-my $GFD_phenotype_id = 2118;
+my $GFD_phenotype_id = 52063;
 my $comment_text = 'comment';
 
 $gfdpc = Bio::EnsEMBL::G2P::GFDPhenotypeComment->new(
