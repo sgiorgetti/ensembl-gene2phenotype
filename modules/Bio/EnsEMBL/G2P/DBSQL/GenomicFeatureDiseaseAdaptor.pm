@@ -163,7 +163,30 @@ sub update_log {
 sub fetch_by_dbID {
   my $self = shift;
   my $genomic_feature_disease_id = shift;
-  return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
+  my $panels = shift;
+  my $is_authorised = shift;
+
+  if (defined $panels && defined $is_authorised) {
+    my @constraints = ();
+    push @constraints, "gfd.genomic_feature_disease_id=$genomic_feature_disease_id";
+    my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+    my @panel_attribs = ();
+    foreach my $panel (@$panels) {
+      push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+    }
+    push @constraints, "gfdp.panel_attrib IN (". join(',', @panel_attribs) . ")";
+    if (!$is_authorised) {
+      push @constraints, "gfdp.is_visible=1"; 
+    }
+    my $result = $self->generic_fetch(join(" AND ",  @constraints));
+    if ($result) {
+      return $result->[0];
+    } else {
+      return undef;
+    }
+  } else {
+    return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
+  }
 }
 
 sub fetch_all_by_GenomicFeatureDisease {
@@ -195,19 +218,21 @@ sub fetch_all_by_Disease_panels {
   my $panels = shift;
   my $is_authorised = shift;
   my $disease_id = $disease->dbID;
+
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my @panel_attribs = ();
-  foreach my $panel (@$panels) {
-    push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
-  }
-  if (!defined $is_authorised) {
-    $is_authorised = 0;
+  my @constraints = ();
+  push @constraints, "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id)";
+  if ($panels) {
+    my @panel_attribs = ();
+    foreach my $panel (@$panels) {
+      push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+    }
+    push @constraints, "gfdp.panel_attrib IN (". join(',', @panel_attribs) . ")";
   }
   if (!$is_authorised) {
-    push @panel_attribs, "gfdp.is_visible=1"; 
+    push @constraints, "gfdp.is_visible=1"; 
   }
-  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id) AND gfdp.panel_attrib IN (". join(',', @panel_attribs) . ");";
-  return $self->generic_fetch($constraint);
+  return $self->generic_fetch(join(" AND ",  @constraints));
 }
 
 sub fetch_all_by_GenomicFeature {
@@ -224,19 +249,21 @@ sub fetch_all_by_GenomicFeature_panels {
   my $panels = shift;
   my $is_authorised = shift;
   my $genomic_feature_id = $genomic_feature->dbID;
+
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my @panel_attribs = ();
-  foreach my $panel (@$panels) {
-    push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
-  }
-  if (!defined $is_authorised) {
-    $is_authorised = 0;
+  my @constraints = ();
+  push @constraints, "gfd.genomic_feature_id=$genomic_feature_id";
+  if ($panels) {
+    my @panel_attribs = ();
+    foreach my $panel (@$panels) {
+      push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+    }
+    push @constraints, "gfdp.panel_attrib IN (". join(',', @panel_attribs) . ")";
   }
   if (!$is_authorised) {
-    push @panel_attribs, "gfdp.is_visible=1"; 
+    push @constraints, "gfdp.is_visible=1"; 
   }
-  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfdp.panel_attrib IN (". join(',', @panel_attribs) . ");";
-  return $self->generic_fetch($constraint);
+  return $self->generic_fetch(join(" AND ",  @constraints));
 }
 
 sub fetch_all_by_GenomicFeature_constraints {
