@@ -91,8 +91,6 @@ sub update_log {
   my $gfd_phenotype_log_adaptor = $self->db->get_GFDPhenotypeLogAdaptor;
   my $gfdl = Bio::EnsEMBL::G2P::GFDPhenotypeLog->new(
     -genomic_feature_disease_phenotype_id => $gfdp->dbID,
-    -is_visible => $gfdp->get_GenomicFeatureDisease->is_visible,
-    -panel_attrib => $gfdp->get_GenomicFeatureDisease->panel_attrib,
     -genomic_feature_disease_id => $gfdp->genomic_feature_disease_id,
     -phenotype_id => $gfdp->phenotype_id,
     -user_id => $user->dbID,
