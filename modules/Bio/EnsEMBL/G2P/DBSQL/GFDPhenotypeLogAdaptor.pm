@@ -40,20 +40,16 @@ sub store {
       genomic_feature_disease_phenotype_id,
       genomic_feature_disease_id,
       phenotype_id,
-      is_visible,
-      panel_attrib,
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+    ) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
   });
 
   $sth->execute(
     $gfd_phenotype_log->{genomic_feature_disease_phenotype_id},
     $gfd_phenotype_log->{genomic_feature_disease_id},
     $gfd_phenotype_log->{phenotype_id},
-    $gfd_phenotype_log->{is_visible},
-    $gfd_phenotype_log->{panel_attrib},
     $gfd_phenotype_log->user_id,
     $gfd_phenotype_log->action,
   );
@@ -89,21 +85,6 @@ sub fetch_all_by_GenomicFeatureDiseasePhenotype {
   return $self->generic_fetch($constraint);
 }
 
-sub fetch_latest_updates {
-  my $self = shift;
-  my $panel = shift;
-  my $limit = shift; # 10
-  my $is_visible_only = shift;
-  my $aa = $self->db->get_AttributeAdaptor;
-  my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $panel);
-  my $constraint = "gfd.panel_attrib='$panel_attrib' AND gfdpl.action='create'";
-  if ($is_visible_only) {
-    $constraint .= " AND gfd.is_visible = 1";
-  }
-  $constraint .= " ORDER BY created DESC limit $limit";
-  return $self->generic_fetch($constraint);
-}
-
 sub _columns {
   my $self = shift;
   my @cols = (
@@ -111,8 +92,6 @@ sub _columns {
     'gfdpl.genomic_feature_disease_phenotype_id',
     'gfdpl.genomic_feature_disease_id',
     'gfdpl.phenotype_id',
-    'gfd.is_visible',
-    'gfd.panel_attrib',
     'gfdpl.created',
     'gfdpl.user_id',
     'gfdpl.action'
@@ -124,26 +103,16 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['GFD_phenotype_log', 'gfdpl'],
-    ['genomic_feature_disease', 'gfd']
   );
   return @tables;
-}
-
-sub _left_join {
-  my $self = shift;
-
-  my @left_join = (
-    ['genomic_feature_disease', 'gfdpl.genomic_feature_disease_id = gfd.genomic_feature_disease_id'],
-  );
-  return @left_join;
 }
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($gfd_phenotype_log_id, $genomic_feature_disease_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $is_visible, $panel_attrib, $created, $user_id, $action);
+  my ($gfd_phenotype_log_id, $genomic_feature_disease_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $created, $user_id, $action);
 
-  $sth->bind_columns(\($gfd_phenotype_log_id, $genomic_feature_disease_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $is_visible, $panel_attrib, $created, $user_id, $action));
+  $sth->bind_columns(\($gfd_phenotype_log_id, $genomic_feature_disease_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $created, $user_id, $action));
 
   my @objs;
 
@@ -153,8 +122,6 @@ sub _objs_from_sth {
       -genomic_feature_disease_phenotype_id => $genomic_feature_disease_phenotype_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
       -phenotype_id => $phenotype_id,
-      -is_visible => $is_visible,
-      -panel_attrib => $panel_attrib,
       -created => $created,
       -user_id => $user_id,
       -action => $action,
