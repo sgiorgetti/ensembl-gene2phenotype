@@ -46,7 +46,7 @@ ok($panel->is_visible eq $is_visible, 'is_visible');
 $panel = $pa->fetch_by_name('Skin');
 ok($panel->name eq 'Skin', 'Skin');
 ok($panel->is_visible == 1, 'is_visible');
-ok($panel->dbID == 3, 'dbID');
+ok($panel->dbID == 4, 'dbID');
 
 $panel = $pa->fetch_by_name('Ear');
 ok($panel->is_visible == 0, 'is_visible');
@@ -62,8 +62,8 @@ $panel->is_visible(0);
 ok($panel->is_visible == 0, 'is_visible');
 $pa->update($panel);
 
-my $panels = $pa->fetch_all_visible_Panels;
-ok(scalar @$panels == 2, 'fetch_all_visible_Panels');
+my $panels = $pa->fetch_all_visible;
+ok(scalar @$panels == 4, 'fetch_all_visible');
 
 done_testing();
 1;
