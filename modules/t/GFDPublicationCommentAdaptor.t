@@ -33,9 +33,9 @@ my $ua = $g2pdb->get_UserAdaptor;
 ok($gfdpca && $gfdpca->isa('Bio::EnsEMBL::G2P::DBSQL::GFDPublicationCommentAdaptor'), 'isa GFDPublicationCommentAdaptor');
 
 my $gfdpc = $gfdpca->fetch_by_dbID(1);
-ok($gfdpc->comment_text eq 'comment', 'comment text');
+ok($gfdpc->comment_text eq 'No inheritance information on a single mutation', 'comment text');
 
-my $gfdp = $gfdpa->fetch_by_dbID(291);
+my $gfdp = $gfdpa->fetch_by_dbID(9067);
 my $gfdps = $gfdpca->fetch_all_by_GenomicFeatureDiseasePublication($gfdp);
 ok(scalar @$gfdps == 1, 'fetch_all_by_GenomicFeatureDiseasePublication');
 
@@ -43,6 +43,8 @@ my $user = $ua->fetch_by_dbID(1);
 
 my $GFD_publication_id = 503;
 my $comment_text = 'test';
+
+$multi->hide('gene2phenotype', 'GFD_publication_comment', 'GFD_publication_comment_deleted');
 
 $gfdpc = Bio::EnsEMBL::G2P::GFDPublicationComment->new(
   -genomic_feature_disease_publication_id => $GFD_publication_id,
@@ -57,6 +59,8 @@ $gfdpc = $gfdpca->fetch_by_dbID($gfdpc->{GFD_publication_comment_id});
 ok($gfdpc && $gfdpc->isa('Bio::EnsEMBL::G2P::GFDPublicationComment'), 'isa GFDPublicationComment');
 
 ok($gfdpca->delete($gfdpc, $user), 'delete');
+
+$multi->restore('gene2phenotype', 'GFD_publication_comment', 'GFD_publication_comment_deleted');
 
 done_testing();
 1;

@@ -18,9 +18,11 @@ limitations under the License.
 use strict;
 use warnings;
 
+use Test::Exception;
 use Test::More;
 use Bio::EnsEMBL::Test::MultiTestDB;
 use Bio::EnsEMBL::Test::TestUtils;
+use Data::Dumper;
 
 my $multi = Bio::EnsEMBL::Test::MultiTestDB->new('homo_sapiens');
 
@@ -30,17 +32,31 @@ my $aa = $g2pdb->get_AttributeAdaptor;
 
 ok($aa && $aa->isa('Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor'), 'isa AttributeAdaptor');
 
-my $attrib_id = 1;
-my $attrib_type_id = 1;
-my $code = 'allelic_requirement';
-my $name = 'Allelic requirement'; 
-my $value = 'monoallelic (autosome)';
+my $g2p_panel_attribs =  {
+  'Cancer' => 42,
+  'PaedNeuro' => 48,
+  'ALL' => 36,
+  'Eye' => 40,
+  'DD' => 38,
+  'Skin' => 41,
+  'Cardiac' => 37,
+  'Prenatal' => 43,
+  'Rapid_PICU_NICU' => 47,
+  'Demo' => 46,
+  'NeonatalRespiratory' => 45,
+  'Ear' => 39
+};
 
-ok($aa->attrib_id_for_value($value) == $attrib_id, 'attrib_id_for_value');
-ok($aa->attrib_value_for_id($attrib_id) eq $value, 'attrib_value_for_id');
-ok($aa->attrib_id_for_type_value($code, $value) == $attrib_id, 'attrib_id_for_type_value');
-my $attribs = $aa->get_attribs_by_type_value($code);
-ok(scalar keys %$attribs == 20, 'get_attribs_by_type_value');
+my $attribs = $aa->get_attribs_by_type('g2p_panel');
+is_deeply($attribs, $g2p_panel_attribs, 'get_attribs_by_type - g2p_panel');
+ok($aa->get_attrib('g2p_panel', 'DD') == $g2p_panel_attribs->{DD}, 'get_attrib');
+ok($aa->get_value('g2p_panel', 42) eq 'Cancer', 'get_value');
+
+throws_ok { $aa->get_attrib('g2p_panel', 'DDD'); } qr/Could not get attrib for value/, 'get_attrib - wrong value';
+throws_ok { $aa->get_attrib('panel', 'DD'); } qr/Could not get attrib for value/, 'get_attrib - wrong type';
+throws_ok { $aa->get_value('g2p_panel', '388'); } qr/Could not get value for attrib/, 'get_value - wrong value';
+throws_ok { $aa->get_value('panel', '38'); } qr/Could not get value for attrib/, 'get_value - wrong type';
+
 
 done_testing();
 1;
