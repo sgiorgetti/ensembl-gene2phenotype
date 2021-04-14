@@ -32,7 +32,6 @@ sub new {
     rearrange(['genomic_feature_disease_panel_id', 'genomic_feature_disease_id', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'adaptor'], @_);
 
   my $self = bless {
-    'dbID' => $genomic_feature_disease_panel_id,
     'genomic_feature_disease_panel_id' => $genomic_feature_disease_panel_id,
     'adaptor' => $adaptor,
     'genomic_feature_disease_id' => $genomic_feature_disease_id,
@@ -46,6 +45,12 @@ sub new {
 }
 
 sub dbID {
+  my $self = shift;
+  $self->{genomic_feature_disease_panel_id} = shift if ( @_ );
+  return $self->{genomic_feature_disease_panel_id};
+}
+
+sub genomic_feature_disease_panel_id {
   my $self = shift;
   $self->{genomic_feature_disease_panel_id} = shift if ( @_ );
   return $self->{genomic_feature_disease_panel_id};
