@@ -30,9 +30,9 @@ my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePhenotypeAdaptor;
 
 ok($gfdpa && $gfdpa->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor'), 'isa GenomicFeatureDiseasePhenotypeAdaptor');
 
-my $GFDP_id = 2118;
-my $GFD_id = 133; 
-my $phenotype_id = 323;
+my $GFDP_id = 29952;
+my $GFD_id = 2345; 
+my $phenotype_id = 289;
 
 my $GFDP = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
   -genomic_feature_disease_phenotype_id => $GFDP_id,
