@@ -117,7 +117,7 @@ sub attrib_value_for_type_id {
   return $self->{attrib_values}->{$type}->{$attrib_id};
 }
 
-sub get_attribs_by_type_value {
+sub get_attribs_by_type {
   my ($self, $attrib_type_code) = @_;
   my $attribs = {};
   my $sql = qq{
