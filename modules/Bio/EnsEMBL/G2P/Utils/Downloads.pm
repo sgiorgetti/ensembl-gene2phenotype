@@ -25,7 +25,10 @@ our @EXPORT_OK = qw( download_data );
 my $gfd_attributes = {};
 my $gfd_create_dates = {};
 my $gfid2synonyms = {};
-my $attribs = {};
+my $confidence_category_attribs = {};
+my $allelic_requirement_attribs = {};
+my $mutation_consequence_attribs = {};
+
 
 sub download_data {
   my $downloads_dir = shift;
@@ -41,7 +44,10 @@ sub download_data {
   
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
-  my $panels = $attribute_adaptor->get_attribs_by_type_value('g2p_panel');
+  my $panels = $attribute_adaptor->get_attribs_by_type('g2p_panel');
+  my $confidence_category_attribs = $attribute_adaptor->get_attribs_by_type('confidence_category');  
+  my $allelic_requirement_attribs = $attribute_adaptor->get_attribs_by_type('allelic_requirement');
+  my $mutation_consequence_attribs = $attribute_adaptor->get_attribs_by_type('mutation_consequence');
 
   my $dbh = $GFD_adaptor->dbc->db_handle;
 
@@ -73,14 +79,6 @@ sub download_data {
     my ($id, $value) = @$row;
     $gfid2synonyms->{$id}->{$value} = 1;
   }
-
-  $sth = $dbh->prepare(q{SELECT attrib_id, value FROM attrib;});
-  $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
-  while (my $row = $sth->fetchrow_arrayref()) {
-    my ($id, $value) = @$row;
-    $attribs->{$id} = $value;
-  }
-  $sth->finish();
 
   $sth = $dbh->prepare(q{SELECT genomic_feature_disease_id, created FROM genomic_feature_disease_log WHERE action='create';});
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
@@ -145,9 +143,9 @@ sub write_data {
     $gene_mim ||= 'No gene mim';
     $disease_name ||= 'No disease name';
     $disease_mim ||= 'No disease mim';
-    my $confidence_category = ($confidence_category_attrib) ? $attribs->{$confidence_category_attrib} : 'No confidence category';
-    my $allelic_requirement = ($ar_attrib) ? join(',', map { $attribs->{$_} } split(',', $ar_attrib)) : undef;
-    my $mutation_consequence = ($mc_attrib) ? join(',', map { $attribs->{$_} } split(',', $mc_attrib)) : undef;
+    my $confidence_category = ($confidence_category_attrib) ? $confidence_category_attribs->{$confidence_category_attrib} : 'No confidence category';
+    my $allelic_requirement = ($ar_attrib) ? join(',', map { $allelic_requirement_attribs->{$_} } split(',', $ar_attrib)) : undef;
+    my $mutation_consequence = ($mc_attrib) ? join(',', map { $mutation_consequence_attribs->{$_} } split(',', $mc_attrib)) : undef;
 
     my @annotations = ();
     if ($gfd_attributes->{$gfd_id}) {
