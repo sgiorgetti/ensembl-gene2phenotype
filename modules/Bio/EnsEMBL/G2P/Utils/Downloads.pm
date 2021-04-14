@@ -90,18 +90,16 @@ sub download_data {
   }
   $sth->finish();
 
-  my $where = ($panel_name eq 'ALL') ? 'WHERE gfd.is_visible = 1' : "WHERE a.value = '$panel_name' AND gfd.is_visible = 1";
+  my $where = ($panel_name eq 'ALL') ? 'WHERE gfdp.is_visible = 1' : "WHERE a.value = '$panel_name' AND gfdp.is_visible = 1";
 
-  if (!$is_logged_in) {
-    write_data($dbh, $csv, $fh, $where);
-  } else {
+  if ($is_logged_in) {
     if ($panel_name eq 'ALL') {
       foreach my $panel (keys %$panels) {
         next if ($panel eq 'ALL');
         if (grep {$panel eq $_} @$user_panels) {
           $where =  "WHERE a.value = '$panel'";
         } else {
-          $where =  "WHERE a.value = '$panel' AND gfd.is_visible = 1";
+          $where =  "WHERE a.value = '$panel' AND gfdp.is_visible = 1";
         }
         write_data($dbh, $csv, $fh, $where);
       }
@@ -109,10 +107,12 @@ sub download_data {
       if (grep {$panel_name eq $_} @$user_panels) {
         $where =  "WHERE a.value = '$panel_name'";
       } else {
-        $where =  "WHERE a.value = '$panel_name' AND gfd.is_visible = 1";
+        $where =  "WHERE a.value = '$panel_name' AND gfdp.is_visible = 1";
       }
       write_data($dbh, $csv, $fh, $where);
     }
+  } else {
+    write_data($dbh, $csv, $fh, $where);
   } 
 
   close $fh or die "$csv: $!";
@@ -126,11 +126,12 @@ sub write_data {
   my $fh = shift;
   my $where = shift;
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfd.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id
+    SELECT gfd.genomic_feature_disease_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id
     FROM genomic_feature_disease gfd
+    LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
     LEFT JOIN disease d ON gfd.disease_id = d.disease_id
-    LEFT JOIN attrib a ON gfd.panel_attrib = a.attrib_id
+    LEFT JOIN attrib a ON gfdp.panel_attrib = a.attrib_id
     $where;
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
