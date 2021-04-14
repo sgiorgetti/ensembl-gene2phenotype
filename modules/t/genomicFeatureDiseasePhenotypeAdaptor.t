@@ -40,7 +40,7 @@ my $GFDP = $gfdpa->fetch_by_dbID($GFDP_id);
 ok($GFDP->dbID == $GFDP_id, 'fetch_by_dbID');
 
 my $GFD_id = 133;
-my $phenotype_id = 323;
+my $phenotype_id = 2282;
 $GFDP = $gfdpa->fetch_by_GFD_id_phenotype_id($GFD_id, $phenotype_id);
 ok($GFDP->dbID == $GFDP_id, 'fetch_by_GFD_id_phenotype_id');
 
@@ -72,7 +72,7 @@ $dbh->do(qq{DELETE FROM phenotype WHERE phenotype_id=$phenotype_id;}) or die $db
 $dbh->do(qq{DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$GFDP_id;}) or die $dbh->errstr;
 
 my $GFDPs2 = $gfdpa->fetch_all_by_phenotype_ids([971,4744,982,453,1570,443,506,2583,1783]);
-ok(scalar @$GFDPs2 == 15, 'fetch_all_by_phenotype_ids');
+ok(scalar @$GFDPs2 == 106, 'fetch_all_by_phenotype_ids');
 
 done_testing();
 1;
