@@ -195,7 +195,7 @@ sub get_statistics {
     my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel_name);
     push @panel_attribs, $panel_attrib;
   }
-  my $confidence_categories = $attribute_adaptor->get_attribs_by_type_value('confidence_category');
+  my $confidence_categories = $attribute_adaptor->get_attribs_by_type('confidence_category');
   %$confidence_categories = reverse %$confidence_categories;
   my $panel_attrib_ids = join(',', @panel_attribs);
   my $sth = $self->prepare(qq{
