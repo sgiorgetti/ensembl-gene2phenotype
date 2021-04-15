@@ -47,7 +47,7 @@ my $g2p_panel_attribs =  {
   'Ear' => 39
 };
 
-my $attribs = $aa->get_attribs_by_type('g2p_panel');
+my $attribs = $aa->get_values_by_type('g2p_panel');
 is_deeply($attribs, $g2p_panel_attribs, 'get_attribs_by_type - g2p_panel');
 ok($aa->get_attrib('g2p_panel', 'DD') == $g2p_panel_attribs->{DD}, 'get_attrib');
 ok($aa->get_value('g2p_panel', 42) eq 'Cancer', 'get_value');
