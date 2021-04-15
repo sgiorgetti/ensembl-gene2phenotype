@@ -282,16 +282,12 @@ sub fetch_all_by_GenomicFeature_constraints {
       }
     } elsif ($key eq 'allelic_requirement_attrib') {
       foreach my $v (split(',', $value)) {
-        # test that value exists
-        my $allelic_requirement = $attribute_adaptor->get_value('allelic_requirement', $v);
         push @constraints, "gfd.allelic_requirement_attrib='$v'";
       }
     } elsif ($key eq 'mutation_consequence') {
       my $mutation_consequence_attrib = $attribute_adaptor->get_attrib('mutation_consequence', $value); 
       push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
     } elsif ($key eq 'mutation_consequence_attrib') {
-      # test that value exists
-      my $mutation_consequence = $attribute_adaptor->get_value('mutation_consequence', $value); 
       push @constraints, "gfd.mutation_consequence_attrib='$value'";
     } elsif ($key eq 'disease_id') {
       push @constraints, "(gfd.disease_id=$value OR gfdds.disease_id=$value)";
@@ -314,42 +310,6 @@ sub fetch_all_by_GenomicFeature_Disease {
   my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id ) AND gfd.genomic_feature_id=$genomic_feature_id;";
   return $self->generic_fetch($constraint);
 } 
-
-sub get_statistics {
-  my $self = shift;
-  my $panels = shift;
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $confidence_categories = $attribute_adaptor->get_attribs_by_type('confidence_category');
-  %$confidence_categories = reverse %$confidence_categories;
-  my $panel_attrib_ids = join(',', @$panels);
-  my $sth = $self->prepare(qq{
-    select a.value, gfd.confidence_category_attrib, count(*)
-    from genomic_feature_disease gfd, attrib a
-    where a.attrib_id = gfd.panel_attrib
-    AND gfd.panel_attrib IN ($panel_attrib_ids)
-    group by a.value, gfd.confidence_category_attrib;
-  });
-  $sth->execute;
-
-  my $hash = {};
-  while (my ($panel, $confidence_category_attrib_id, $count) = $sth->fetchrow_array) {
-    my $confidence_category_value = $confidence_categories->{$confidence_category_attrib_id};
-    $hash->{$panel}->{$confidence_category_value} = $count;
-  }
-  my @results = ();
-  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both RD and IF', 'child IF'); 
-  push @results, \@header;
-  foreach my $panel (sort keys %$hash) {
-    my @row = ();
-    push @row, $panel;
-    for (my $i = 1; $i <= $#header; $i++) {
-      push @row, ($hash->{$panel}->{$header[$i]} || 0) + 0;
-    }
-    push @results, \@row;
-  }
-
-  return \@results;
-}
 
 sub fetch_all {
   my $self = shift;
