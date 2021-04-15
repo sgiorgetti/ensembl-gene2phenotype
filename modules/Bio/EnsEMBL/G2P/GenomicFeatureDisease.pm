@@ -133,14 +133,18 @@ sub add_gfd_disease_synonym_id {
   my $self = shift;
   my $gfd_disease_synonym_id = shift;
   throw("id is required") if(!$gfd_disease_synonym_id);
-  push @{$self->{gfd_disease_synonym_id}}, $gfd_disease_synonym_id;
+  if (! grep { $gfd_disease_synonym_id == $_ } @{$self->{gfd_disease_synonym_id}}) {
+    push @{$self->{gfd_disease_synonym_id}}, $gfd_disease_synonym_id;
+  }
 }
 
 sub add_panel {
   my $self = shift;
   my $panel = shift;
   throw("panel is required") if(!$panel);
-  push @{$self->{panels}}, $panel;
+  if (! grep { $panel eq $_ } @{$self->{panels}}) {
+    push @{$self->{panels}}, $panel;
+  }
 }
 
 sub panels {
