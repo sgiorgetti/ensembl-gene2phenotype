@@ -195,8 +195,7 @@ sub get_statistics {
     my $panel_attrib = $attribute_adaptor->get_attrib('g2p_panel', $panel_name);
     push @panel_attribs, $panel_attrib;
   }
-  my $confidence_categories = $attribute_adaptor->get_attribs_by_type('confidence_category');
-  %$confidence_categories = reverse %$confidence_categories;
+  my $confidence_category_attribs = $attribute_adaptor->get_attribs_by_type('confidence_category');
   my $panel_attrib_ids = join(',', @panel_attribs);
   my $sth = $self->prepare(qq{
     select a.value, gfdp.confidence_category_attrib, count(*)
@@ -209,7 +208,7 @@ sub get_statistics {
 
   my $hash = {};
   while (my ($panel, $confidence_category_attrib_id, $count) = $sth->fetchrow_array) {
-    my $confidence_category_value = $confidence_categories->{$confidence_category_attrib_id};
+    my $confidence_category_value = $confidence_category_attribs->{$confidence_category_attrib_id};
     $hash->{$panel}->{$confidence_category_value} = $count;
   }
   my @results = ();
