@@ -16,9 +16,10 @@ limitations under the License.
  
 =cut
 package Bio::EnsEMBL::G2P::Utils::Downloads;
+use strict;
+use warnings;
 use Text::CSV;
 use Bio::EnsEMBL::Registry;
-
 use base qw(Exporter);
 our @EXPORT_OK = qw( download_data );
 
@@ -44,10 +45,10 @@ sub download_data {
   
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
-  my $panels = $attribute_adaptor->get_attribs_by_type('g2p_panel');
-  my $confidence_category_attribs = $attribute_adaptor->get_attribs_by_type('confidence_category');  
-  my $allelic_requirement_attribs = $attribute_adaptor->get_attribs_by_type('allelic_requirement');
-  my $mutation_consequence_attribs = $attribute_adaptor->get_attribs_by_type('mutation_consequence');
+  my $panels = $attribute_adaptor->get_values_by_type('g2p_panel');
+  $confidence_category_attribs = $attribute_adaptor->get_attribs_by_type('confidence_category');  
+  $allelic_requirement_attribs = $attribute_adaptor->get_attribs_by_type('allelic_requirement');
+  $mutation_consequence_attribs = $attribute_adaptor->get_attribs_by_type('mutation_consequence');
 
   my $dbh = $GFD_adaptor->dbc->db_handle;
 
@@ -143,6 +144,7 @@ sub write_data {
     $gene_mim ||= 'No gene mim';
     $disease_name ||= 'No disease name';
     $disease_mim ||= 'No disease mim';
+
     my $confidence_category = ($confidence_category_attrib) ? $confidence_category_attribs->{$confidence_category_attrib} : 'No confidence category';
     my $allelic_requirement = ($ar_attrib) ? join(',', map { $allelic_requirement_attribs->{$_} } split(',', $ar_attrib)) : undef;
     my $mutation_consequence = ($mc_attrib) ? join(',', map { $mutation_consequence_attribs->{$_} } split(',', $mc_attrib)) : undef;
