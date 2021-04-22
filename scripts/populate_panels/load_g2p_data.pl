@@ -126,7 +126,7 @@ foreach my $row (@rows) {
 
   # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
 
-  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $panel);
+  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $g2p_panel);
 
   my @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
 
@@ -134,8 +134,8 @@ foreach my $row (@rows) {
     foreach my $gfd (@gfds_matched_ar_and_mc) {
       warn("Entry with same gene symbol, allelic requirement and mutation consequence exists: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
     }
-    if ($restricted_mutation_set eq 'y') {
-      warn("Create new entry with restricted mutation set for: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
+    if ($restricted_mutation_set) {
+      warn("Create new entry with restricted mutation set for: " . join(" ", $gene_symbol, $allelic_requirement, $mutation_consequence, $disease_name) . "\n");
     } else {
       next;
     }
@@ -144,10 +144,9 @@ foreach my $row (@rows) {
   # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence and disease name. fetch_all_by_GenomicFeature_Disease_panel also considers disease name synonyms.
   # In two steps:
   # 1) get all GFD by gene and disease  
-  $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $panel);
+  $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $g2p_panel);
   # 2) then compare by allelic requirement and mutation consequence
   my ($gfd) = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
-
   if ($gfd) {
     # only update confidence:
     # TODO is confidence value different and does it need to be updated:
@@ -156,6 +155,7 @@ foreach my $row (@rows) {
     $gfd_adaptor->update($gfd, $user);
   } else {
     # create new GFD
+    print STDERR "Create new GFD $gene_symbol $disease_name\n";
     $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
@@ -182,7 +182,7 @@ sub add_to_panel {
   my $panels = shift;
   my $add = 0;
   foreach my $panel (split/;|,/, $panels) {
-    $panel =~ s/^\s+|\s+$//g;
+    $panel =~ s/\s+//g;
     if ($panel eq $g2p_panel) {
       return 1;
     }
