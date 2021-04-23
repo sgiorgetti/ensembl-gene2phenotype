@@ -70,6 +70,12 @@ sub store {
     }
   }
 
+  # Check if GFD already exists
+  my $gfds = $self->fetch_all_by_GenomicFeatureDisease($gfd);
+  if (scalar @$gfds > 0) {
+    return $gfds->[0];
+  }
+
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease(
       genomic_feature_id,
@@ -165,7 +171,6 @@ sub fetch_by_dbID {
   my $genomic_feature_disease_id = shift;
   my $panels = shift;
   my $is_authorised = shift;
-
   if (defined $panels && defined $is_authorised) {
     my @constraints = ();
     push @constraints, "gfd.genomic_feature_disease_id=$genomic_feature_disease_id";
