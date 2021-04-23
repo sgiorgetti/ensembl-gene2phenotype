@@ -13,5 +13,4 @@
 -- limitations under the License.
 
 
-ALTER TABLE genomic_feature_disease DROP INDEX genomic_feature_disease;
-ALTER TABLE genomic_feature_disease DROP COLUMN confidence_category_attrib, DROP COLUMN is_visible, DROP COLUMN panel_attrib;
+ALTER TABLE genomic_feature_disease DROP COLUMN confidence_category_attrib, DROP COLUMN is_visible;
