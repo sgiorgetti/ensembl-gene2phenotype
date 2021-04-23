@@ -209,7 +209,7 @@ sub _obj_from_row {
   }
 
   # Add a ontology accession if available
-  my $link_source = $self->db->get_AttributeAdaptor->attrib_value_for_id($row->{mapped_by_attrib})
+  my $link_source = $self->db->get_AttributeAdaptor->get_value('ontology_mapping', $row->{mapped_by_attrib})
   if $row->{mapped_by_attrib};
 
   $obj->add_ontology_accession({
