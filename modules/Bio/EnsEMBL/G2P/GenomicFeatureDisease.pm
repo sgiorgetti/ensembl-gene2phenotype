@@ -149,7 +149,11 @@ sub add_panel {
 
 sub panels {
   my $self = shift;
-  return $self->{panels};
+  if (defined $self->{panels}) {
+    return $self->{panels};
+  } else {
+    return [];
+  }
 }
 
 sub get_GenomicFeature {
