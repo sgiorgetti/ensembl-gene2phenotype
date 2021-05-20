@@ -14,3 +14,5 @@
 
 
 ALTER TABLE genomic_feature_disease DROP COLUMN confidence_category_attrib, DROP COLUMN is_visible;
+ALTER TABLE genomic_feature_disease DROP INDEX genomic_feature_disease;
+CREATE UNIQUE INDEX genomic_feature_disease ON genomic_feature_disease(`genomic_feature_id`,`allelic_requirement_attrib`,`mutation_consequence_attrib`,`disease_id`);
