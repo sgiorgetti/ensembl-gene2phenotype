@@ -28,8 +28,8 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
-  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement, $allelic_requirement_attrib, $mutation_consequence, $mutation_consequence_attrib, $confidence_category, $confidence_category_attrib, $is_visible, $panel, $panel_attrib, $restricted_mutation_set, $adaptor) =
-    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'allelic_requirement', 'allelic_requirement_attrib', 'mutation_consequence', 'mutation_consequence_attrib', 'confidence_category', 'confidence_category_attrib', 'is_visible', 'panel', 'panel_attrib', 'restricted_mutation_set', 'adaptor'], @_);
+  my ($genomic_feature_disease_id, $genomic_feature_id, $disease_id, $allelic_requirement, $allelic_requirement_attrib, $mutation_consequence, $mutation_consequence_attrib, $restricted_mutation_set, $adaptor) =
+    rearrange(['genomic_feature_disease_id', 'genomic_feature_id', 'disease_id', 'allelic_requirement', 'allelic_requirement_attrib', 'mutation_consequence', 'mutation_consequence_attrib', 'restricted_mutation_set', 'adaptor'], @_);
 
   my $self = bless {
     'dbID' => $genomic_feature_disease_id,
@@ -41,11 +41,6 @@ sub new {
     'allelic_requirement' => $allelic_requirement,
     'mutation_consequence_attrib' => $mutation_consequence_attrib,
     'mutation_consequence' => $mutation_consequence,
-    'confidence_category' => $confidence_category,
-    'confidence_category_attrib' => $confidence_category_attrib,
-    'is_visible' => $is_visible,
-    'panel' => $panel,
-    'panel_attrib' => $panel_attrib,
     'restricted_mutation_set' => $restricted_mutation_set,
   }, $class;
   return $self;
@@ -54,6 +49,12 @@ sub new {
 sub dbID {
   my $self = shift;
   $self->{genomic_feature_disease_id} = shift if ( @_ );
+  return $self->{genomic_feature_disease_id};
+}
+
+sub genomic_feature_disease_id {
+  my $self = shift;
+  $self->{genomic_feature_disease_id} = shift if @_;
   return $self->{genomic_feature_disease_id};
 }
 
@@ -78,7 +79,7 @@ sub allelic_requirement {
     my @values = split(',', $allelic_requirement); 
     my @ids = ();
     foreach my $value (@values) {
-      push @ids, $attribute_adaptor->attrib_id_for_value($value);
+      push @ids, $attribute_adaptor->get_attrib('allelic_requirement', $value);
     }        
     $self->{allelic_requirement_attrib} = join(',', sort @ids);
     $self->{allelic_requirement} = $allelic_requirement;
@@ -87,7 +88,7 @@ sub allelic_requirement {
       my @ids = split(',', $self->{allelic_requirement_attrib});
       my @values = ();
       foreach my $id (@ids) {
-        push @values, $attribute_adaptor->attrib_value_for_id($id);
+        push @values, $attribute_adaptor->get_value('allelic_requirement', $id);
       }
       $self->{allelic_requirement} = join(',', sort @values);
     }
@@ -106,11 +107,11 @@ sub mutation_consequence {
   my $mutation_consequence = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
   if ($mutation_consequence) {
-    $self->{mutation_consequence_attrib} = $attribute_adaptor->attrib_id_for_value($mutation_consequence);
+    $self->{mutation_consequence_attrib} = $attribute_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
     $self->{mutation_consequence} = $mutation_consequence;
   } else { 
     if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
-      $self->{mutation_consequence} = $attribute_adaptor->attrib_value_for_id($self->{mutation_consequence_attrib});
+      $self->{mutation_consequence} = $attribute_adaptor->get_value('mutation_consequence', $self->{mutation_consequence_attrib});
     }
   }
   return $self->{mutation_consequence};
@@ -120,77 +121,6 @@ sub mutation_consequence_attrib {
   my $self = shift;
   $self->{mutation_consequence_attrib} = shift if @_;
   return $self->{mutation_consequence_attrib};
-}
-
-sub confidence_category {
-  my $self = shift;
-  my $confidence_category = shift;
-  if ($confidence_category) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $confidence_category_attrib = $attribute_adaptor->attrib_id_for_value($confidence_category);
-    die "Could not get confidence category attrib id for value $confidence_category\n" unless ($confidence_category_attrib);
-    $self->{confidence_category} = $confidence_category;
-    $self->{confidence_category_attrib} = $confidence_category_attrib;
-  } else {
-    if ($self->{confidence_category_attrib} && !$self->{confidence_category}) {
-      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-      my $confidence_category = $attribute_adaptor->attrib_value_for_id($self->{confidence_category_attrib});
-      $self->{confidence_category} = $confidence_category;
-    }   
-    die "No confidence_category" unless ($self->{confidence_category} );
-  }
-  return $self->{confidence_category};
-}
-
-sub confidence_category_attrib {
-  my $self = shift;
-  my $confidence_category_attrib = shift;
-  if ($confidence_category_attrib) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $confidence_category = $attribute_adaptor->attrib_value_for_id($confidence_category_attrib);
-    die "Could not get confidence category for value $confidence_category_attrib\n" unless ($confidence_category);
-    $self->{confidence_category} = $confidence_category;
-    $self->{confidence_category_attrib} = $confidence_category_attrib;
-  } else {
-    die "No confidence_category_attrib" unless ($self->{confidence_category_attrib});
-  }
-  return $self->{confidence_category_attrib};
-}
-
-sub is_visible {
-  my $self = shift;
-  $self->{is_visible} = shift if ( @_ );
-  return $self->{is_visible};
-}
-
-sub panel {
-  my $self = shift;
-  my $panel = shift;
-  if ($panel) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $panel_attrib = $attribute_adaptor->attrib_id_for_value($panel);
-    die "Could not get panel attrib id for value $panel\n" unless ($panel_attrib);
-    $self->{panel} = $panel;
-    $self->{panel_attrib} = $panel_attrib;
-  } else {
-    die "No panel" unless ($self->{panel});
-  }
-  return $self->{panel};
-}
-
-sub panel_attrib {
-  my $self = shift;
-  my $panel_attrib = shift;
-  if ($panel_attrib) {
-    my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-    my $panel = $attribute_adaptor->attrib_value_for_id($panel_attrib);
-    die "Could not get panel for value $panel_attrib\n" unless ($panel);
-    $self->{panel} = $panel;
-    $self->{panel_attrib} = $panel_attrib;
-  } else {
-    die "No panel_attrib" unless ($self->{panel_attrib});
-  }
-  return $self->{panel_attrib};
 }
 
 sub restricted_mutation_set {
@@ -203,13 +133,27 @@ sub add_gfd_disease_synonym_id {
   my $self = shift;
   my $gfd_disease_synonym_id = shift;
   throw("id is required") if(!$gfd_disease_synonym_id);
-  push @{$self->{gfd_disease_synonym_id}}, $gfd_disease_synonym_id;
+  if (! grep { $gfd_disease_synonym_id == $_ } @{$self->{gfd_disease_synonym_id}}) {
+    push @{$self->{gfd_disease_synonym_id}}, $gfd_disease_synonym_id;
+  }
 }
 
-sub get_all_GenomicFeatureDiseaseActions {
+sub add_panel {
   my $self = shift;
-  my $GFDA_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseActionAdaptor;
-  return $GFDA_adaptor->fetch_all_by_GenomicFeatureDisease($self);       
+  my $panel = shift;
+  throw("panel is required") if(!$panel);
+  if (! grep { $panel eq $_ } @{$self->{panels}}) {
+    push @{$self->{panels}}, $panel;
+  }
+}
+
+sub panels {
+  my $self = shift;
+  if (defined $self->{panels}) {
+    return $self->{panels};
+  } else {
+    return [];
+  }
 }
 
 sub get_GenomicFeature {
@@ -222,6 +166,12 @@ sub get_Disease {
   my $self = shift;
   my $disease_adaptor = $self->{adaptor}->db->get_DiseaseAdaptor;
   return $disease_adaptor->fetch_by_dbID($self->disease_id);
+}
+
+sub get_all_GFDPanels {
+  my $self = shift;
+  my $GFD_panel_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseasePanelAdaptor;
+  return $GFD_panel_adaptor->fetch_all_by_GenomicFeatureDisease($self);
 }
 
 sub get_all_GFDPublications {

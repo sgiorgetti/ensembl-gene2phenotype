@@ -1,2 +1,29 @@
-1	2118	comment	2016-03-17 16:21:18	1
-2	2129	comment	2016-03-17 16:21:55	1
+1	29952	Only in a proportion of cases	2017-01-31 14:37:30	4
+2	30149	Progressive degeneration of the choroid, RPE and retina	2017-04-20 14:55:04	10
+3	30248	Vitreous condensations	2017-04-21 17:44:44	10
+5	30268	Adult onset (third to fourth decades)	2017-04-23 21:53:19	10
+6	30335	Early-onset cone-rod dystrophy	2017-04-24 14:14:51	10
+7	30640	Microspherophakia (small, spherical lens).	2017-05-09 10:02:31	10
+9	30828	Except elbow. 	2017-05-11 11:40:08	10
+10	30847	Absent upper lateral incisors. 	2017-05-11 12:01:40	10
+11	30868	Large anterior fontanel (birth).	2017-05-11 12:24:15	10
+12	30911	Early blindness	2017-05-17 13:24:49	10
+13	31004	Low-frequency conductive hearing loss.	2017-05-22 12:07:18	10
+14	31489	Cataracts develop by second decade of life.	2017-07-25 13:52:18	10
+15	31515	Onset of vision loss in young adulthood (<20 years) .	2017-07-26 11:31:02	10
+16	30895	 Impaired platelet aggregation to ADP or to collagen.	2017-07-26 12:20:58	10
+17	31544	Retinal findings showed well-demarcated round lesions of chorioretinal atrophy in the far periphery, partly confluent, with various amounts of pigment clumping or aggregation.	2017-07-31 11:23:24	10
+18	31744	Decreased visual acuity (noted in the 3rd decade) 	2017-08-02 15:54:50	10
+19	31840	Absence of decussation of the superior cerebellar peduncles - color-coded FA maps (neuroimaging) - PMID 28431631.	2017-08-09 17:02:43	10
+20	31924	Proximal femur, metacarpal	2017-08-10 18:38:31	10
+21	32200	Absent platelet delta granules.	2017-08-12 10:46:41	10
+22	32221	Chronic angle-closure glaucoma, in older patients.	2017-08-12 18:26:08	10
+23	32226	Punctate white opacities in the retina.	2017-08-12 20:39:07	10
+27	32263	Galactosyltransferase I deficiency in fibroblasts.	2017-08-13 18:04:52	10
+28	32334	PMID: 27899449, 27799409.	2017-08-14 12:20:57	10
+29	42319	Photopic: severely reduced responses\
+Scotopic: slightly reduced responses	2018-01-18 16:06:39	10
+30	42489	ERG revealed diminished scotopic rod and scotopic combined responses with a relative preservation of photopic responses.	2018-05-25 16:48:44	10
+31	46779	Probably very common, Kate Tatton Brown presented many cases in MDC20018	2018-11-06 16:30:53	4
+32	47186	 Cataracts between one and 3 years of age	2019-01-17 18:25:43	10
+34	51708	phenotype resembling choroideremia	2019-10-30 14:51:29	15

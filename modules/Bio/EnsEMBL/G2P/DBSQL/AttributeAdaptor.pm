@@ -23,28 +23,60 @@ package Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor'); 
 
-sub attrib_id_for_value {
-  my ($self, $attrib_value) = @_;
-  my $sql = qq{
-    SELECT attrib_id FROM attrib WHERE value=?;
-  };
-  my $dbh = $self->dbc->db_handle;
-  my $sth = $dbh->prepare($sql);
-  $sth->execute($attrib_value);
-  my $attrib_id;
-  $sth->bind_columns(\$attrib_id);
-  $sth->fetch;
-  $sth->finish;
-  return $attrib_id;  
+
+sub get_attrib {
+  my $self = shift;
+  my $type = shift;
+  my $value = shift;
+  if ($type eq 'allelic_requirement') {
+    my @ids = ();
+    foreach my $v (split(',', $value)) {
+      my $id = $self->attrib_id_for_type_value($type, $v);
+      if (!$id) {
+        die "Could not get attrib for value: $v and type: $type\n";
+      }
+      push @ids, $self->attrib_id_for_type_value($type, $v);
+    }        
+    return join(',', sort @ids);
+  } else {
+    my $attrib = $self->attrib_id_for_type_value($type, $value);
+    if (!$attrib) {
+      die "Could not get attrib for value: $value and type: $type\n";
+    }
+    return $attrib;
+  }
 }
 
-sub attrib_value_for_id {
-  my ($self, $attrib_id) = @_;
+sub get_value {
+  my $self = shift;
+  my $type = shift;
+  my $attrib = shift;
+  if ($type eq 'allelic_requirement') {
+    my @values = ();
+    foreach my $id (split(',', $attrib)) {
+      my $value =  $self->attrib_value_for_type_id($type, $id);
+      if (!$value) {
+        die "Could not get value for attrib: $id and type: $type\n";
+      }
+      push @values, $value;
+    }
+    return join(',', sort @values);
+  } else {
+    my $value = $self->attrib_value_for_type_id($type, $attrib);
+    if (!$value) {
+      die "Could not get value for attrib: $attrib and type: $type\n";
+    }
+    return $value;
+  }
+}
+
+sub set_attribs {
+  my $self = shift;
 
   unless ($self->{attribs}) {
     my $attribs;
     my $attrib_ids;
-
+    my $attrib_values;
     my $sql = qq{
       SELECT  a.attrib_id, t.code, a.value
       FROM    attrib a, attrib_type t
@@ -53,33 +85,37 @@ sub attrib_value_for_id {
 
     my $dbh = $self->dbc->db_handle;
     my $sth = $dbh->prepare($sql);
-
     $sth->execute;
 
     while (my ($attrib_id, $type, $value) = $sth->fetchrow_array) {
       $attribs->{$attrib_id}->{type}  = $type;
       $attribs->{$attrib_id}->{value} = $value;
       $attrib_ids->{$type}->{$value} = $attrib_id;
+      $attrib_values->{$type}->{$attrib_id} = $value;
     }
-
     $self->{attribs}    = $attribs;
     $self->{attrib_ids} = $attrib_ids;
-
+    $self->{attrib_values} = $attrib_values;
   }
-  return defined $attrib_id ? $self->{attribs}->{$attrib_id}->{value} : undef;
 }
 
 sub attrib_id_for_type_value {
   my ($self, $type, $value) = @_;
   unless ($self->{attrib_ids}) {
-    # call this method to populate the attrib hash
-    $self->attrib_value_for_id;
+    $self->set_attribs;
   }
-
   return $self->{attrib_ids}->{$type}->{$value};
 }
 
-sub get_attribs_by_type_value {
+sub attrib_value_for_type_id {
+  my ($self, $type, $attrib_id) = @_;
+  unless ($self->{attrib_values}) {
+    $self->set_attribs;
+  }
+  return $self->{attrib_values}->{$type}->{$attrib_id};
+}
+
+sub get_values_by_type {
   my ($self, $attrib_type_code) = @_;
   my $attribs = {};
   my $sql = qq{
@@ -100,35 +136,28 @@ sub get_attribs_by_type_value {
   return $attribs;
 }
 
-sub attrib_id_for_type_code {
-  my ($self, $type) = @_;
+sub get_attribs_by_type {
+  my ($self, $attrib_type_code) = @_;
+  my $attribs = {};
+  my $sql = qq{
+    SELECT  a.attrib_id, a.value
+    FROM    attrib a, attrib_type t
+    WHERE   a.attrib_type_id = t.attrib_type_id
+    AND     t.code = ?;
+  };
 
-  unless ($self->{attrib_types}) {
+  my $dbh = $self->dbc->db_handle;
+  my $sth = $dbh->prepare($sql);
+  $sth->execute($attrib_type_code);
 
-    my $attrib_types;
-
-    my $sql = qq{
-      SELECT  t.attrib_type_id, t.code, t.name, t.description
-      FROM    attrib_type t
-    };
-
-    my $sth = $self->prepare($sql);
-
-    $sth->execute;
-
-    while (my ($attrib_type_id, $code, $name, $description ) = $sth->fetchrow_array) {
-      $attrib_types->{$code}->{attrib_type_id} = $attrib_type_id;
-      $attrib_types->{$code}->{name}           = ($name eq '') ? $code : $name;
-      $attrib_types->{$code}->{description}    = $description;
-    }
-
-    $self->{attrib_types}  = $attrib_types;
+  while (my ($attrib_id, $value) = $sth->fetchrow_array) {
+    $attribs->{$attrib_id} = $value;
   }
-
-  return defined $type ? 
-    $self->{attrib_types}->{$type}->{attrib_type_id} :
-      undef;
+  $sth->finish();
+  return $attribs;
 }
+
+
 
 
 1;

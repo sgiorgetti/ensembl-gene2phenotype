@@ -83,7 +83,7 @@ sub panel {
       my @ids = split(',', $self->{panel_attrib});
       my @values = ();
       foreach my $id (@ids) {
-        push @values, $attribute_adaptor->attrib_value_for_id($id);
+        push @values, $attribute_adaptor->get_value('g2p_panel', $id);
       }
       $self->{panel} = join(',', @values);
     }

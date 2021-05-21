@@ -29,13 +29,11 @@ sub new {
   my $caller = shift;
   my $class = ref($caller) || $caller;
 
-  my ($gfd_phenotype_log_id, $genomic_feature_disease_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $is_visible, $panel_attrib, $created, $user_id, $action, $adaptor) = rearrange(['GFD_phenotype_log_id', 'genomic_feature_disease_phenotype_id', 'genomic_feature_disease_id', 'phenotype_id', 'is_visible', 'panel_attrib', 'created', 'user_id', 'action', 'adaptor'], @_);
+  my ($gfd_phenotype_log_id, $genomic_feature_disease_phenotype_id, $genomic_feature_disease_id, $phenotype_id, $created, $user_id, $action, $adaptor) = rearrange(['GFD_phenotype_log_id', 'genomic_feature_disease_phenotype_id', 'genomic_feature_disease_id', 'phenotype_id', 'created', 'user_id', 'action', 'adaptor'], @_);
   my $self = $class->SUPER::new(@_);
   $self->{'GFD_phenotype_log_id'} = $gfd_phenotype_log_id;
   $self->{'genomic_feature_disease_phenotype_id'} = $genomic_feature_disease_phenotype_id;
   $self->{'phenotype_id'} = $phenotype_id;
-  $self->{'is_visible'} = $is_visible;
-  $self->{'panel_attrib'} = $panel_attrib;
   $self->{'genomic_feature_disease_id'} = $genomic_feature_disease_id;
   $self->{'created'} = $created;
   $self->{'user_id'} = $user_id;
@@ -55,18 +53,6 @@ sub genomic_feature_disease_phenotype_id {
   my $self = shift;
   $self->{'genomic_feature_disease_phenotype_id'} = shift if ( @_);
   return $self->{'genomic_feature_disease_phenotype_id'};
-}
-
-sub is_visible {
-  my $self = shift;
-  $self->{is_visible} = shift if ( @_ );
-  return $self->{is_visible};
-}
-
-sub panel_attrib {
-  my $self = shift;
-  $self->{panel_attrib} = shift if ( @_ );
-  return $self->{panel_attrib};
 }
 
 sub created {

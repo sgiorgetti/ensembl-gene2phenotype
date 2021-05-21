@@ -1,2 +1,86 @@
-1	291	comment	2016-03-17 16:22:47	1
-2	3580	comment	2016-03-17 16:23:06	1
+1	4083	No inheritance information on a single mutation	2015-12-01 18:29:50	4
+2	4085	Four mutations with some functional work but no inheritance information	2015-12-01 18:33:14	4
+3	4094	They suggest that this may be treatable with galactose supplementation	2016-01-03 14:10:32	4
+4	4205	I have downgraded this gene to possible due to the rather weak initial evidence and the data in this paper and DECIPHER.  DRF	2016-09-22 15:27:58	4
+5	4206	This is definitely the cause of cherubism, but this would be difficult to term a developmental disorder in pure terms. DRF	2016-09-22 15:47:59	4
+6	4215	Total of 14 patients identified in multiple studies 	2016-11-07 20:32:03	4
+7	4798	De novo mutations	2016-11-08 11:12:48	4
+8	4227	Mutations in the coiled coiled domain, increasing MAPK activity	2016-11-08 11:18:09	4
+9	4186	Bifid metopic suture seen in two of the patients, phenotype variable even within a family	2016-11-08 12:13:04	4
+10	4242	Two families, one with homozygous missense other with variant in promotor	2016-11-09 17:02:36	4
+11	4246	LOF combined with hypomorphic mutation. Suggestion that balletic LOF is not viable and balletic hypomorphic mutations causes a different/no phenotype	2016-11-10 09:47:57	3
+12	4187	Two families with apparently biallelic mutations, one family ESS/NSV with phase.  The other are adjacent amino acid residues with no phase reported in the text\
+	2017-02-09 09:42:41	4
+13	4799	isoleucyl-tRNA synthetase deficiency	2017-02-09 10:36:42	4
+14	4800	Somatic GNA14 c.614A>T (p.Gln205Leu) & c.547C>T (p.Arg183Cys)	2017-02-09 10:42:42	4
+15	4801	Only two families but strong supporting animal model work	2017-02-09 10:48:35	4
+16	4802	Proband in late 50s with apparent onset of respiratory problems in childhood	2017-02-09 10:55:44	4
+17	4815	Two individuals with recurrent de novo mutation c.1999G>A (p.Val667Ile)	2017-02-16 14:39:44	4
+18	4211	recurrent de novo ATAD3A c.1582C>T (p.Arg528Trp)	2017-02-16 14:44:04	4
+19	4817	Recurrent de novo c.239G>A (p.Arg80His) and c.703C>G (p.Arg235Gly)	2017-02-16 14:54:47	4
+20	4819	Infection induced cerebellar oedema with unusual skin lesions	2017-02-16 15:21:23	4
+21	4822	Recurrent de novo mutations c.G155A, p.R52H	2017-02-16 15:55:59	4
+22	4846	Relatively few alleles, mostly NSV, among the five families	2017-03-21 12:14:36	4
+23	4853	Mitochondrial trans-2-enoyl-coenzyme A-reductase deficiency	2017-03-21 14:44:53	4
+24	4862	Nomenclature of the mutations in this paper is not clear but there is reasonable biochemical evidence that this is the correct gene	2017-04-05 15:35:33	4
+25	4872	The most prevalent NMNAT1 variant is c.769G>A (p.Glu257Lys). The p.Glu257Lys variant is considered not fully penetrant: one patient with this variant in a homozygous state and no ocular abnormalities. 	2017-04-20 12:10:33	10
+26	4877	Schmeatic representation of the location of variants reported in NMNAT1 gene.	2017-04-20 12:53:13	10
+27	4876	Variants: 5'UTR variants, partial deletions of NMNAT1 gene (CNVs).	2017-04-20 13:34:46	10
+28	4901	Two patients with clinical diagnosis of RP sino pigmento (RPSP).	2017-04-20 17:18:51	10
+31	4902	One patient with clinical diagnosis of cone-rod dystrophy.	2017-04-20 17:30:09	10
+32	4918	A severe FEVR phenotype segregated with a biallelic deletion in FZD4. The heterozygous individuals were asymptomatic and without retinal findings (fluorescein angiography was not performed). The FEVR deletion was previously reported as a cause for dominant FEVR in an Chinese family with a highly variable phenotype (1 heterozygous individual with mild peripheral findings - flurorescence angiography, 1 heterozygous individual with severe disease) - PMID 20938005.	2017-04-21 11:47:51	10
+34	4941	Mutation consequence: possible dominant-negative effect.	2017-04-21 17:11:58	10
+36	4948	3 simplex cases: retinal dystrophy sharing features with that seen in retinal disease caused by mutation in CRB1.	2017-04-23 21:59:38	10
+37	4953	Autosomal dominant MAC disease with dominant inheritance but incomplete penetrance. Maternal inheritance significantly increases the probability of phenotypic expression.	2017-04-24 11:11:03	10
+38	4986	The most frequent variant is c.2991+1655A-G (p.Cys998X).	2017-04-24 16:05:37	10
+39	4994	Translocation cases	2017-04-24 19:22:32	4
+40	4995	Two frameshift mutations and one intragenic single exon duplication	2017-04-24 19:24:54	4
+42	5037	Single de novo LOF mutation	2017-04-26 20:39:09	4
+43	5130	It is not possible to establish a clear genotype-phenotype correlation for ABHD12 mutations, and it is not clear if less detrimental mutations cause a less severe phenotype.	2017-05-08 11:17:14	10
+44	5191	This report describes a novel mutation in YAP1 associated with isolated ocular coloboma in a family with an autosomal dominant pattern of inheritance with apparent incomplete penetrance.	2017-05-12 10:58:40	10
+46	5225	Diagram with all published likely pathogenic variants.	2017-05-17 14:54:16	10
+47	5225	Diagram with all published likely pathogenic variants.	2017-05-17 14:54:27	10
+48	5230	The PPCRA phenotype is associated with a Val162Met mutation in CRB1 - one family. 	2017-05-17 16:19:47	10
+51	5237	Syndromic cataract.	2017-05-18 14:24:33	10
+53	5292	Missense variation: c.493G>C (p.Gly165Arg) in CRYBB3 - mutational hot spot that is frequently mutated in the Pakistani population.	2017-05-24 12:09:26	10
+54	5304	Summary of mutations in CRYGC associated with cataract.	2017-05-25 14:54:36	10
+55	5305	Two individuals heterozygous for the mutation developed nuclear sclerosis of the lens at approximately 50 years of age. 	2017-05-25 16:10:07	10
+56	5310	All homozygous missense but nice functional work\
+	2017-05-28 12:55:39	4
+57	5311	Presented at ESHG 28 May 2017 2pm by Frederico Tessadori	2017-05-28 13:12:29	4
+58	5311	The mutations a missense variants at Lysine 91	2017-05-28 13:13:43	4
+59	5312	p.Pro854Ser in a single individual	2017-05-29 08:45:16	4
+61	5324	Presented at ESHG 11.15am 30/05/17 by Sidd Banka	2017-05-30 10:27:28	4
+62	5325	Presented at ESHG 11.30am 30/05/17 by Norine Voisin	2017-05-30 10:39:13	4
+63	5326	8 families presented by Luci Gueneau ESHG 2017 11.45am 	2017-05-30 10:56:31	4
+64	5412	The authors hypothesise that the AHI1 variants that cause RP most likely give rise to residual Jouberin function that can overcome all symptoms of Joubert syndrome, except for retinal degeneration.	2017-06-08 15:54:10	10
+65	5525	A homozygous nonsense mutation in CEP250 causes a novel form of USH that is characterised by early-onset hearing loss and a relatively mild retinal degeneration phenotype.	2017-07-31 14:40:21	10
+66	5601	Both families with additional postaxial polydactyly had splice site mutations affecting intron 1 of C8orf37, one at the slice donor and one at the splice acceptor site.	2017-08-08 15:22:09	10
+67	5608	Meckel-Gruber like phenotype	2017-08-10 09:05:57	10
+68	5628	Supplementary Table 3: Reported C19orf12 mutations	2017-08-11 11:31:19	10
+69	5767	 Oligocone trichromacy: compound heterozygous missense mutations. 	2017-08-16 21:47:00	10
+70	5794	In Marshall syndrome, the majority of themutations in COL11A1 affect the splicing of 54 bp exons in a regionspanning exons 38Ã¢â‚¬â€œ54 of the gene. 	2017-08-17 15:47:23	10
+71	5839	More severe phenotypes in the children who are homozygous for the R345W mutation.	2017-08-18 20:23:54	10
+73	5861	One case (DD, cerebellar atrophy, scoliosis): variant c.1411G>C, p.G471R. 	2017-08-20 16:09:38	10
+74	5860	One family with non-syndromic RP: variant c.G430A, p.Ala144Thr, homozygous.	2017-08-20 16:10:18	10
+75	5939	Homozygous frameshift mutation in CEP78 in two siblings of a consanguineous family with arRP.	2017-08-23 22:32:56	10
+76	5988	In two affected members of a family with posterior polymorphous corneal dystrophy, the authors, identified a missense mutation in the COL8A2 gene (the same variant was identified in familial and sporadic cases of early-onset Fuchs endothelial corneal dystrophy).	2017-08-24 17:10:48	10
+77	6031	Coexistence of juvenile and ocular forms of cystinosis in one family.	2017-08-25 16:58:07	10
+78	6067	One syndromic IRD (no clinical details were provided) with heterozygous truncating SCAPER mutations.	2017-08-26 09:33:44	10
+79	6196	Single case, extensive biochemistry	2017-08-30 12:52:57	4
+80	6209	De novo variant	2017-08-30 14:11:48	4
+81	6340	Dhayat et al. (PMID 26376857) identified a heterozygous missense mutation in the renal glucosuria-associated gene SLC5A2 that segregated fully with renal leak glucosuria in the family. They concluded that the previously identified mutation in SLC16A12 was only responsible for the cataract/microcornea phenotype	2017-08-31 19:07:01	10
+82	7661	Unusual stroma of the irises and corectopia. 	2018-01-21 11:41:06	10
+83	7775	Single family in-frame deletion	2018-06-05 13:34:12	4
+84	7778	Paper by Webster E et al. De novo PHIP-predicted deleterious variants are associated with developmental delay, ID, obesity and dysmorphic features. |Molecular Case Studies CSH Published on line June 5 2018	2018-06-08 12:33:25	3
+85	8043	9 year old girl\
+	2018-07-26 16:38:15	4
+86	8299	NSV only between aa residue number 1054-1064 NP_001007027.1 HX Repeat Motif	2019-04-17 11:58:00	4
+87	8705	missense substitutions in the ZEB1 protein are associated with FECD6 and keratoconus, whereas protein truncating ZEB1 mutations result in PPCD3	2019-10-09 16:17:42	15
+89	5238	Syndromic cataract	2019-10-16 12:55:48	15
+90	5236	Non-syndromic, pseudodominat	2019-10-16 12:56:39	15
+91	8827	Of limited use from a human genetics perspective - rare missense variants with some biochemistry changes from normal\
+	2019-10-21 12:18:33	4
+92	8941	single de novo mutation in a large cohort	2019-11-17 20:09:05	4
+93	8942	Case report of LGD DNM	2019-11-17 20:10:22	4
+94	9067	duplication resulting in fusion gene ATAD3A and ATAD3C	2020-02-13 12:19:31	21

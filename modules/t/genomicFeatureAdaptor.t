@@ -37,7 +37,7 @@ my $ensembl_stable_id = 'ENSG00000144647';
 my $synonym = 'GTDC2'; 
 
 my $gfs = $gfa->fetch_all;
-ok(scalar @$gfs == 9, 'fetch_all');
+ok(scalar @$gfs == 2573, 'fetch_all');
 
 my $gf = $gfa->fetch_by_dbID($dbID);
 ok($gf->dbID == $dbID, 'fetch_by_dbID');
@@ -55,7 +55,7 @@ $gf = $gfa->fetch_by_synonym($synonym);
 ok($gf->gene_symbol eq $gene_symbol, 'fetch_by_synonym');
 
 $gfs = $gfa->fetch_all_by_substring('KM');
-ok(scalar @$gfs == 2, 'fetch_all_by_substring');
+ok(scalar @$gfs == 6, 'fetch_all_by_substring');
 
 $gf = Bio::EnsEMBL::G2P::GenomicFeature->new(
   -mim => '610142',

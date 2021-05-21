@@ -31,7 +31,7 @@ my $oa = $g2pdb->get_OrganAdaptor;
 ok($oa && $oa->isa('Bio::EnsEMBL::G2P::DBSQL::OrganAdaptor'), 'isa organ_adaptor');
 
 my $organ_id = 1;
-my $name = 'Teeth & Dentitian'; 
+my $name = 'Teeth and Dentition'; 
 
 my $organ = $oa->fetch_by_organ_id($organ_id);
 ok($organ->dbID == $organ_id, 'fetch_by_organ_id');
@@ -43,10 +43,10 @@ $organ = $oa->fetch_by_name($name);
 ok($organ->name eq $name, 'fetch_by_name');
 
 my $organs = $oa->fetch_all();
-ok(scalar @$organs == 23, 'fetch_all');
+ok(scalar @$organs == 149, 'fetch_all');
 
 $organs = $oa->fetch_all_by_panel_id(1);
-ok(scalar @$organs == 4, 'fetch_all_by_panel_id');
+ok(scalar @$organs == 23, 'fetch_all_by_panel_id');
 
 $organ = Bio::EnsEMBL::G2P::Organ->new(
   -name => 'test_organ',

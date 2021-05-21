@@ -41,25 +41,39 @@ sub store {
     die('Bio::EnsEMBL::G2P::User arg expected');
   }
 
-  if (! (defined $gfd->{panel} || defined $gfd->{panel_attrib})) {
-    die "panel or panel_attrib is required\n";
+  if (! (defined $gfd->{allelic_requirement} || defined $gfd->{allelic_requirement_attrib})) {
+    die "allelic_requirement or allelic_requirement_attrib is required\n";
   }
 
-  if (! (defined $gfd->{confidence_category} || defined $gfd->{confidence_category_attrib})) {
-    die "confidence_category or confidence_category_attrib is required\n";
+  if (! (defined $gfd->{mutation_consequence} || defined $gfd->{mutation_consequence_attrib})) {
+    die "mutation_consequence or mutation_consequence_attrib is required\n";
+  }
+  
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+
+  foreach my $key (qw/allelic_requirement mutation_consequence/)  {
+
+    if (defined $gfd->{$key} && ! defined $gfd->{"$key\_attrib"}) {
+      my $attrib = $attribute_adaptor->get_attrib($key, $gfd->{$key});
+      if (!$attrib) {
+        die "Could not get $key attrib id for value ", $gfd->{$key}, "\n";
+      }
+      $gfd->{"$key\_attrib"} = $attrib;
+    }
+
+    if (defined $gfd->{"$key\_attrib"} && ! defined $gfd->{$key}) {
+      my $value = $attribute_adaptor->get_value($key, $gfd->{"$key\_attrib"});
+      if (!$value) {
+        die "Could not get $key value for attrib id ", $gfd->{"$key\_attrib"}, "\n";
+      }
+      $gfd->{$key} = $value;
+    }
   }
 
-  my $aa = $self->db->get_AttributeAdaptor;
-  if ( defined $gfd->{panel} ) {
-    my $panel_attrib = $aa->attrib_id_for_type_value('g2p_panel', $gfd->{panel});
-    die "Could not get panel attrib id for value ", $gfd->{panel}, "\n" unless ($panel_attrib);
-    $gfd->{panel_attrib} = $panel_attrib;
-  }
-
-  if ( defined $gfd->{confidence_category} ) {
-    my $confidence_category_attrib = $aa->attrib_id_for_type_value('confidence_category', $gfd->{confidence_category});
-    die "Could not get confidence category attrib id for value ", $gfd->{confidence_category}, "\n" unless ($confidence_category_attrib);
-    $gfd->{confidence_category_attrib} = $confidence_category_attrib;
+  # Check if GFD already exists
+  my $gfds = $self->fetch_all_by_GenomicFeatureDisease($gfd);
+  if (scalar @$gfds > 0) {
+    return $gfds->[0];
   }
 
   my $sth = $dbh->prepare(q{
@@ -68,11 +82,8 @@ sub store {
       disease_id,
       allelic_requirement_attrib,
       mutation_consequence_attrib,
-      confidence_category_attrib,
-      is_visible,
-      panel_attrib,
       restricted_mutation_set
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -80,9 +91,6 @@ sub store {
     $gfd->{disease_id},
     $gfd->{allelic_requirement_attrib},
     $gfd->{mutation_consequence_attrib},
-    $gfd->{confidence_category_attrib},
-    $gfd->is_visible || 1,
-    $gfd->{panel_attrib},
     $gfd->restricted_mutation_set || 0
   );
 
@@ -95,74 +103,6 @@ sub store {
   $self->update_log($gfd, $user, 'create');
 
   return $gfd;
-}
-
-sub delete {
- my $self = shift;
-  my $GFD = shift;
-  my $user = shift;
-  my $dbh = $self->dbc->db_handle;
-
-  if (!ref($GFD) || !$GFD->isa('Bio::EnsEMBL::G2P::GenomicFeatureDisease')) {
-    die ('Bio::EnsEMBL::G2P::GenomicFeatureDisease arg expected');
-  }
-
-  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
-    die ('Bio::EnsEMBL::G2P::User arg expected');
-  }
-
-  my $GFD_id = $GFD->dbID; 
-
-  my $GFDPublicationAdaptor = $self->db->get_GenomicFeatureDiseasePublicationAdaptor;
-  foreach my $GFDPublication (@{$GFD->get_all_GFDPublications}) {
-    $GFDPublicationAdaptor->delete($GFDPublication, $user);
-  }
-
-  my $GFDPhenotypeAdaptor = $self->db->get_GenomicFeatureDiseasePhenotypeAdaptor;
-  foreach my $GFDPhenotype (@{$GFD->get_all_GFDPhenotypes}) {
-    $GFDPhenotypeAdaptor->delete($GFDPhenotype, $user);
-  }     
-  
-  my $GFDOrganAdaptor = $self->db->get_GenomicFeatureDiseaseOrganAdaptor;
-  foreach my $GFDOrgan (@{$GFD->get_all_GFDOrgans}) {
-    $GFDOrganAdaptor->delete($GFDOrgan, $user);
-  }   
-
-  my $GenomicFeatureDiseaseLogAdaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor; 
-  foreach my $log_entry (@{$GenomicFeatureDiseaseLogAdaptor->fetch_all_by_GenomicFeatureDisease($GFD)}) {
-    $GenomicFeatureDiseaseLogAdaptor->delete($log_entry, $user);
-  }
-
-  my $sth = $dbh->prepare(q{
-    INSERT INTO genomic_feature_disease_deleted (
-      genomic_feature_disease_id,
-      genomic_feature_id,
-      disease_id,
-      confidence_category_attrib,
-      is_visible,
-      panel_attrib,
-      deleted,
-      deleted_by_user_id
-    ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
-  });
-
-  $sth->execute(
-    $GFD->dbID,
-    $GFD->genomic_feature_id,
-    $GFD->disease_id,
-    $GFD->confidence_category_attrib,
-    $GFD->is_visible,
-    $GFD->panel_attrib,
-    $user->user_id
-  );
-  $sth->finish();
-
-  $sth = $dbh->prepare(q{
-    DELETE FROM genomic_feature_disease WHERE genomic_feature_disease_id = ?;
-  });
-
-  $sth->execute($GFD->dbID);
-  $sth->finish();
 }
 
 sub update {
@@ -181,20 +121,20 @@ sub update {
 
   my $sth = $dbh->prepare(q{
     UPDATE genomic_feature_disease
-      SET genomic_feature_id = ?,
-        disease_id = ?,
-        confidence_category_attrib = ?,
-        is_visible = ?,
-        panel_attrib = ?,
-        restricted_mutation_set = ?
-      WHERE genomic_feature_disease_id = ? 
+    SET
+      genomic_feature_id = ?,
+      disease_id = ?,
+      allelic_requirement_attrib = ?,
+      mutation_consequence_attrib = ?,
+      restricted_mutation_set = ?
+    WHERE genomic_feature_disease_id = ? 
   });
+
   $sth->execute(
     $gfd->genomic_feature_id,
     $gfd->disease_id,
-    $gfd->confidence_category_attrib,
-    $gfd->is_visible,
-    $gfd->panel_attrib,
+    $gfd->allelic_requirement_attrib,
+    $gfd->mutation_consequence_attrib,
     $gfd->restricted_mutation_set,
     $gfd->dbID
   );
@@ -212,13 +152,13 @@ sub update_log {
   my $action = shift;
 
   my $GFD_log_adaptor = $self->db->get_GenomicFeatureDiseaseLogAdaptor;
+
   my $gfdl = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(
     -genomic_feature_disease_id => $gfd->dbID,
-    -is_visible => $gfd->is_visible,
-    -panel_attrib => $gfd->panel_attrib,
     -disease_id => $gfd->disease_id,
     -genomic_feature_id => $gfd->genomic_feature_id,
-    -confidence_category_attrib => $gfd->confidence_category_attrib,
+    -allelic_requirement_attrib => $gfd->allelic_requirement_attrib,
+    -mutation_consequence_attrib => $gfd->mutation_consequence_attrib,
     -user_id => $user->dbID,
     -action => $action, 
     -adaptor => $GFD_log_adaptor,
@@ -226,234 +166,78 @@ sub update_log {
   $GFD_log_adaptor->store($gfdl);
 }
 
-sub _merge_all_duplicated_LGM_by_panel_gene {
-  my $self = shift;
-  my $user = shift;
-  my $gf_id = shift;
-  my $disease_id = shift;
-  my $panel = shift;
-  my $gfd_ids = shift;
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  my $base_gfd = $self->_fetch_by_genomic_feature_id_disease_id_panel_id($gf_id, $disease_id, $panel_id);
-  my $base_gfd_id = $base_gfd->dbID;
-  my @base_gfd_phenotype_ids = map {$_->get_Phenotype->phenotype_id} @{$base_gfd->get_all_GFDPhenotypes};
-  my @base_gfd_publication_ids = map {$_->get_Publication->publication_id} @{$base_gfd->get_all_GFDPublications};
-  my @base_gfd_organ_ids = map {$_->get_Organ->organ_id} @{$base_gfd->get_all_GFDOrgans};
-  my @base_gfd_actions = map {$_->allelic_requirement . '_' . $_->mutation_consequence} @{$base_gfd->get_all_GenomicFeatureDiseaseActions};
-  my @base_gfd_disease_synonym_ids = map {$_->disease_id} @{$base_gfd->get_all_GFDDiseaseSynonyms};
-
-  my $dbh = $self->dbc->db_handle;
-
-  foreach my $gfd_id (@$gfd_ids) {
-    next if ($gfd_id == $base_gfd_id);
-    my $gfd = $self->fetch_by_dbID($gfd_id);
-    # Move over all GFD comments
-    foreach my $gfd_comment (@{$gfd->get_all_GFDComments}) {
-      my $gfd_comment_id = $gfd_comment->dbID;
-#      print STDERR "Update genomic_feature_disease_comment set genomic_feature_disease_id=$base_gfd_id where genomic_feature_disease_id=$gfd_id and genomic_feature_disease_comment_id=$gfd_comment_id\n";
-      $dbh->do(qq/
-        UPDATE genomic_feature_disease_comment
-        SET genomic_feature_disease_id=$base_gfd_id
-        WHERE genomic_feature_disease_comment_id=$gfd_comment_id/) or die $dbh->errstr;
-    }
-    foreach my $gfd_phenotype (@{$gfd->get_all_GFDPhenotypes}) {
-      my $gfd_phenotype_id = $gfd_phenotype->dbID;
-      my $phenotype_id = $gfd_phenotype->get_Phenotype->phenotype_id;
-      # If phenotype is already in target GFD
-      if (grep {$phenotype_id == $_} @base_gfd_phenotype_ids) {
-        foreach my $gfd_phenotype_comment (@{$gfd_phenotype->get_all_GFDPhenotypeComments}) {
-          my ($base_gfd_phenotype_id) = map {$_->dbID} grep {$_->get_Phenotype->phenotype_id == $phenotype_id } @{$base_gfd->get_all_GFDPhenotypes};
-          my $gfd_phenotype_comment_id = $gfd_phenotype_comment->dbID;
-          # move over gfd phenotype comments
-#          print STDERR "UPDATE GFD_phenotype_comment SET genomic_feature_disease_phenotype_id = $base_gfd_phenotype_id WHERE GFD_phenotype_comment_id = $gfd_phenotype_comment_id;\n";
-          $dbh->do(qq/
-            UPDATE GFD_phenotype_comment
-            SET genomic_feature_disease_phenotype_id = $base_gfd_phenotype_id
-            WHERE GFD_phenotype_comment_id = $gfd_phenotype_comment_id;/) or die $dbh->errstr;
-        }
-#        print STDERR "DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;\n";
-        $dbh->do(qq/DELETE FROM genomic_feature_disease_phenotype WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;/) or die $dbh->errstr;
-      } else {
-#        print STDERR "UPDATE genomic_feature_disease_phenotype SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;\n";
-        $dbh->do(qq/UPDATE genomic_feature_disease_phenotype SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;/) or die $dbh->errstr;
-      }
-      # GFD_phenotype_log: 
-#      print STDERR "UPDATE GFD_phenotype_log SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;\n";
-      $dbh->do(qq/UPDATE GFD_phenotype_log SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_phenotype_id=$gfd_phenotype_id;/) or die $dbh->errstr;
-    }
-
-    foreach my $gfd_publication (@{$gfd->get_all_GFDPublications}) {
-      my $gfd_publication_id = $gfd_publication->dbID;
-      my $publication_id = $gfd_publication->get_Publication->publication_id;
-      # If publication is already in target GFD
-      if (grep {$publication_id == $_} @base_gfd_publication_ids) {
-        foreach my $gfd_publication_comment (@{$gfd_publication->get_all_GFDPublicationComments}) {
-          my ($base_gfd_publication_id) = map {$_->dbID} grep {$_->get_Publication->publication_id == $publication_id} @{$base_gfd->get_all_GFDPublications};
-          my $gfd_publication_comment_id = $gfd_publication_comment->dbID;
-          # move over gfd publication comments
-#          print STDERR "UPDATE GFD_publication_comment SET genomic_feature_disease_publication_id = $base_gfd_publication_id WHERE GFD_publication_comment_id = $gfd_publication_comment_id;\n";
-          $dbh->do(qq/
-            UPDATE GFD_publication_comment
-            SET genomic_feature_disease_publication_id = $base_gfd_publication_id
-            WHERE GFD_publication_comment_id = $gfd_publication_comment_id;/) or die $dbh->errstr;
-        }
-#        print STDERR "DELETE FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id=$gfd_publication_id;\n";
-        $dbh->do(qq/DELETE FROM genomic_feature_disease_publication WHERE genomic_feature_disease_publication_id=$gfd_publication_id;/) or die $dbh->errstr;
-      } else {
-#        print STDERR "UPDATE genomic_feature_disease_publication SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_publication_id=$gfd_publication_id;\n";
-        $dbh->do(qq/UPDATE genomic_feature_disease_publication SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_publication_id=$gfd_publication_id;/) or die $dbh->errstr;
-      }
-    }
-    
-    foreach my $gfd_organ (@{$gfd->get_all_GFDOrgans}) {
-      my $gfd_organ_id = $gfd_organ->dbID;
-      my $organ_id = $gfd_organ->get_Organ->organ_id;
-      if (grep {$organ_id == $_} @base_gfd_organ_ids) {
-#        print STDERR "DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id=$gfd_organ_id;\n";
-        $dbh->do(qq/DELETE FROM genomic_feature_disease_organ WHERE genomic_feature_disease_organ_id=$gfd_organ_id;/) or die $dbh->errstr;
-      } else {
-#        print STDERR "UPDATE genomic_feature_disease_organ SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_organ_id=$gfd_organ_id;\n";
-        $dbh->do(qq/UPDATE genomic_feature_disease_organ SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_organ_id=$gfd_organ_id;/) or die $dbh->errstr;
-      }
-    }
-
-    foreach my $gfd_action (@{$gfd->get_all_GenomicFeatureDiseaseActions}) {
-      my $gfd_action_id = $gfd_action->dbID;
-      my $ar_mc = $gfd_action->allelic_requirement . '_' . $gfd_action->mutation_consequence;
-      if (grep {$_ eq $ar_mc} @base_gfd_actions) {
-#        print STDERR "DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id=$gfd_action_id;\n";
-        $dbh->do(qq/DELETE FROM genomic_feature_disease_action WHERE genomic_feature_disease_action_id=$gfd_action_id;/) or die $dbh->errstr;
-      } else {
-#        print STDERR "UPDATE genomic_feature_disease_action SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_action_id=$gfd_action_id;\n";
-        $dbh->do(qq/UPDATE genomic_feature_disease_action SET genomic_feature_disease_id=$base_gfd_id WHERE genomic_feature_disease_action_id=$gfd_action_id;/) or die $dbh->errstr;
-      }
-    }
-    # disease name synonyms
-    my $disease_id = $gfd->get_Disease->dbID;
-    if (!grep {$_ eq $disease_id} @base_gfd_disease_synonym_ids) {
-      my $gfd_disease_synonym_adaptor = $self->db->get_GFDDiseaseSynonymAdaptor;
-      my $disease_synonym =  Bio::EnsEMBL::G2P::GFDDiseaseSynonym->new(
-        -disease_id => $disease_id,
-        -genomic_feature_disease_id => $base_gfd_id,
-        -adaptor => $gfd_disease_synonym_adaptor,
-      );
-      $gfd_disease_synonym_adaptor->store($disease_synonym);
-    }
-
-#    print STDERR "Delete GFD $gfd\n";
-    $self->delete($gfd, $user);
-
-    @base_gfd_phenotype_ids = map {$_->get_Phenotype->phenotype_id} @{$base_gfd->get_all_GFDPhenotypes};
-    @base_gfd_publication_ids = map {$_->get_Publication->publication_id} @{$base_gfd->get_all_GFDPublications};
-    @base_gfd_organ_ids = map {$_->get_Organ->organ_id} @{$base_gfd->get_all_GFDOrgans};
-    @base_gfd_actions = map {$_->allelic_requirement . '_' . $_->mutation_consequence} @{$base_gfd->get_all_GenomicFeatureDiseaseActions};
-    @base_gfd_disease_synonym_ids = map {$_->disease_id} @{$base_gfd->get_all_GFDDiseaseSynonyms};
-
-  }
-  return $base_gfd;
-}
-
-
-#LGM = locus, genotype, mechanism
-sub _get_all_duplicated_LGM_entries_by_panel {
-  my $self = shift;
-  my $panel = shift;
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-
-  my $sth = $self->prepare(qq{
-    select gf.gene_symbol, gfd.genomic_feature_id, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, count(*) as count
-    from genomic_feature_disease gfd
-    left join genomic_feature gf on gfd.genomic_feature_id = gf.genomic_feature_id
-    where gfd.panel_attrib = $panel_id
-    group by gfd.genomic_feature_id, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib
-    having count > 1;
-  });
-  $sth->execute;
-  
-  my @results = ();
-  while (my ($gene_symbol, $genomic_feature_id, $allelic_requirement_attrib, $mutation_consequence_attrib, $count) = $sth->fetchrow_array) {
-    my $allelic_requirement = $attribute_adaptor->attrib_value_for_id($allelic_requirement_attrib);
-    my $mutation_consequence = $attribute_adaptor->attrib_value_for_id($mutation_consequence_attrib);
-    push @results, {
-      gene_symbol => $gene_symbol,
-      gf_id => $genomic_feature_id,
-      panel_id => $panel_id,
-      panel => $panel,
-      genomic_feature_id => $genomic_feature_id,
-      allelic_requirement_attrib => $allelic_requirement_attrib,
-      allelic_requirement => $allelic_requirement,
-      mutation_consequence_attrib => $mutation_consequence_attrib,
-      mutation_consequence => $mutation_consequence,
-      count => $count,
-    };
-  }
-
-  $sth->finish;
-  return \@results;
-} 
-
 sub fetch_by_dbID {
   my $self = shift;
   my $genomic_feature_disease_id = shift;
-  return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
+  my $panels = shift;
+  my $is_authorised = shift;
+  if (defined $panels && defined $is_authorised) {
+    my @constraints = ();
+    push @constraints, "gfd.genomic_feature_disease_id=$genomic_feature_disease_id";
+    my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+    my @panel_attribs = ();
+    foreach my $panel (@$panels) {
+      push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+    }
+    push @constraints, "gfdp.panel_attrib IN (". join(',', @panel_attribs) . ")";
+    if (!$is_authorised) {
+      push @constraints, "gfdp.is_visible=1"; 
+    }
+    my $result = $self->generic_fetch(join(" AND ",  @constraints));
+    if ($result) {
+      return $result->[0];
+    } else {
+      return undef;
+    }
+  } else {
+    return $self->SUPER::fetch_by_dbID($genomic_feature_disease_id);
+  }
 }
 
-sub fetch_all_by_GenomicFeature_Disease_panel {
+sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
-  my $genomic_feature = shift;
+  my $gfd = shift;  
+  my @constraints = ();
+  my $genomic_feature = $gfd->get_GenomicFeature;
+  my $disease_id = $gfd->get_Disease->dbID;
+  my $allelic_requirement = $gfd->allelic_requirement;
+  my $mutation_consequence = $gfd->mutation_consequence;
+  return $self->fetch_all_by_GenomicFeature_constraints($genomic_feature, {
+    allelic_requirement => $allelic_requirement,
+    mutation_consequence => $mutation_consequence,
+    disease_id => $disease_id,
+  });
+}
+
+sub fetch_all_by_Disease {
+  my $self = shift;
   my $disease = shift;
-  my $panel = shift;
-  my $genomic_feature_id = $genomic_feature->dbID;
   my $disease_id = $disease->dbID;
+  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id);";
+  return $self->generic_fetch($constraint);
+}
+
+sub fetch_all_by_Disease_panels {
+  my $self = shift;
+  my $disease = shift;
+  my $panels = shift;
+  my $is_authorised = shift;
+  my $disease_id = $disease->dbID;
+
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id ) AND gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id;";
-  my $result = $self->generic_fetch($constraint);
-} 
-
-sub _fetch_by_genomic_feature_id_disease_id_panel_id {
-  my $self = shift;
-  my $genomic_feature_id = shift;
-  my $disease_id = shift;
-  my $panel_id = shift;
-  my $constraint = "gfd.disease_id=$disease_id AND gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id;";
-  my $result = $self->generic_fetch($constraint);
-  return $result->[0];
-}
-
-sub fetch_by_GenomicFeature_Disease {
-  my $self = shift;
-  my $genomic_feature = shift;
-  my $disease = shift;
-  my $genomic_feature_id = $genomic_feature->dbID;
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id AND gfd.genomic_feature_id=$genomic_feature_id;";
-  my $result = $self->generic_fetch($constraint);
-  return $result->[0];
-}
-
-sub fetch_by_GenomicFeature_Disease_panel_id {
-  my $self = shift;
-  my $genomic_feature = shift;
-  my $disease = shift;
-  my $panel_id = shift;
-  my $genomic_feature_id = $genomic_feature->dbID;
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id AND gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id;";
-  my $result = $self->generic_fetch($constraint);
-  return $result->[0];
-}
-
-sub fetch_by_GenomicFeature_Disease_panel {
-  my $self = shift;
-  my $genomic_feature = shift;
-  my $disease = shift;
-  my $panel = shift;
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  return $self->fetch_by_GenomicFeature_Disease_panel_id($genomic_feature, $disease, $panel_id);
+  my @constraints = ();
+  push @constraints, "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id)";
+  if ($panels) {
+    my @panel_attribs = ();
+    foreach my $panel (@$panels) {
+      push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
+    }
+    push @constraints, "gfdp.panel_attrib IN (". join(',', @panel_attribs) . ")";
+  }
+  if (!$is_authorised) {
+    push @constraints, "gfdp.is_visible=1"; 
+  }
+  return $self->generic_fetch(join(" AND ",  @constraints));
 }
 
 sub fetch_all_by_GenomicFeature {
@@ -464,167 +248,73 @@ sub fetch_all_by_GenomicFeature {
   return $self->generic_fetch($constraint);
 }
 
-sub fetch_all_by_GenomicFeature_panel {
-  my $self = shift;
-  my $genomic_feature = shift;
-  my $panel = shift;
-
-  if ($panel eq 'ALL') {
-    return $self->fetch_all_by_GenomicFeature($genomic_feature);
-  }
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-
-  my $genomic_feature_id = $genomic_feature->dbID;
-  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib=$panel_id";
-  return $self->generic_fetch($constraint);
-}
-
 sub fetch_all_by_GenomicFeature_panels {
   my $self = shift;
   my $genomic_feature = shift;
   my $panels = shift;
-
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my @panel_ids = ();
-  foreach my $panel (@$panels) {
-    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-    push @panel_ids, $panel_id;
-  } 
+  my $is_authorised = shift;
   my $genomic_feature_id = $genomic_feature->dbID;
-  my $constraint = "gfd.genomic_feature_id=$genomic_feature_id AND gfd.panel_attrib IN (" . join(',', @panel_ids) . ")";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_Disease {
-  my $self = shift;
-  my $disease = shift;
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_Disease_panel {
-  my $self = shift;
-  my $disease = shift;
-  my $panel = shift;
-  if ($panel eq 'ALL') {
-    return $self->fetch_all_by_Disease($disease);
-  } 
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id AND gfd.panel_attrib=$panel_id";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_Disease_panels {
-  my $self = shift;
-  my $disease = shift;
-  my $panels = shift;
 
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my @panel_ids = ();
-  foreach my $panel (@$panels) {
-    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-    push @panel_ids, $panel_id;
-  } 
-
-  my $disease_id = $disease->dbID;
-  my $constraint = "gfd.disease_id=$disease_id AND gfd.panel_attrib IN (" . join(',', @panel_ids) . ")";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_disease_id {
-  my $self = shift;
-  my $disease_id = shift;
-  my $constraint = qq{gfd.disease_id = ?};
-  $self->bind_param_generic_fetch($disease_id, SQL_INTEGER);
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_panel {
-  my $self = shift;
-  my $panel = shift;
-  if ($panel eq 'ALL') {
-    return $self->fetch_all();
-  } 
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  my $constraint = "gfd.panel_attrib=$panel_id";
-  return $self->generic_fetch($constraint);
-}
-
-sub fetch_all_by_panel_restricted {
-  my $self = shift;
-  my $panel = shift;
-  if ($panel eq 'ALL') {
-    return $self->fetch_all();
-  } 
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-  my $constraint = "gfd.panel_attrib=$panel_id AND gfd.is_visible = 0";
-  return $self->generic_fetch($constraint);
-}
-
-sub get_statistics {
-  my $self = shift;
-  my $panels = shift;
-  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-  my $confidence_categories = $attribute_adaptor->get_attribs_by_type_value('confidence_category');
-  %$confidence_categories = reverse %$confidence_categories;
-  my $panel_attrib_ids = join(',', @$panels);
-  my $sth = $self->prepare(qq{
-    select a.value, gfd.confidence_category_attrib, count(*)
-    from genomic_feature_disease gfd, attrib a
-    where a.attrib_id = gfd.panel_attrib
-    AND gfd.panel_attrib IN ($panel_attrib_ids)
-    group by a.value, gfd.confidence_category_attrib;
-  });
-  $sth->execute;
-
-  my $hash = {};
-  while (my ($panel, $confidence_category_attrib_id, $count) = $sth->fetchrow_array) {
-    my $confidence_category_value = $confidence_categories->{$confidence_category_attrib_id};
-    $hash->{$panel}->{$confidence_category_value} = $count;
-  }
-  my @results = ();
-  my @header = ('Panel', 'confirmed', 'probable', 'possible', 'both RD and IF', 'child IF'); 
-  push @results, \@header;
-  foreach my $panel (sort keys %$hash) {
-    my @row = ();
-    push @row, $panel;
-    for (my $i = 1; $i <= $#header; $i++) {
-      push @row, ($hash->{$panel}->{$header[$i]} || 0) + 0;
+  my @constraints = ();
+  push @constraints, "gfd.genomic_feature_id=$genomic_feature_id";
+  if ($panels) {
+    my @panel_attribs = ();
+    foreach my $panel (@$panels) {
+      push @panel_attribs, "'" . $attribute_adaptor->get_attrib('g2p_panel', $panel) . "'"; 
     }
-    push @results, \@row;
+    push @constraints, "gfdp.panel_attrib IN (". join(',', @panel_attribs) . ")";
+  }
+  if (!$is_authorised) {
+    push @constraints, "gfdp.is_visible=1"; 
+  }
+  return $self->generic_fetch(join(" AND ",  @constraints));
+}
+
+sub fetch_all_by_GenomicFeature_constraints {
+  my $self = shift;
+  my $genomic_feature = shift;
+  my $constraints_hash = shift;
+  my @constraints = ();
+  my $attribute_adaptor = $self->db->get_AttributeAdaptor;
+
+  while ( my ($key, $value) = each (%$constraints_hash)) {
+    if ($key eq 'allelic_requirement') {
+      # we can have more than one allelic_requirement
+      foreach my $v (split(',', $value)) {
+        my $allelic_requriement_attrib = $attribute_adaptor->get_attrib('allelic_requirement', $v);
+        push @constraints, "gfd.allelic_requirement_attrib='$allelic_requriement_attrib'";
+      }
+    } elsif ($key eq 'allelic_requirement_attrib') {
+      foreach my $v (split(',', $value)) {
+        push @constraints, "gfd.allelic_requirement_attrib='$v'";
+      }
+    } elsif ($key eq 'mutation_consequence') {
+      my $mutation_consequence_attrib = $attribute_adaptor->get_attrib('mutation_consequence', $value); 
+      push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
+    } elsif ($key eq 'mutation_consequence_attrib') {
+      push @constraints, "gfd.mutation_consequence_attrib='$value'";
+    } elsif ($key eq 'disease_id') {
+      push @constraints, "(gfd.disease_id=$value OR gfdds.disease_id=$value)";
+    } else {
+      die "Did not recognise constraint: $key. Supported constraints are: allelic_requirement, allelic_requirement_attrib, mutation_consequence, mutation_consequence_attrib, disease_id\n";
+    }
   }
 
-  return \@results;
+  my $genomic_feature_id = $genomic_feature->dbID;
+  push @constraints, "gfd.genomic_feature_id=$genomic_feature_id";
+  return $self->generic_fetch(join(' AND ', @constraints));
 }
 
-sub fetch_all_by_panel_without_publications {
+sub fetch_all_by_GenomicFeature_Disease {
   my $self = shift;
-  my $panel = shift;
-  my $constraint = '';
-  if ($panel ne 'ALL') {
-    my $attribute_adaptor = $self->db->get_AttributeAdaptor;
-    my $panel_id = $attribute_adaptor->attrib_id_for_value($panel);
-    $constraint = "AND gfd.panel_attrib=$panel_id";
-  } 
-  my $cols = join ",", $self->_columns();
-  my $sth = $self->prepare(qq{
-    SELECT $cols FROM genomic_feature_disease gfd
-    LEFT JOIN genomic_feature_disease_publication gfdp
-    ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
-    WHERE gfdp.genomic_feature_disease_id IS NULL
-    $constraint;
-  });
-
-  $sth->execute;
-  return $self->_objs_from_sth($sth);
-}
+  my $genomic_feature = shift;
+  my $disease = shift;
+  my $genomic_feature_id = $genomic_feature->dbID;
+  my $disease_id = $disease->dbID;
+  my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id ) AND gfd.genomic_feature_id=$genomic_feature_id;";
+  return $self->generic_fetch($constraint);
+} 
 
 sub fetch_all {
   my $self = shift;
@@ -640,10 +330,8 @@ sub _columns {
     'gfdds.GFD_disease_synonym_id AS gfd_disease_synonym_id',
     'gfd.allelic_requirement_attrib',
     'gfd.mutation_consequence_attrib',
-    'gfd.confidence_category_attrib',
-    'gfd.is_visible',
-    'gfd.panel_attrib',
     'gfd.restricted_mutation_set',
+    'gfdp.panel_attrib',
   );
   return @cols;
 }
@@ -652,6 +340,7 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['genomic_feature_disease', 'gfd'],
+    ['genomic_feature_disease_panel', 'gfdp'],
     ['GFD_disease_synonym', 'gfdds'],
   );
   return @tables;
@@ -662,9 +351,10 @@ sub _left_join {
 
   my @left_join = (
     ['GFD_disease_synonym', 'gfd.genomic_feature_disease_id = gfdds.genomic_feature_disease_id'],
+    ['genomic_feature_disease_panel', 'gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id'],
   );
 
-return @left_join;
+  return @left_join;
 }
 
 sub _objs_from_sth {
@@ -691,29 +381,15 @@ sub _obj_from_row {
   my $obj = $self->{_temp_objs}{$row->{genomic_feature_disease_id}};
 
   unless (defined($obj)) {
-    my $confidence_category;
-    my $panel;
     my $allelic_requirement;
     my $mutation_consequence;
 
-    if (defined $row->{confidence_category_attrib}) {
-      $confidence_category = $attribute_adaptor->attrib_value_for_id($row->{confidence_category_attrib});
-    }
-    if (defined $row->{panel_attrib}) {
-      $panel = $attribute_adaptor->attrib_value_for_id($row->{panel_attrib});
-    }
-
     if (defined $row->{allelic_requirement_attrib}) {
-      my @ids = split(',', $row->{allelic_requirement_attrib});
-      my @values = ();
-      foreach my $id (@ids) {
-        push @values, $attribute_adaptor->attrib_value_for_id($id);
-      }
-      $allelic_requirement = join(',', @values);
+      $allelic_requirement = $attribute_adaptor->get_value('allelic_requirement', $row->{allelic_requirement_attrib});
     }
 
     if (defined $row->{mutation_consequence_attrib}) {
-      $mutation_consequence = $attribute_adaptor->attrib_value_for_id($row->{mutation_consequence_attrib});
+      $mutation_consequence = $attribute_adaptor->get_value('mutation_consequence', $row->{mutation_consequence_attrib});
     }
 
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
@@ -724,11 +400,6 @@ sub _obj_from_row {
       -allelic_requirement => $allelic_requirement,
       -mutation_consequence_attrib => $row->{mutation_consequence_attrib},
       -mutation_consequnece => $mutation_consequence,
-      -confidence_category => $confidence_category, 
-      -confidence_category_attrib => $row->{confidence_category_attrib},
-      -is_visible => $row->{is_visible},
-      -panel => $panel,
-      -panel_attrib => $row->{panel_attrib},
       -restricted_mutation_set => $row->{restricted_mutation_set},
       -adaptor => $self,
     );
@@ -736,9 +407,17 @@ sub _obj_from_row {
     if (defined $row->{gfd_disease_synonym_id}) {
       $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
     }
+    if (defined $row->{panel_attrib}) {
+      my $panel = $attribute_adaptor->get_value('g2p_panel', $row->{panel_attrib});
+      $obj->add_panel($panel);
+    }
   } else {
     if (defined $row->{gfd_disease_synonym_id}) {
       $obj->add_gfd_disease_synonym_id($row->{gfd_disease_synonym_id});
+    }
+    if (defined $row->{panel_attrib}) {
+      my $panel = $attribute_adaptor->get_value('g2p_panel', $row->{panel_attrib});
+      $obj->add_panel($panel);
     }
   }
 }

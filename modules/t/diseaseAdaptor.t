@@ -31,7 +31,7 @@ my $da = $g2pdb->get_DiseaseAdaptor;
 ok($da && $da->isa('Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor'), 'isa disease_adaptor');
 
 my $dbID = 35;
-my $name = 'KABUKI SYNDROME (KABS)'; 
+my $name = 'KABUKI SYNDROME'; 
 my $mim = 147920;
 
 my $disease = $da->fetch_by_dbID($dbID);
@@ -43,6 +43,7 @@ ok($disease->dbID == $dbID, 'fetch_by_name');
 $disease = $da->fetch_by_mim($mim); 
 ok($disease->name eq $name, 'fetch_by_mim');
 
+$multi->hide('gene2phenotype', 'disease');
 $disease = Bio::EnsEMBL::G2P::Disease->new(
   -name => 'disease_name',
   -mim => 12345,
@@ -57,6 +58,8 @@ $disease->name('update_name');
 ok($da->update($disease), 'update');
 $disease = $da->fetch_by_name('update_name');
 ok($disease && $disease->name eq 'update_name', 'fetch updated');
+
+$multi->restore('gene2phenotype', 'disease');
 
 done_testing();
 1;
