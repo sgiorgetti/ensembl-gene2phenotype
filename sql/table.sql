@@ -36,13 +36,6 @@ CREATE TABLE disease (
   KEY name_idx (name)
 );
 
-CREATE TABLE disease_name_synonym (
-  disease_id int(10) unsigned NOT NULL,
-  name varchar(255) NOT NULL,
-  UNIQUE KEY name (disease_id,name),
-  KEY disease_idx (disease_id)
-);
-
 CREATE TABLE disease_ontology_accession (
   disease_id int(11) unsigned NOT NULL,
   accession varchar(255) NOT NULL,
@@ -56,6 +49,7 @@ CREATE TABLE genomic_feature (
   genomic_feature_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   gene_symbol varchar(128) DEFAULT NULL,
   hgnc_id int(10) unsigned DEFAULT NULL,
+  ncbi_id int(10) unsigned DEFAULT NULL,
   mim int(10) unsigned DEFAULT NULL,
   ensembl_stable_id varchar(128) DEFAULT NULL,
   seq_region_id int(10) unsigned DEFAULT NULL,
@@ -79,38 +73,40 @@ CREATE TABLE genomic_feature_disease (
   genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_id int(10) unsigned NOT NULL,
   disease_id int(10) unsigned NOT NULL,
-  allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
-  mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
+  allelic_requirement_attrib set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
+  mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
+  panel_attrib tinyint(1) DEFAULT NULL,
   restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (genomic_feature_disease_id),
-  UNIQUE KEY genomic_feature_disease (genomic_feature_id, disease_id, panel_attrib),
+  UNIQUE KEY genomic_feature_disease (genomic_feature_id, allelic_requirement_attrib, mutation_consequence_attrib, disease_id),
   KEY genomic_feature_idx (genomic_feature_id),
   KEY disease_idx (disease_id)
 );
 
-CREATE TABLE genomic_feature_disease_log (
+CREATE TABLE genomic_feature_disease_deleted (
+  genomic_feature_disease_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  genomic_feature_id int(10) unsigned NOT NULL,
+  disease_id int(10) unsigned NOT NULL,
+  allelic_requirement_attrib set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
+  mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
+  deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  deleted_by_user_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (genomic_feature_disease_id),
+  KEY genomic_feature_idx (genomic_feature_id),
+  KEY disease_idx (disease_id)
+);
+
+CREATE TABLE `genomic_feature_disease_log` (
   genomic_feature_disease_log_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   genomic_feature_id int(10) unsigned NOT NULL,
   disease_id int(10) unsigned NOT NULL,
-  allelic_requirement_attrib set('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20') DEFAULT NULL,
-  mutation_consequence_attrib set('21', '22', '23', '24', '25', '26', '27', '28', '29', '30') DEFAULT NULL,
-  restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
+  allelic_requirement_attrib set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
+  mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL,
   action varchar(128) NOT NULL,
   PRIMARY KEY (genomic_feature_disease_log_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
-);
-
-CREATE TABLE genomic_feature_disease_panel (
-  genomic_feature_disease_panel_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  genomic_feature_disease_id int(10) unsigned NOT NULL,
-  confidence_category_attrib set('31','32','33','34','35') DEFAULT NULL,
-  is_visible tinyint(1) unsigned NOT NULL DEFAULT '1',
-  panel_attrib tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (genomic_feature_disease_panel_id),
-  UNIQUE KEY gfd_panel_idx (genomic_feature_disease_id, panel_attrib),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
@@ -290,17 +286,6 @@ CREATE TABLE GFD_disease_synonym (
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 );
 
-CREATE TABLE mesh (
-  mesh_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  stable_id varchar(255) DEFAULT NULL,
-  name varchar(255) DEFAULT NULL,
-  description varchar(255) DEFAULT NULL,
-  PRIMARY KEY (mesh_id),
-  UNIQUE KEY desc_idx (description),
-  KEY name_idx (name),
-  KEY stable_idx (stable_id)
-);
-
 CREATE TABLE organ (
   organ_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
@@ -344,7 +329,7 @@ CREATE TABLE phenotype_mapping (
 CREATE TABLE publication (
   publication_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   pmid int(10) DEFAULT NULL,
-  title text DEFAULT NULL,
+  title mediumtext DEFAULT NULL,
   source varchar(255) DEFAULT NULL,
   PRIMARY KEY (publication_id),
   KEY pmid_idx (pmid)
@@ -359,7 +344,7 @@ CREATE TABLE user (
   user_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   username varchar(255) NOT NULL,
   email varchar(255) NOT NULL,
-  panel_attrib set('36','37','38','39','40','41','42','43','45','46','47') DEFAULT NULL,
+  panel_attrib set('36','37','38','39','40','41','42','43','45','46','47','48') DEFAULT NULL,
   PRIMARY KEY (user_id),
   UNIQUE KEY user_idx (username),
   UNIQUE KEY email_idx (email)
