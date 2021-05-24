@@ -11,6 +11,19 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
+
+CREATE TABLE meta (
+  meta_id     INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  species_id  INT UNSIGNED DEFAULT 1,
+  meta_key    VARCHAR( 40 ) NOT NULL,
+  meta_value  VARCHAR( 255 ) NOT NULL,
+  PRIMARY KEY ( meta_id ),
+  UNIQUE KEY species_key_value_idx (species_id, meta_key, meta_value ),
+  KEY species_value_idx (species_id, meta_value )
+);
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'variation'), (NULL, 'schema_version', '104');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_a.sql|schema version');
+
 CREATE TABLE attrib (
   attrib_id int(11) unsigned NOT NULL,
   attrib_type_id smallint(5) unsigned NOT NULL,
