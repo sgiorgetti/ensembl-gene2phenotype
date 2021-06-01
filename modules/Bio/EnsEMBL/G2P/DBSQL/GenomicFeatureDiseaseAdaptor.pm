@@ -135,7 +135,7 @@ sub update {
     $gfd->disease_id,
     $gfd->allelic_requirement_attrib,
     $gfd->mutation_consequence_attrib,
-    $gfd->restricted_mutation_set,
+    $gfd->restricted_mutation_set || 0,
     $gfd->dbID
   );
   $sth->finish();
