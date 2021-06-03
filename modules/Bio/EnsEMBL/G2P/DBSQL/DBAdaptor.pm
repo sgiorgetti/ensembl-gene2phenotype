@@ -43,6 +43,7 @@ sub get_available_adaptors {
     'GenomicFeatureDiseasePhenotype'   => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePhenotypeAdaptor',
     'GenomicFeatureDiseasePublication' => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseasePublicationAdaptor',   
     'GenomicFeatureStatistic'          => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureStatisticAdaptor', 
+    'MetaContainer'                    => 'Bio::EnsEMBL::G2P::DBSQL::MetaContainer',
     'Organ'                            => 'Bio::EnsEMBL::G2P::DBSQL::OrganAdaptor',
     'Panel'                            => 'Bio::EnsEMBL::G2P::DBSQL::PanelAdaptor',
     'Phenotype'                        => 'Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor',
