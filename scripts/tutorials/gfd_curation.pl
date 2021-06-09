@@ -33,7 +33,6 @@ my $registry = 'Bio::EnsEMBL::Registry';
 my $registry_file = $config->{registry_file};
 $registry->load_all($registry_file);
 
-# specis is human
 my $species = 'human';
 # Create adaptors
 my $disease_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'Disease');
