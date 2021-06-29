@@ -11,6 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+=head1 NAME
+
+load_g2p_data.pl - imports new entries and annotations from a spreadsheet into the gene2phenotype database
+
+=cut
+
 use strict;
 use warnings;
 
@@ -53,6 +60,8 @@ my $gfd_comment_adaptor      = $registry->get_adaptor($species, 'gene2phenotype'
 my $email = $config->{email};
 my $user = $user_adaptor->fetch_by_email($email);
 die "Couldn't fetch user for email $email" if (!defined $user);
+
+# Add new entry to this panel
 my $g2p_panel = $config->{panel};
 my $panel_attrib_id = $attrib_adaptor->get_attrib('g2p_panel', $g2p_panel);
 die "Couldn't fetch panel_attrib_id for panel $g2p_panel" if (!defined $g2p_panel);
@@ -122,6 +131,8 @@ foreach my $row (@rows) {
   my $disease = get_disease($disease_name, $disease_mim);
 
   # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
+  
+  
   my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_constraints(
     $gf,
     {
@@ -142,7 +153,6 @@ foreach my $row (@rows) {
       my $target_disease_id = $gfd->get_Disease->dbID;
       if ( $disease->dbID == $target_disease_id && $is_target_panel ) {
         # same disease and GFD is already in target panel
-        # update confidence
         update_gfd_panel($gfd, $g2p_panel, $confidence_attrib);
         add_annotations($gfd, %data);
         last;
@@ -176,6 +186,16 @@ foreach my $row (@rows) {
   }
 }
 
+=head2 add_annotations
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : hash %data contains keys (column header) and values (column value) for one row in the
+               input spreadsheet.
+  Description: Add annotations from the input row for the given GenomicFeatureDisease.
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
+
 sub add_annotations {
   my ($gfd, %data) = @_;
 
@@ -194,9 +214,20 @@ sub add_annotations {
 
 }
 
+=head2 create_gfd
+  Arg [1]    : Integer $gf_id GenomicFeature database id
+  Arg [2]    : Integer $disease_id Disease database id
+  Arg [3]    : Integer $allelic_requirement_attrib - Can be a single attrib id or comma separated list of attrib ids.
+  Arg [4]    : Integer $mutation_consequence_attrib - Single attrib id
+  Description: Create a new GenomicFeatureDisease entry.
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub create_gfd {
   my ($gf_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib) = @_;
+  
   my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_id => $gf_id,
       -disease_id => $disease_id,
@@ -207,6 +238,16 @@ sub create_gfd {
   $gfd = $gfd_adaptor->store($gfd, $user);
   return $gfd;
 }
+
+=head2 add_gfd_to_panel
+  Arg [1]    : Integer $gfd_id - GenomicFeatureDisease database id
+  Arg [2]    : String $g2p_panel - Add GFD to this panel
+  Arg [3]    : Integer $confidence_attrib - Single attrib id
+  Description: Create a new GenomicFeatureDiseasePanel entry.
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub add_gfd_to_panel {
   my ($gfd_id, $g2p_panel, $confidence_attrib) = @_;
@@ -219,6 +260,17 @@ sub add_gfd_to_panel {
   $gfd_panel = $gfd_panel_adaptor->store($gfd_panel, $user); 
 }
 
+=head2 update_gfd_panel
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : String $g2p_panel - Add GFD to this panel
+  Arg [3]    : Integer $confidence_attrib - Single attrib id
+  Description: Update the confidence value for the GenomicFeatureDiseasePanel entry.
+               Check if the confidence value is different before updating.
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
+
 sub update_gfd_panel {
   my ($gfd, $g2p_panel, $confidence_attrib) = @_;
   my $gfd_panel = $gfd_panel_adaptor->fetch_by_GenomicFeatureDisease_panel($gfd, $g2p_panel);
@@ -227,21 +279,41 @@ sub update_gfd_panel {
         $gfd->get_GenomicFeature->gene_symbol . " and disease name " .
         $gfd->get_Disease->name . " and panel $g2p_panel\n";
   }
-  $gfd_panel->confidence_category_attrib($confidence_attrib);
-  $gfd_panel_adaptor->update($gfd_panel, $user); 
+  if ($gfd_panel->confidence_category_attrib ne $confidence_attrib) {
+    $gfd_panel->confidence_category_attrib($confidence_attrib);
+    $gfd_panel_adaptor->update($gfd_panel, $user); 
+  }
 }
+
+=head2 add_to_panel
+  Arg [1]    : String $panels - ';' or ',' separated list of panels provided by the user.
+  Description: The list specifies all the panels to which the new entry needs to be added.
+               The script is run for each panel separately and we check if the panel that
+               has been passed to the script is included in the list.
+  Returntype : 1 if the script argument panel is included in the panel list and 0 if not. 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub add_to_panel {
   my $panels = shift;
   my $add = 0;
   foreach my $panel (split/;|,/, $panels) {
     $panel =~ s/\s+//g;
-    if ($panel eq $g2p_panel) {
+    if (lc $panel eq lc $g2p_panel) {
       return 1;
     }
   } 
   return $add;
 }
+
+=head2 get_genomic_feature
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub get_genomic_feature {
   my $gene_symbol = shift;
@@ -263,6 +335,14 @@ sub get_genomic_feature {
   }
   return undef;
 }
+
+=head2 get_disease
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub get_disease {
   my $disease_name = shift;
@@ -289,6 +369,15 @@ sub get_disease {
   return $disease;
 }
 
+=head2 get_confidence_attrib
+
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
+
 sub get_confidence_attrib {
   my $DDD_category = shift;
   my $disease_confidence = lc $DDD_category;
@@ -303,16 +392,34 @@ sub get_confidence_attrib {
   return $disease_confidence_attrib;
 }
 
+=head2 get_allelic_requirement_attrib
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
+
 sub get_allelic_requirement_attrib {
   my $allelic_requirement = shift;
-  my $ar = lc $allelic_requirement;
-  $ar =~ s/^\s+|\s+$//g;
-  my $ar_attrib = $ar_values->{$ar} || undef;
-  if (!$ar_attrib && $ar) {
-    die "no allelic requirement attrib for $allelic_requirement\n";
+
+  my @values = ();
+  foreach my $value (split/;|,/, $allelic_requirement) {
+    my $ar = lc $value;
+    $ar =~ s/^\s+|\s+$|\s//g;
+    push @values, $ar;
   }
+  my $ar_attrib = $attrib_adaptor->get_attrib('allelic_requirement', join(',', @values));
   return $ar_attrib;
 }
+
+=head2 get_mutation_consequence_attrib
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub get_mutation_consequence_attrib {
   my $mutation_consequence = shift;
@@ -332,6 +439,14 @@ sub get_mutation_consequence_attrib {
   }
   return $mc_attrib;
 }
+
+=head2 add_publications
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub add_publications {
   my $gfd = shift;
@@ -361,6 +476,14 @@ sub add_publications {
     }
   }
 }
+
+=head2 add_phenotypes
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub add_phenotypes {
   my $gfd = shift;
@@ -394,6 +517,14 @@ sub add_phenotypes {
     }
   }
 }
+
+=head2 add_organ_specificity
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub add_organ_specificity {
   my $gfd = shift;
@@ -429,6 +560,14 @@ sub add_organ_specificity {
     }
   }
 }
+
+=head2 add_comments
+  Arg [1]    :
+  Description:
+  Returntype : 
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub add_comments {
   my $gfd = shift;
