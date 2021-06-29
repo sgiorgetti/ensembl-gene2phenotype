@@ -20,7 +20,7 @@ use Bio::EnsEMBL::Registry;
 use DBI;
 use Getopt::Long;
 use FileHandle;
-
+use Data::Dumper;
 my $config = {};
 GetOptions(
   $config,
@@ -39,6 +39,7 @@ my $species = 'human';
 my $gf_adaptor               = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeature');
 my $disease_adaptor          = $registry->get_adaptor($species, 'gene2phenotype', 'Disease');
 my $gfd_adaptor              = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDisease');
+my $gfd_panel_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePanel');
 my $gfd_publication_adaptor  = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePublication');
 my $gfd_organ_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseOrgan');
 my $gfd_phenotype_adaptor    = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePhenotype');
@@ -53,13 +54,13 @@ my $email = $config->{email};
 my $user = $user_adaptor->fetch_by_email($email);
 die "Couldn't fetch user for email $email" if (!defined $user);
 my $g2p_panel = $config->{panel};
-my $panel_attrib_id = $attrib_adaptor->attrib_id_for_value($g2p_panel);
+my $panel_attrib_id = $attrib_adaptor->get_attrib('g2p_panel', $g2p_panel);
 die "Couldn't fetch panel_attrib_id for panel $g2p_panel" if (!defined $g2p_panel);
 
-my $confidence_values = $attrib_adaptor->get_attribs_by_type_value('confidence_category');
+my $confidence_values = $attrib_adaptor->get_values_by_type('confidence_category');
 %{$confidence_values} = map { lc $_ => $confidence_values->{$_} } keys %{$confidence_values};
-my $ar_values = $attrib_adaptor->get_attribs_by_type_value('allelic_requirement'); 
-my $mc_values = $attrib_adaptor->get_attribs_by_type_value('mutation_consequence'); 
+my $ar_values = $attrib_adaptor->get_values_by_type('allelic_requirement'); 
+my $mc_values = $attrib_adaptor->get_values_by_type('mutation_consequence'); 
 
 my $supported_mc_values = {
   'all missense/inframe' => 'all missense/in frame',
@@ -85,14 +86,11 @@ foreach my $row (@rows) {
   my $DDD_category = $data{'DDD category'};
   my $allelic_requirement = $data{'allelic requirement'};
   my $mutation_consequence = $data{'mutation consequence'};
-  my $phenotypes = $data{'phenotypes'};
-  my $organs = $data{'organ specificity list'};
-  my $pmids = $data{'pmids'};
   my $panel = $data{'panel'};
   my $prev_symbols = $data{'prev symbols'};
   my $hgnc_id = $data{'hgnc id'};
-  my $comments = $data{'comments'};
   my $restricted_mutation_set = $data{'restricted mutation set'};
+  my $add_after_review = $data{'add after review'};
 
   if (!$panel) {
     warn "No panel for gene $gene_symbol\n";
@@ -105,7 +103,7 @@ foreach my $row (@rows) {
     die "No genomic feature for $gene_symbol\n";
   }
 
-  my $disease_confidence_attrib = get_disease_confidence_attrib($DDD_category);
+  my $confidence_attrib = get_confidence_attrib($DDD_category);
 
   my $allelic_requirement_attrib = get_allelic_requirement_attrib($allelic_requirement);
   if (!$allelic_requirement_attrib) {
@@ -123,50 +121,68 @@ foreach my $row (@rows) {
 
   my $disease = get_disease($disease_name, $disease_mim);
 
-
   # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
-
-  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panel($gf, $g2p_panel);
-
-  my @gfds_matched_ar_and_mc = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
-
-  if (scalar @gfds_matched_ar_and_mc > 0) {
-    foreach my $gfd (@gfds_matched_ar_and_mc) {
-      warn("Entry with same gene symbol, allelic requirement and mutation consequence exists: " . join(" ", $gfd->get_GenomicFeature->gene_symbol, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd->get_Disease->name) . "\n");
+  my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_constraints(
+    $gf,
+    {
+      'allelic_requirement_attrib' => $allelic_requirement_attrib,
+      'mutation_consequence_attrib' => $mutation_consequence_attrib,
     }
-    if ($restricted_mutation_set) {
-      warn("Create new entry with restricted mutation set for: " . join(" ", $gene_symbol, $allelic_requirement, $mutation_consequence, $disease_name) . "\n");
-    } else {
-      next;
-    }
-  }
+  );
 
-  # Try to get existing GFD from database by genomic_feature, allelic requirement, mutation consequence and disease name. fetch_all_by_GenomicFeature_Disease_panel also considers disease name synonyms.
-  # In two steps:
-  # 1) get all GFD by gene and disease  
-  $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease_panel($gf, $disease, $g2p_panel);
-  # 2) then compare by allelic requirement and mutation consequence
-  my ($gfd) = grep {$_->allelic_requirement_attrib eq $allelic_requirement_attrib && $_->mutation_consequence_attrib eq $mutation_consequence_attrib} @{$gfds}; 
-  if ($gfd) {
-    # only update confidence:
-    # TODO is confidence value different and does it need to be updated:
-    # If yes:
-    $gfd->confidence_category_attrib($disease_confidence_attrib);
-    $gfd_adaptor->update($gfd, $user);
+  if (scalar @$gfds == 0) { 
+    # Entries with same gene symbol, allelic requirement and mutation consequence don't exist
+    # Create new GenomicFeatureDiease and GenomicFeatureDiseasePanel
+    my $gfd = create_gfd($gf->dbID, $disease->dbID, $allelic_requirement_attrib, $mutation_consequence_attrib);
+    add_gfd_to_panel($gfd->dbID, $g2p_panel, $confidence_attrib);
+    add_annotations($gfd, %data);
   } else {
-    # create new GFD
-    print STDERR "Create new GFD $gene_symbol $disease_name\n";
-    $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
-      -genomic_feature_id => $gf->dbID,
-      -disease_id => $disease->dbID,
-      -panel_attrib => $panel_attrib_id,
-      -confidence_category_attrib => $disease_confidence_attrib,
-      -allelic_requirement_attrib => $allelic_requirement_attrib,
-      -mutation_consequence_attrib => $mutation_consequence_attrib,
-      -adaptor => $gfd_adaptor,
-    );
-    $gfd = $gfd_adaptor->store($gfd, $user);
+    foreach my $gfd (@$gfds) {
+      my $is_target_panel = grep {$g2p_panel eq $_} @{$gfd->panels};
+      my $target_disease_id = $gfd->get_Disease->dbID;
+      if ( $disease->dbID == $target_disease_id && $is_target_panel ) {
+        # same disease and GFD is already in target panel
+        # update confidence
+        update_gfd_panel($gfd, $g2p_panel, $confidence_attrib);
+        add_annotations($gfd, %data);
+        last;
+      } elsif ($disease->dbID == $target_disease_id && !$is_target_panel) {
+        # GFD already exists. Add GFD to target panel
+        add_gfd_to_panel($gfd->dbID, $g2p_panel, $confidence_attrib);
+        add_annotations($gfd, %data);
+        last;
+      } elsif ($disease->dbID != $target_disease_id && $is_target_panel) {
+        warn(
+          "Entry with same gene symbol ($gene_symbol), allelic requirement ($allelic_requirement) " .
+          "and mutation consequence ($mutation_consequence) exists in target panel ($g2p_panel). " .
+          "But disease names are different: " .
+          "For exisiting entry: " . $gfd->get_Disease->name . ". For new entry: $disease_name\n"  
+        );
+      } else {
+        my $g2p_panels = join(',',  @{$gfd->panels});
+        warn(
+          "Entry with same gene symbol ($gene_symbol), allelic requirement ($allelic_requirement) " .
+          "and mutation consequence ($mutation_consequence) exists in a different panel(s) ($g2p_panels). " .
+          "The disease names are different: " .
+          "For exisiting entry: " . $gfd->get_Disease->name . ". For new entry: $disease_name\n"  
+        );
+      }
+    } 
+    if ($add_after_review) {
+      my $gfd = create_gfd($gf->dbID, $disease->dbID, $allelic_requirement_attrib, $mutation_consequence_attrib);
+      add_gfd_to_panel($gfd->dbID, $g2p_panel, $confidence_attrib);
+      add_annotations($gfd, %data);
+    }
   }
+}
+
+sub add_annotations {
+  my ($gfd, %data) = @_;
+
+  my $phenotypes = $data{'phenotypes'};
+  my $organs = $data{'organ specificity list'};
+  my $pmids = $data{'pmids'};
+  my $comments = $data{'comments'};
 
   add_publications($gfd, $pmids); 
 
@@ -176,6 +192,43 @@ foreach my $row (@rows) {
   
   add_comments($gfd, $comments, $user);
 
+}
+
+
+sub create_gfd {
+  my ($gf_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib) = @_;
+  my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
+      -genomic_feature_id => $gf_id,
+      -disease_id => $disease_id,
+      -allelic_requirement_attrib => $allelic_requirement_attrib,
+      -mutation_consequence_attrib => $mutation_consequence_attrib,
+      -adaptor => $gfd_adaptor,
+    );
+  $gfd = $gfd_adaptor->store($gfd, $user);
+  return $gfd;
+}
+
+sub add_gfd_to_panel {
+  my ($gfd_id, $g2p_panel, $confidence_attrib) = @_;
+  my $gfd_panel =  Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
+    -genomic_feature_disease_id => $gfd_id,
+    -panel => $g2p_panel,
+    -confidence_category_attrib => $confidence_attrib,
+    -adaptor => $gfd_panel_adaptor,
+  );
+  $gfd_panel = $gfd_panel_adaptor->store($gfd_panel, $user); 
+}
+
+sub update_gfd_panel {
+  my ($gfd, $g2p_panel, $confidence_attrib) = @_;
+  my $gfd_panel = $gfd_panel_adaptor->fetch_by_GenomicFeatureDisease_panel($gfd, $g2p_panel);
+  if (!$gfd_panel) {
+    die "Could not get GenomicFeatureDiseasePanel for GFD with gene symbol " .
+        $gfd->get_GenomicFeature->gene_symbol . " and disease name " .
+        $gfd->get_Disease->name . " and panel $g2p_panel\n";
+  }
+  $gfd_panel->confidence_category_attrib($confidence_attrib);
+  $gfd_panel_adaptor->update($gfd_panel, $user); 
 }
 
 sub add_to_panel {
@@ -236,7 +289,7 @@ sub get_disease {
   return $disease;
 }
 
-sub get_disease_confidence_attrib {
+sub get_confidence_attrib {
   my $DDD_category = shift;
   my $disease_confidence = lc $DDD_category;
   $disease_confidence =~ s/^\s+|\s+$//g;
