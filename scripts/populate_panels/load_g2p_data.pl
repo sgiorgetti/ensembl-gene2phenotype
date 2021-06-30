@@ -27,7 +27,6 @@ use Bio::EnsEMBL::Registry;
 use DBI;
 use Getopt::Long;
 use FileHandle;
-use Data::Dumper;
 my $config = {};
 GetOptions(
   $config,
@@ -65,11 +64,6 @@ die "Couldn't fetch user for email $email" if (!defined $user);
 my $g2p_panel = $config->{panel};
 my $panel_attrib_id = $attrib_adaptor->get_attrib('g2p_panel', $g2p_panel);
 die "Couldn't fetch panel_attrib_id for panel $g2p_panel" if (!defined $g2p_panel);
-
-my $confidence_values = $attrib_adaptor->get_values_by_type('confidence_category');
-%{$confidence_values} = map { lc $_ => $confidence_values->{$_} } keys %{$confidence_values};
-my $ar_values = $attrib_adaptor->get_values_by_type('allelic_requirement'); 
-my $mc_values = $attrib_adaptor->get_values_by_type('mutation_consequence'); 
 
 my $supported_mc_values = {
   'all missense/inframe' => 'all missense/in frame',
@@ -115,14 +109,8 @@ foreach my $row (@rows) {
   my $confidence_attrib = get_confidence_attrib($DDD_category);
 
   my $allelic_requirement_attrib = get_allelic_requirement_attrib($allelic_requirement);
-  if (!$allelic_requirement_attrib) {
-    die "No allelic requirement for $gene_symbol\n";
-  }
 
   my $mutation_consequence_attrib = get_mutation_consequence_attrib($mutation_consequence);
-  if (!$mutation_consequence_attrib) {
-    die "No mutation consequence for $gene_symbol\n";
-  }
 
   if (!$disease_name) {
     die "No disease name for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
@@ -131,8 +119,6 @@ foreach my $row (@rows) {
   my $disease = get_disease($disease_name, $disease_mim);
 
   # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
-  
-  
   my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_constraints(
     $gf,
     {
@@ -308,9 +294,12 @@ sub add_to_panel {
 }
 
 =head2 get_genomic_feature
-  Arg [1]    :
-  Description:
-  Returntype : 
+  Arg [1]    : String $gene_symbol - Gene symbol from the import file
+  Arg [2]    : String $prev_symbols - ';' or ',' separated list of previously assigned gene symbols
+               from the import file
+  Description: Tries to get the GenomicFeature for the given gene symbol or previously assigned gene
+               symbols
+  Returntype : GenomicFeature or undef
   Exceptions : None
   Status     : Stable
 =cut
@@ -337,9 +326,11 @@ sub get_genomic_feature {
 }
 
 =head2 get_disease
-  Arg [1]    :
-  Description:
-  Returntype : 
+  Arg [1]    : String $diseaes_name - Disease name from the import file
+  Arg [2]    : Integer $mim - OMIM disease number
+  Description: First tries to get the Disease for the given disease name.
+               Create a new Disease entry if it doesn't already exist.
+  Returntype : Disease
   Exceptions : None
   Status     : Stable
 =cut
@@ -371,79 +362,74 @@ sub get_disease {
 
 =head2 get_confidence_attrib
 
-  Arg [1]    :
-  Description:
-  Returntype : 
-  Exceptions : None
+  Arg [1]    : String $confidence_category - Confidence category from the import file 
+  Description: Get the confidence category attrib id for the given confidence
+               category value.
+  Returntype : String $confidence_category_attrib 
+  Exceptions : Throws error if no attrib id can be found for the given value. 
   Status     : Stable
 =cut
 
 sub get_confidence_attrib {
-  my $DDD_category = shift;
-  my $disease_confidence = lc $DDD_category;
-  $disease_confidence =~ s/^\s+|\s+$//g;
-  if ($disease_confidence eq 'child if' || $disease_confidence eq 'rd+if') {
-    $disease_confidence = 'both rd and if';
+  my $confidence_category = shift;
+  $confidence_category = lc $confidence_category;
+  $confidence_category =~ s/^\s+|\s+$//g;
+  if ($confidence_category eq 'child if' || $confidence_category eq 'rd+if') {
+    $confidence_category = 'both rd and if';
   }
-  my $disease_confidence_attrib = $confidence_values->{$disease_confidence};
-  if (!$disease_confidence_attrib) {
-    die "No disease confidence attrib for $disease_confidence \n";
-  }
-  return $disease_confidence_attrib;
+  return $attrib_adaptor->get_attrib('confidence_category', $confidence_category);
 }
 
 =head2 get_allelic_requirement_attrib
-  Arg [1]    :
-  Description:
-  Returntype : 
-  Exceptions : None
+  Arg [1]    : String $allelic_requirement - ',' or ';' separated list of
+               allelic requirements from the import file
+  Description: Get the allelic requirement attrib id(s) for the given
+               allelic requirement value(s)
+  Returntype : String $allelic_requirement_attrib 
+  Exceptions : Throws error if no attrib id can be found for the given value. 
   Status     : Stable
 =cut
 
 sub get_allelic_requirement_attrib {
   my $allelic_requirement = shift;
-
   my @values = ();
   foreach my $value (split/;|,/, $allelic_requirement) {
     my $ar = lc $value;
     $ar =~ s/^\s+|\s+$|\s//g;
     push @values, $ar;
   }
-  my $ar_attrib = $attrib_adaptor->get_attrib('allelic_requirement', join(',', @values));
-  return $ar_attrib;
+  return $attrib_adaptor->get_attrib('allelic_requirement', join(',', @values));
 }
 
 =head2 get_mutation_consequence_attrib
-  Arg [1]    :
-  Description:
+  Arg [1]    : String $mutation_consequence - mutation consequence from the
+               import file
+  Description: Get the mutation consequence attrib if for the given
+               mutation consequence value.
   Returntype : 
-  Exceptions : None
+  Exceptions : Throws error if no attrib id can be found for the given value. 
   Status     : Stable
 =cut
 
 sub get_mutation_consequence_attrib {
   my $mutation_consequence = shift;
-  my $mc = lc $mutation_consequence;
-  $mc =~ s/^\s+|\s+$//g;
+  $mutation_consequence = lc $mutation_consequence;
+  $mutation_consequence =~ s/^\s+|\s+$//g;
 
-  my $mc_attrib = $mc_values->{$mc} || undef;
-
-  # try some variations
-  if (!$mc_attrib) {
-    $mc = $supported_mc_values->{$mc};  
-    $mc_attrib = $mc_values->{$mc} || undef;
+  # Sometimes the provided mutational consequence is not
+  # correct and we need to map it to the correct one first
+  if ($supported_mc_values->{$mutational_consequence}) {
+    return $attrib_adaptor->get_attrib('mutation_consequence', $supported_mc_values->{$mutational_consequence}); 
+  } else {
+    return  $attrib_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
   }
-
-  if (!$mc_attrib) {
-    die "no mutation consequence attrib for $mutation_consequence\n";
-  }
-  return $mc_attrib;
 }
 
 =head2 add_publications
-  Arg [1]    :
-  Description:
-  Returntype : 
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : String $pmids - ';' or ',' separated list of PMID ids from the import file 
+  Description: Add publications to the GenomicFeatureDisease entry.
+  Returntype : None
   Exceptions : None
   Status     : Stable
 =cut
@@ -478,9 +464,11 @@ sub add_publications {
 }
 
 =head2 add_phenotypes
-  Arg [1]    :
-  Description:
-  Returntype : 
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : String $phenotypes - ';' or ',' separated list of phenotype ids from the import file
+  Arg [3]    : User $user
+  Description: Add phenotypes to the GenomicFeatureDisease entry.
+  Returntype : Warns about phenotype ids that cannot be found in the database.
   Exceptions : None
   Status     : Stable
 =cut
@@ -502,8 +490,8 @@ sub add_phenotypes {
     $hpo_id =~ s/^\s+|\s+$//g;
     my $phenotype = $phenotype_adaptor->fetch_by_stable_id($hpo_id);
     if (!$phenotype) {
-      print STDERR 'No phenotype ', $hpo_id, "\n";
-     } else {
+      warn("Could not map given phenotype id ($hpo_id) to any phenotypes in the database: " . $gfd->get_GenomicFeature->gene_symbol . "\n");
+    } else {
       my $phenotype_id = $phenotype->dbID;
       if (!$new_gfd_phenotypes_lookup->{"$gfd_id\t$phenotype_id"}) {
         my $new_gfd_phenotype = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(
@@ -511,7 +499,6 @@ sub add_phenotypes {
           -phenotype_id => $phenotype_id,
           -adaptor => $gfd_phenotype_adaptor,
         );
-        print "add_phenotypes $gfd_id $hpo_id\n";
         $gfd_phenotype_adaptor->store($new_gfd_phenotype, $user);
       }
     }
@@ -519,10 +506,10 @@ sub add_phenotypes {
 }
 
 =head2 add_organ_specificity
-  Arg [1]    :
-  Description:
-  Returntype : 
-  Exceptions : None
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : String $organs - ';' or ',' separated list of organs from the import file
+  Description: Add organs to the GenomicFeatureDisease entry.
+  Returntype : Warns about organs that cannot be found in the database.
   Status     : Stable
 =cut
 
@@ -544,7 +531,7 @@ sub add_organ_specificity {
     next unless($name);
     my $organ = $organ_adaptor->fetch_by_name($name);
     if (!$organ) {
-      print STDERR "No organ for $name gfd_id " . $gfd->get_GenomicFeature->gene_symbol ."\n";
+      warn("Could not match given organ ($name) to any organ in the database:  " . $gfd->get_GenomicFeature->gene_symbol . "\n");
     } else {
       my $organ_id = $organ->dbID;
       if (!$new_gfd_organs_lookup->{"$gfd_id\t$organ_id"}) {
@@ -553,7 +540,6 @@ sub add_organ_specificity {
           -genomic_feature_disease_id => $gfd_id,
           -adaptor => $gfd_organ_adaptor, 
         );
-        print "add_organ_specificity $gfd_id $organ_id\n";
         $gfd_organ_adaptor->store($new_gfd_organ);
         $new_gfd_organs_lookup->{"$gfd_id\t$organ_id"} = 1;
       }
@@ -562,14 +548,16 @@ sub add_organ_specificity {
 }
 
 =head2 add_comments
-  Arg [1]    :
-  Description:
-  Returntype : 
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : String $comments - Comments from the import file
+  Arg [3]    : User $user
+  Description: Add comments to the GenomicFeatureDisease entry.
+  Returntype : None 
   Exceptions : None
   Status     : Stable
 =cut
 
-sub add_comments {
+sub add_comment {
   my $gfd = shift;
   my $comments = shift;
   my $user = shift;
@@ -583,7 +571,6 @@ sub add_comments {
       -genomic_feature_disease_id => $gfd_id,
       -adaptor => $gfd_comment_adaptor,
     );
-    print "add GFD comment $gfd_id $comments\n";
     $gfd_comment_adaptor->store($gfd_comment, $user);
   }
 }
