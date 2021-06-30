@@ -33,63 +33,50 @@ load_g2p_data.pl [arguments]
 
 Displays this documentation
 
-=item B<--gvf_file FILE>
+=item B<--email email>
 
-GVF file which will be converted into a VCF file
+Email of the curator who provided the import file.
+Email address needs to be the same that is used when
+logging in to the gene2phenotype website.
 
-=item B<--vcf_file FILE>
+=item B<--panel panel>
 
-New VCF file
-=item B<--species >
-Species for which to genereate VCF file
-=item B<--registry FILE>
+G2P panel to which the new entries from the import
+file are added.
+
+=item B<--registry_file FILE >
+
 Registry file which provides database connections
-to core and variation databases from which the GVF
-file was dumped. Database connections are
-required for populating meta information in the VCF
-file.
-=item B<--fasta_file FILE>
-Provide fasta file for sequence look ups which
-otherwise would be achieved by database queries
-which are slower. It is recommended to provide
-a fasta file for human file conversions.
-=item B<--ancestral_allele|aa>
-Parse ancestral allele from GVF file and
-store in new VCF file
-=item B<--ancestral_allele_file FILE>
-Provide the ancestral genome FASTA file for looking up
-ancestral alleles. This is required for indels where
-the allele string or position of the reference have changed
-after formatting alleles to match the VCF format
-=item B<--global_maf>
-Parse minor allele, minor allele frequency and minor allele count
-from GVF file and store in new VCF file
-=item B<--evidence>
-Parse evidence attributes (Multiple observations, Frequency, Cited,
-Phenotype or Disease, 1000 Genomes, ESP, ExAC, gnomAD, TOPMed) from GVF file and store in new VCF file
-=item B<--clinical_significance>
-Parse clinical significance attributes from GVF file and
-sotre in VCF file. Available attributes are described here:
-https://www.ensembl.org/info/genome/variation/phenotype/phenotype_annotation.html#clin_significance
-=item B<--structural_variations|svs>
-Parse structural variants from GVF and store in VCF
-=item B<--incl_consequences>
-Parse variant consequences from GVF and store in VCF
-=item B<--protein_coding_details>
-Parse protein consequences from GVF and store in VCF
-=item B<--sift>
-Parse SIFT annotations from GVF and store in VCF
-=item B<--polyphen>
-Parse PolyPhen annotations from GVF and store in VCF
-=item B<--individual STRING>
-Individual name for which genotypes are stored in the GVF file.
-The name will be stored in the VCF header line.
+gene2phenotype database.
+
+=item B<--report_file FILE>
+
+A summary of the imported entries and annotations
+is written to the report fil
+
+=item B<--import_file FILE>
+
+A spreadsheet which contains new entries and annotations
+that will be imported into the gene2phenotype database
+for the given panel.
+
+Supported columns:
+- gene symbol
+- gene mim
+- disease name
+- disease mim
+- DDD category
+- allelic requirement
+- mutation consequence
+- phenotypes
+- organ specificity list
+- pmids
+- panel
+- comments
+- other disease names
+- add after review
+
 =back
-=head1 CONTACT
-  Please email comments or questions to the public Ensembl
-  developers list at <http://lists.ensembl.org/mailman/listinfo/dev>.
-  Questions may also be sent to the Ensembl help desk at
-  <https://www.ensembl.org/Help/Contact>.
 =cut
 
 use strict;
@@ -490,7 +477,6 @@ sub get_disease {
 
 sub get_confidence_attrib {
   my $confidence_category = shift;
-  print STDERR "get_confidence_attrib $confidence_category\n";
   $confidence_category = lc $confidence_category;
   $confidence_category =~ s/^\s+|\s+$//g;
   if ($confidence_category eq 'child if' || $confidence_category eq 'rd+if') {
