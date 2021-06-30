@@ -12,49 +12,134 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 =head1 NAME
 
-load_g2p_data.pl - imports new entries and annotations from a spreadsheet into the gene2phenotype database
+load_g2p_data.pl 
 
+=head1 DESCRIPTION
+
+Imports new entries and annotations from a spreadsheet into the gene2phenotype database
+
+=head1 SYNOPSIS
+
+load_g2p_data.pl [arguments]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Displays this documentation
+
+=item B<--gvf_file FILE>
+
+GVF file which will be converted into a VCF file
+
+=item B<--vcf_file FILE>
+
+New VCF file
+=item B<--species >
+Species for which to genereate VCF file
+=item B<--registry FILE>
+Registry file which provides database connections
+to core and variation databases from which the GVF
+file was dumped. Database connections are
+required for populating meta information in the VCF
+file.
+=item B<--fasta_file FILE>
+Provide fasta file for sequence look ups which
+otherwise would be achieved by database queries
+which are slower. It is recommended to provide
+a fasta file for human file conversions.
+=item B<--ancestral_allele|aa>
+Parse ancestral allele from GVF file and
+store in new VCF file
+=item B<--ancestral_allele_file FILE>
+Provide the ancestral genome FASTA file for looking up
+ancestral alleles. This is required for indels where
+the allele string or position of the reference have changed
+after formatting alleles to match the VCF format
+=item B<--global_maf>
+Parse minor allele, minor allele frequency and minor allele count
+from GVF file and store in new VCF file
+=item B<--evidence>
+Parse evidence attributes (Multiple observations, Frequency, Cited,
+Phenotype or Disease, 1000 Genomes, ESP, ExAC, gnomAD, TOPMed) from GVF file and store in new VCF file
+=item B<--clinical_significance>
+Parse clinical significance attributes from GVF file and
+sotre in VCF file. Available attributes are described here:
+https://www.ensembl.org/info/genome/variation/phenotype/phenotype_annotation.html#clin_significance
+=item B<--structural_variations|svs>
+Parse structural variants from GVF and store in VCF
+=item B<--incl_consequences>
+Parse variant consequences from GVF and store in VCF
+=item B<--protein_coding_details>
+Parse protein consequences from GVF and store in VCF
+=item B<--sift>
+Parse SIFT annotations from GVF and store in VCF
+=item B<--polyphen>
+Parse PolyPhen annotations from GVF and store in VCF
+=item B<--individual STRING>
+Individual name for which genotypes are stored in the GVF file.
+The name will be stored in the VCF header line.
+=back
+=head1 CONTACT
+  Please email comments or questions to the public Ensembl
+  developers list at <http://lists.ensembl.org/mailman/listinfo/dev>.
+  Questions may also be sent to the Ensembl help desk at
+  <https://www.ensembl.org/Help/Contact>.
 =cut
 
 use strict;
 use warnings;
 
-use Spreadsheet::Read;
-use Text::CSV;
 use Bio::EnsEMBL::Registry;
 use DBI;
-use Getopt::Long;
 use FileHandle;
+use Getopt::Long;
+use Pod::Usage qw(pod2usage);
+use Spreadsheet::Read;
+use Text::CSV;
+
+my $args = scalar @ARGV;
 my $config = {};
 GetOptions(
   $config,
+  'help|h',
   'registry_file=s',
   'email=s',
   'import_file=s',
   'panel=s',
+  'report_file=s',
 ) or die "Error: Failed to parse command line arguments\n";
-die ('A registry file is required (--registry_file)') unless (defined($config->{registry_file}));
+
+pod2usage(1) if ($config->{'help'} || !$args);
+
+foreach my $param (qw/registry_file email import_file panel report_file/) {
+  die ("Argument --$param is required.") unless (defined($config->{$param}));
+}
 
 my $registry = 'Bio::EnsEMBL::Registry';
 my $registry_file = $config->{registry_file};
 $registry->load_all($registry_file);
 
 my $species = 'human';
-my $gf_adaptor               = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeature');
-my $disease_adaptor          = $registry->get_adaptor($species, 'gene2phenotype', 'Disease');
-my $gfd_adaptor              = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDisease');
-my $gfd_panel_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePanel');
-my $gfd_publication_adaptor  = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePublication');
-my $gfd_organ_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseOrgan');
-my $gfd_phenotype_adaptor    = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePhenotype');
-my $publication_adaptor      = $registry->get_adaptor($species, 'gene2phenotype', 'Publication');
-my $organ_adaptor            = $registry->get_adaptor($species, 'gene2phenotype', 'Organ');
-my $phenotype_adaptor        = $registry->get_adaptor($species, 'gene2phenotype', 'Phenotype');
-my $attrib_adaptor           = $registry->get_adaptor($species, 'gene2phenotype', 'Attribute');
-my $user_adaptor             = $registry->get_adaptor($species, 'gene2phenotype', 'User');
-my $gfd_comment_adaptor      = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseComment');
+my $gf_adaptor                  = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeature');
+my $disease_adaptor             = $registry->get_adaptor($species, 'gene2phenotype', 'Disease');
+my $gfd_adaptor                 = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDisease');
+my $gfd_panel_adaptor           = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePanel');
+my $gfd_disease_synonym_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'GFDDiseaseSynonym');
+my $gfd_publication_adaptor     = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePublication');
+my $gfd_organ_adaptor           = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseOrgan');
+my $gfd_phenotype_adaptor       = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePhenotype');
+my $publication_adaptor         = $registry->get_adaptor($species, 'gene2phenotype', 'Publication');
+my $organ_adaptor               = $registry->get_adaptor($species, 'gene2phenotype', 'Organ');
+my $phenotype_adaptor           = $registry->get_adaptor($species, 'gene2phenotype', 'Phenotype');
+my $attrib_adaptor              = $registry->get_adaptor($species, 'gene2phenotype', 'Attribute');
+my $user_adaptor                = $registry->get_adaptor($species, 'gene2phenotype', 'User');
+my $gfd_comment_adaptor         = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseaseComment');
 
 my $email = $config->{email};
 my $user = $user_adaptor->fetch_by_email($email);
@@ -68,6 +153,11 @@ die "Couldn't fetch panel_attrib_id for panel $g2p_panel" if (!defined $g2p_pane
 my $supported_mc_values = {
   'all missense/inframe' => 'all missense/in frame',
 };
+
+my $report_file = $config->{report_file};
+
+my $import_stats = {};
+my $fh_report = FileHandle->new($report_file, 'w');
 
 my $file = $config->{import_file};
 die "Data file $file doesn't exist" if (!-e $file);
@@ -130,8 +220,8 @@ foreach my $row (@rows) {
   if (scalar @$gfds == 0) { 
     # Entries with same gene symbol, allelic requirement and mutation consequence don't exist
     # Create new GenomicFeatureDiease and GenomicFeatureDiseasePanel
-    my $gfd = create_gfd($gf->dbID, $disease->dbID, $allelic_requirement_attrib, $mutation_consequence_attrib);
-    add_gfd_to_panel($gfd->dbID, $g2p_panel, $confidence_attrib);
+    my $gfd = create_gfd($gf, $disease, $allelic_requirement_attrib, $mutation_consequence_attrib);
+    add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
     add_annotations($gfd, %data);
   } else {
     foreach my $gfd (@$gfds) {
@@ -144,7 +234,7 @@ foreach my $row (@rows) {
         last;
       } elsif ($disease->dbID == $target_disease_id && !$is_target_panel) {
         # GFD already exists. Add GFD to target panel
-        add_gfd_to_panel($gfd->dbID, $g2p_panel, $confidence_attrib);
+        add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
         add_annotations($gfd, %data);
         last;
       } elsif ($disease->dbID != $target_disease_id && $is_target_panel) {
@@ -165,12 +255,17 @@ foreach my $row (@rows) {
       }
     } 
     if ($add_after_review) {
-      my $gfd = create_gfd($gf->dbID, $disease->dbID, $allelic_requirement_attrib, $mutation_consequence_attrib);
-      add_gfd_to_panel($gfd->dbID, $g2p_panel, $confidence_attrib);
+      my $gfd = create_gfd($gf, $disease, $allelic_requirement_attrib, $mutation_consequence_attrib);
+      add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
       add_annotations($gfd, %data);
     }
   }
 }
+
+print $fh_report "Created " . $import_stats->{new_gfd} . " new GFDs.\n" if ($import_stats->{new_gfd});
+print $fh_report "Added " . $import_stats->{add_to_panel}->{$g2p_panel} . " GFDs to the $g2p_panel panel.\n" if ($import_stats->{add_to_panel}->{$g2p_panel});
+
+$fh_report->close();
 
 =head2 add_annotations
   Arg [1]    : GenomicFeatureDisease $gfd
@@ -185,24 +280,32 @@ foreach my $row (@rows) {
 sub add_annotations {
   my ($gfd, %data) = @_;
 
+  my $other_disease_names = $data{'other disease names'};
   my $phenotypes = $data{'phenotypes'};
   my $organs = $data{'organ specificity list'};
   my $pmids = $data{'pmids'};
   my $comments = $data{'comments'};
 
-  add_publications($gfd, $pmids); 
+  my $count = add_other_disease_names($gfd, $other_disease_names);
+  print $fh_report "    Added $count other disease names\n" if ($count > 0);
 
-  add_phenotypes($gfd, $phenotypes, $user);
+  $count = add_publications($gfd, $pmids); 
+  print $fh_report "    Added $count publications\n" if ($count > 0);
 
-  add_organ_specificity($gfd, $organs);
+  $count = add_phenotypes($gfd, $phenotypes, $user);
+  print $fh_report "    Added $count phenotypes\n" if ($count > 0);
+
+  $count = add_organ_specificity($gfd, $organs);
+  print $fh_report "    Added $count organs\n" if ($count > 0);
   
-  add_comments($gfd, $comments, $user);
+  $count = add_comments($gfd, $comments, $user);
+  print $fh_report "    Added $count comments\n" if ($count > 0);
 
 }
 
 =head2 create_gfd
-  Arg [1]    : Integer $gf_id GenomicFeature database id
-  Arg [2]    : Integer $disease_id Disease database id
+  Arg [1]    : GenomicFeature
+  Arg [2]    : Disease
   Arg [3]    : Integer $allelic_requirement_attrib - Can be a single attrib id or comma separated list of attrib ids.
   Arg [4]    : Integer $mutation_consequence_attrib - Single attrib id
   Description: Create a new GenomicFeatureDisease entry.
@@ -212,21 +315,27 @@ sub add_annotations {
 =cut
 
 sub create_gfd {
-  my ($gf_id, $disease_id, $allelic_requirement_attrib, $mutation_consequence_attrib) = @_;
-  
+  my ($gf, $disease, $allelic_requirement_attrib, $mutation_consequence_attrib) = @_;
   my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
-      -genomic_feature_id => $gf_id,
-      -disease_id => $disease_id,
+      -genomic_feature_id => $gf->dbID,
+      -disease_id => $disease->dbID,
       -allelic_requirement_attrib => $allelic_requirement_attrib,
       -mutation_consequence_attrib => $mutation_consequence_attrib,
       -adaptor => $gfd_adaptor,
     );
   $gfd = $gfd_adaptor->store($gfd, $user);
+
+  my $allelic_requirement = $gfd->allelic_requirement;
+  my $mutation_consequence = $gfd->mutation_consequence;
+
+  $import_stats->{new_gfd}++;
+  print $fh_report "Create new GFD: ", $gf->gene_symbol, ", ", $disease->name, ", $allelic_requirement, $mutation_consequence\n"; 
+
   return $gfd;
 }
 
 =head2 add_gfd_to_panel
-  Arg [1]    : Integer $gfd_id - GenomicFeatureDisease database id
+  Arg [1]    : GenomicFeatureDisease database
   Arg [2]    : String $g2p_panel - Add GFD to this panel
   Arg [3]    : Integer $confidence_attrib - Single attrib id
   Description: Create a new GenomicFeatureDiseasePanel entry.
@@ -236,14 +345,24 @@ sub create_gfd {
 =cut
 
 sub add_gfd_to_panel {
-  my ($gfd_id, $g2p_panel, $confidence_attrib) = @_;
+  my ($gfd, $g2p_panel, $confidence_attrib) = @_;
   my $gfd_panel =  Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
-    -genomic_feature_disease_id => $gfd_id,
+    -genomic_feature_disease_id => $gfd->dbID,
     -panel => $g2p_panel,
     -confidence_category_attrib => $confidence_attrib,
     -adaptor => $gfd_panel_adaptor,
   );
   $gfd_panel = $gfd_panel_adaptor->store($gfd_panel, $user); 
+
+  my $gene_symbol = $gfd->get_GenomicFeature->gene_symbol;
+  my $disease_name = $gfd->get_Disease->name;
+  my $allelic_requirement = $gfd->allelic_requirement;
+  my $mutation_consequence = $gfd->mutation_consequence;
+  my $confidence_category = $gfd_panel->confidence_category;
+ 
+  $import_stats->{add_to_panel}->{$g2p_panel}++;
+ 
+  print $fh_report "Add GFD: $gene_symbol, $disease_name, $allelic_requirement, $mutation_consequence to $g2p_panel with confidence $confidence_category\n"; 
 }
 
 =head2 update_gfd_panel
@@ -343,7 +462,6 @@ sub get_disease {
   my $disease_list = $disease_adaptor->fetch_all_by_name($disease_name);
   my @sorted_disease_list = sort {$a->dbID <=> $b->dbID} @$disease_list;
   my $disease = $sorted_disease_list[0]; 
-    
   if (! defined $disease) {
     $disease = Bio::EnsEMBL::G2P::Disease->new(
       -name => $disease_name,
@@ -372,6 +490,7 @@ sub get_disease {
 
 sub get_confidence_attrib {
   my $confidence_category = shift;
+  print STDERR "get_confidence_attrib $confidence_category\n";
   $confidence_category = lc $confidence_category;
   $confidence_category =~ s/^\s+|\s+$//g;
   if ($confidence_category eq 'child if' || $confidence_category eq 'rd+if') {
@@ -418,11 +537,43 @@ sub get_mutation_consequence_attrib {
 
   # Sometimes the provided mutational consequence is not
   # correct and we need to map it to the correct one first
-  if ($supported_mc_values->{$mutational_consequence}) {
-    return $attrib_adaptor->get_attrib('mutation_consequence', $supported_mc_values->{$mutational_consequence}); 
+  if ($supported_mc_values->{$mutation_consequence}) {
+    return $attrib_adaptor->get_attrib('mutation_consequence', $supported_mc_values->{$mutation_consequence}); 
   } else {
     return  $attrib_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
   }
+}
+
+=head2 add_other_disease_names
+  Arg [1]    : GenomicFeatureDisease $gfd
+  Arg [2]    : String $disease_names - ';' or ',' separated list of other disease names from the import file 
+  Description: Add other disease names to the GenomicFeatureDisease entry.
+  Returntype : None
+  Exceptions : None
+  Status     : Stable
+=cut
+
+sub add_other_disease_names {
+  my $gfd = shift;
+  my $disease_names = shift;
+  return 0 if (!$disease_names);
+  my $gfd_id = $gfd->dbID;
+  my $count = 0;
+  foreach my $disease_name (split(/;/, $disease_names)) {
+    $disease_name =~ s/^\s+|\s+$//g;
+    my $disease = get_disease($disease_name);
+    my $gfd_disease_synonym = $gfd_disease_synonym_adaptor->fetch_by_GFD_id_disease_id($gfd_id, $disease->dbID);
+    if (!$gfd_disease_synonym) {
+      $gfd_disease_synonym = Bio::EnsEMBL::G2P::GFDDiseaseSynonym->new(
+        -genomic_feature_disease_id => $gfd_id,
+        -disease_id => $disease->dbID,
+        -adaptor => $gfd_publication_adaptor,
+      );
+      $gfd_disease_synonym_adaptor->store($gfd_disease_synonym);
+      $count++;
+    }
+  }
+  return $count;
 }
 
 =head2 add_publications
@@ -437,9 +588,10 @@ sub get_mutation_consequence_attrib {
 sub add_publications {
   my $gfd = shift;
   my $pmids = shift;
-  return if (!$pmids);
+  return 0 if (!$pmids);
   my $gfd_id = $gfd->dbID;
   my @pubmed_ids = split(/;|,/, $pmids);
+  my $count = 0;
   foreach my $pmid (@pubmed_ids) {
     $pmid =~ s/^\s+|\s+$//g;
     $pmid =~ s/]//g;
@@ -459,8 +611,10 @@ sub add_publications {
         -adaptor => $gfd_publication_adaptor,
       );
       $gfd_publication_adaptor->store($gfd_publication);
+      $count++;
     }
   }
+  return $count;
 }
 
 =head2 add_phenotypes
@@ -477,8 +631,9 @@ sub add_phenotypes {
   my $gfd = shift;
   my $phenotypes = shift;
   my $user = shift;
-  return if (!$phenotypes);
+  return 0 if (!$phenotypes);
   my $gfd_id = $gfd->dbID;
+  my $count = 0;
   my $new_gfd_phenotypes = $gfd_phenotype_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
   my $new_gfd_phenotypes_lookup = {};
   foreach my $new_gfd_phenotype (@$new_gfd_phenotypes) {
@@ -500,9 +655,11 @@ sub add_phenotypes {
           -adaptor => $gfd_phenotype_adaptor,
         );
         $gfd_phenotype_adaptor->store($new_gfd_phenotype, $user);
+        $count++;
       }
     }
   }
+  return $count;
 }
 
 =head2 add_organ_specificity
@@ -516,10 +673,11 @@ sub add_phenotypes {
 sub add_organ_specificity {
   my $gfd = shift;
   my $organs = shift;
-  return if (!$organs);
+  return 0 if (!$organs);
   my $gfd_id = $gfd->dbID;
   my $new_gfd_organs = $gfd_organ_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
   my $new_gfd_organs_lookup = {};
+  my $count = 0;
   foreach my $new_gfd_organ (@$new_gfd_organs) {
     my $organ_id = $new_gfd_organ->get_Organ->dbID;
     $new_gfd_organs_lookup->{"$gfd_id\t$organ_id"} = 1;
@@ -542,9 +700,11 @@ sub add_organ_specificity {
         );
         $gfd_organ_adaptor->store($new_gfd_organ);
         $new_gfd_organs_lookup->{"$gfd_id\t$organ_id"} = 1;
+        $count++;
       }
     }
   }
+  return $count;
 }
 
 =head2 add_comments
@@ -557,12 +717,13 @@ sub add_organ_specificity {
   Status     : Stable
 =cut
 
-sub add_comment {
+sub add_comments {
   my $gfd = shift;
   my $comments = shift;
   my $user = shift;
-  return if (!$comments);
+  return 0 if (!$comments);
   $comments =~ s/^\s+|\s+$//g;
+  my $count = 0;
   my @existing_comments = @{$gfd_comment_adaptor->fetch_all_by_GenomicFeatureDisease($gfd)}; 
   if (! grep { $comments eq $_->comment_text} @existing_comments) {
     my $gfd_id = $gfd->dbID;
@@ -572,6 +733,7 @@ sub add_comment {
       -adaptor => $gfd_comment_adaptor,
     );
     $gfd_comment_adaptor->store($gfd_comment, $user);
+    $count++;
   }
+  return $count;
 }
-
