@@ -100,6 +100,7 @@ GetOptions(
   'import_file=s',
   'panel=s',
   'report_file=s',
+  'check_input_data',
 ) or die "Error: Failed to parse command line arguments\n";
 
 pod2usage(1) if ($config->{'help'} || !$args);
@@ -141,9 +142,24 @@ my $supported_mc_values = {
   'all missense/inframe' => 'all missense/in frame',
 };
 
-my $report_file = $config->{report_file};
+my @required_fields = (
+  'gene symbol',
+  'disease name',
+  'DDD category',
+  'allelic requirement',
+  'mutation consequence',
+  'panel'
+);
 
+# test run
+# find problematic data
+# find existing entries in the database
+# full run
+
+
+my $report_file = $config->{report_file};
 my $import_stats = {};
+
 my $fh_report = FileHandle->new($report_file, 'w');
 
 my $file = $config->{import_file};
@@ -152,6 +168,7 @@ my $book  = ReadData($file);
 my $sheet = $book->[1];
 my @rows = Spreadsheet::Read::rows($sheet);
 my @header = ();
+
 foreach my $row (@rows) {
   if ($row->[0] =~ /^gene symbol/) {
     @header = @$row;
@@ -172,28 +189,74 @@ foreach my $row (@rows) {
   my $restricted_mutation_set = $data{'restricted mutation set'};
   my $add_after_review = $data{'add after review'};
 
-  if (!$panel) {
-    warn "No panel for gene $gene_symbol\n";
+  next if (!add_new_entry_to_panel($panel));
+
+  my $entry = "$gene_symbol $disease_name $DDD_category $allelic_requirement $mutation_consequence $g2p_panel";
+  print STDERR "$entry\n" if ($config->{check_input_data});
+  my $has_missing_data = 0;
+  foreach my $field (@required_fields) {
+    if (! $data{$field}) {
+      $has_missing_data = 1;
+      print STDERR "    ERROR: Data for required field ($field) is missing.\n" if ($config->{check_input_data});
+    } 
+  } 
+  if ($config->{check_input_data} && $has_missing_data) {
+    print STDERR "    ERROR: Cannot proceed data checking for this entry\n";
     next;
   }
-  next if (!add_to_panel($panel));  
 
-  my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
-  if (!$gf) {
-    die "No genomic feature for $gene_symbol\n";
+  if (!$panel) {
+    die "ERROR: No panel information provided for $entry\n";
   }
 
-  my $confidence_attrib = get_confidence_attrib($DDD_category);
+  my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
 
-  my $allelic_requirement_attrib = get_allelic_requirement_attrib($allelic_requirement);
-
-  my $mutation_consequence_attrib = get_mutation_consequence_attrib($mutation_consequence);
+  if (!$gf) {
+    die "ERROR: No genomic feature for $gene_symbol\n";
+  }
 
   if (!$disease_name) {
-    die "No disease name for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
+    die "ERROR: No disease name for $gene_symbol, $allelic_requirement, $mutation_consequence\n";
   }
 
   my $disease = get_disease($disease_name, $disease_mim);
+
+  my $confidence_attrib;
+  my $allelic_requirement_attrib;
+  my $mutation_consequence_attrib; 
+
+  eval { $confidence_attrib = get_confidence_attrib($DDD_category) };
+  if ($@) {
+    if ($config->{check_input_data}) {
+      print STDERR "    ERROR: There was a problem retrieving the confidence attrib $@";
+      print STDERR "    ERROR: Cannot proceed data checking for this entry\n";
+      next;
+    } else {
+      die "There was a problem retrieving the confidence attrib for entry $entry $@";
+    }
+  }
+
+  eval { $allelic_requirement_attrib = get_allelic_requirement_attrib($allelic_requirement) };
+  if ($@) {
+    if ($config->{check_input_data}) {
+      print STDERR "    ERROR: There was a problem retrieving the allelic requirement attrib $@";
+      print STDERR "    ERROR: Cannot proceed data checking for this entry\n";
+      next;
+    } else {
+      die "There was a problem retrieving the allelic requirement attrib for entry $entry $@";
+    }
+  }
+
+  eval { $mutation_consequence_attrib = get_mutation_consequence_attrib($mutation_consequence) };
+  if ($@) {
+    if ($config->{check_input_data}) {
+      print STDERR "    ERROR: There was a problem retrieving the mutation consequence attrib $@";
+      print STDERR "    ERROR: Cannot proceed data checking for this entry\n";
+      next;
+    } else {
+      die "There was a problem retrieving the mutation consequence attrib for entry $entry $@";
+    }
+  }
 
   # Try to get existing entries with same gene symbol, allelic requirement and mutation consequence
   my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_constraints(
@@ -204,49 +267,56 @@ foreach my $row (@rows) {
     }
   );
 
-  if (scalar @$gfds == 0) { 
-    # Entries with same gene symbol, allelic requirement and mutation consequence don't exist
-    # Create new GenomicFeatureDiease and GenomicFeatureDiseasePanel
-    my $gfd = create_gfd($gf, $disease, $allelic_requirement_attrib, $mutation_consequence_attrib);
-    add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
-    add_annotations($gfd, %data);
-  } else {
-    foreach my $gfd (@$gfds) {
-      my $is_target_panel = grep {$g2p_panel eq $_} @{$gfd->panels};
-      my $target_disease_id = $gfd->get_Disease->dbID;
-      if ( $disease->dbID == $target_disease_id && $is_target_panel ) {
-        # same disease and GFD is already in target panel
-        update_gfd_panel($gfd, $g2p_panel, $confidence_attrib);
-        add_annotations($gfd, %data);
-        last;
-      } elsif ($disease->dbID == $target_disease_id && !$is_target_panel) {
-        # GFD already exists. Add GFD to target panel
-        add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
-        add_annotations($gfd, %data);
-        last;
-      } elsif ($disease->dbID != $target_disease_id && $is_target_panel) {
-        warn(
-          "Entry with same gene symbol ($gene_symbol), allelic requirement ($allelic_requirement) " .
-          "and mutation consequence ($mutation_consequence) exists in target panel ($g2p_panel). " .
-          "But disease names are different: " .
-          "For exisiting entry: " . $gfd->get_Disease->name . ". For new entry: $disease_name\n"  
-        );
-      } else {
-        my $g2p_panels = join(',',  @{$gfd->panels});
-        warn(
-          "Entry with same gene symbol ($gene_symbol), allelic requirement ($allelic_requirement) " .
-          "and mutation consequence ($mutation_consequence) exists in a different panel(s) ($g2p_panels). " .
-          "The disease names are different: " .
-          "For exisiting entry: " . $gfd->get_Disease->name . ". For new entry: $disease_name\n"  
-        );
+  my @gfds_with_matching_disease_name = grep { $_->get_Disease->dbID eq $disease->dbID } @{$gfds};  
+
+  if ($config->{check_input_data}) {
+    if (scalar @$gfds == 0) {
+      print STDERR "    Create new entry\n";
+    } elsif (scalar @gfds_with_matching_disease_name == 1) {
+      my $gfd = $gfds_with_matching_disease_name[0];
+      my $gfd_panels = join(', ', @{$gfd->panels});
+      print STDERR "    Entry exists already in panel(s): $gfd_panels\n";
+    } else {
+      print STDERR "    Entries with same gene symbol, mutation consequence and allelic requirement already exist:\n";
+      if (!$data{'add after review'}) {
+        print STDERR "        The user must indicate if a new entry should be created (add 1 to 'add after review' column) or\n";
+        print STDERR "        the disease name must match the disease name of the existing entry. Additional disease names can\n";
+        print STDERR "        be added to the 'other disease names' column\n";
+        print STDERR "        Existing entries:\n";
+        foreach my $gfd (@$gfds) {
+          my $gfd_panels = join(', ', @{$gfd->panels});
+          print STDERR "        > ", join(', ', $gfd->get_GenomicFeature->gene_symbol, $gfd->get_Disease->name, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd_panels), "\n"; 
+        }
       }
-    } 
-    if ($add_after_review) {
+    }
+  } else {
+    if (scalar @$gfds == 0) { 
+      # Entries with same gene symbol, allelic requirement and mutation consequence don't exist
+      # Create new GenomicFeatureDiease and GenomicFeatureDiseasePanel
       my $gfd = create_gfd($gf, $disease, $allelic_requirement_attrib, $mutation_consequence_attrib);
       add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
       add_annotations($gfd, %data);
-    }
+    } elsif (scalar @gfds_with_matching_disease_name == 1) {
+      my $gfd = $gfds_with_matching_disease_name[0];
+      my $is_already_in_target_panel = grep {$g2p_panel eq $_} @{$gfd->panels};
+      if ($is_already_in_target_panel) {
+        update_gfd_panel($gfd, $g2p_panel, $confidence_attrib);
+        add_annotations($gfd, %data);
+      } else {
+        add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
+        add_annotations($gfd, %data);
+      } 
+    } else {
+      if ($add_after_review) {
+        my $gfd = create_gfd($gf, $disease, $allelic_requirement_attrib, $mutation_consequence_attrib);
+        add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
+        add_annotations($gfd, %data);
+      } else {
+        warn("Entry $entry cannot be added to the database because entries with the same gene symbol, allelic requirement and mutation consequence exist\n");
+      }
+    } 
   }
+
 }
 
 print $fh_report "Created " . $import_stats->{new_gfd} . " new GFDs.\n" if ($import_stats->{new_gfd});
@@ -377,7 +447,7 @@ sub update_gfd_panel {
   }
 }
 
-=head2 add_to_panel
+=head2 add_new_entry_to_panel
   Arg [1]    : String $panels - ';' or ',' separated list of panels provided by the user.
   Description: The list specifies all the panels to which the new entry needs to be added.
                The script is run for each panel separately and we check if the panel that
@@ -387,7 +457,7 @@ sub update_gfd_panel {
   Status     : Stable
 =cut
 
-sub add_to_panel {
+sub add_new_entry_to_panel {
   my $panels = shift;
   my $add = 0;
   foreach my $panel (split/;|,/, $panels) {
