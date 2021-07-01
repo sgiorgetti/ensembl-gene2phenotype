@@ -317,6 +317,10 @@ foreach my $row (@rows) {
     } 
   }
 
+  if ($config->{check_input_data}) {
+    check_annotations($entry, %data);
+  }
+
 }
 
 print $fh_report "Created " . $import_stats->{new_gfd} . " new GFDs.\n" if ($import_stats->{new_gfd});
@@ -359,6 +363,52 @@ sub add_annotations {
   print $fh_report "    Added $count comments\n" if ($count > 0);
 
 }
+
+sub check_annotations {
+  my ($entry, %data) = @_;
+  my $phenotypes = $data{'phenotypes'};
+  my $organs = $data{'organ specificity list'};
+  my $pmids = $data{'pmids'};
+  
+  my @phenotype_list = get_list($data{'phenotypes'});
+  foreach my $hpo_id (@phenotype_list) {
+    my $phenotype = $phenotype_adaptor->fetch_by_stable_id($hpo_id);
+    if (!$phenotype) {
+      print STDERR "    ERROR: Could not map given phenotype id ($hpo_id) to any phenotypes in the database\n";
+    } 
+  }
+
+  my @organ_list = get_list($data{'organ specificity list'});
+  foreach my $organ_name (@organ_list)  {
+    my $organ = $organ_adaptor->fetch_by_name($organ_name);
+    if (!$organ) {
+      print STDERR "    ERROR: Could not match given organ ($organ_name) to any organ in the database\n";
+    }
+  }
+
+  my @pmid_list = get_list($data{'pmids'});
+  foreach my $pmid (@pmid_list) {
+    print STDERR "    ADD: Planning to add PMID $pmid\n";
+  }
+
+}
+
+
+sub get_list {
+  my $string = shift;
+  my @list = ();
+  if (!$string) {
+    return @list;
+  }
+  my @ids = split(/;|,/, $string);
+  foreach my $id (@ids) {
+    $id =~ s/^\s+|\s+$//g;
+    $id =~ s/]//g;
+    push @list, $id;
+  }
+  return @list;
+}
+
 
 =head2 create_gfd
   Arg [1]    : GenomicFeature
