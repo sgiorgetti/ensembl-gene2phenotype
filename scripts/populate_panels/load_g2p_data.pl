@@ -60,6 +60,15 @@ A spreadsheet which contains new entries and annotations
 that will be imported into the gene2phenotype database
 for the given panel.
 
+=item B<--check_input_data>
+
+The input data is checked for: missing data, wrong values
+and existing entries in the database with the same gene symbol,
+allelic requirement and mutation consequence.
+
+The report is writted to STDERR. No data is imported into
+the database.
+
 Supported columns:
 - gene symbol
 - gene mim
@@ -319,6 +328,7 @@ foreach my $row (@rows) {
 
   if ($config->{check_input_data}) {
     check_annotations($entry, %data);
+    print STDERR "\n";
   }
 
 }
@@ -696,11 +706,8 @@ sub add_publications {
   my $pmids = shift;
   return 0 if (!$pmids);
   my $gfd_id = $gfd->dbID;
-  my @pubmed_ids = split(/;|,/, $pmids);
   my $count = 0;
-  foreach my $pmid (@pubmed_ids) {
-    $pmid =~ s/^\s+|\s+$//g;
-    $pmid =~ s/]//g;
+  foreach my $pmid (get_list($pmids)) {
     next unless($pmid);
     my $publication = $publication_adaptor->fetch_by_PMID($pmid);
     if (!$publication) {
@@ -746,9 +753,7 @@ sub add_phenotypes {
     my $phenotype_id = $new_gfd_phenotype->get_Phenotype->dbID;
     $new_gfd_phenotypes_lookup->{"$gfd_id\t$phenotype_id"} = 1;
   }
-  my @hpo_ids = split(/,|;/, $phenotypes || '');
-  foreach my $hpo_id (@hpo_ids) {
-    $hpo_id =~ s/^\s+|\s+$//g;
+  foreach my $hpo_id (get_list($phenotypes)) {
     my $phenotype = $phenotype_adaptor->fetch_by_stable_id($hpo_id);
     if (!$phenotype) {
       warn("Could not map given phenotype id ($hpo_id) to any phenotypes in the database: " . $gfd->get_GenomicFeature->gene_symbol . "\n");
@@ -789,9 +794,7 @@ sub add_organ_specificity {
     $new_gfd_organs_lookup->{"$gfd_id\t$organ_id"} = 1;
   }
 
-  my @organ_names = split(/;|,/, $organs);
-  foreach my $name (@organ_names) {
-    $name =~ s/^\s+|\s+$//g;
+  foreach my $name (get_list($organs)) {
     next unless($name);
     my $organ = $organ_adaptor->fetch_by_name($name);
     if (!$organ) {
