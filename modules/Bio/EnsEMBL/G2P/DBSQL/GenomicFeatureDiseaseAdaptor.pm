@@ -280,15 +280,10 @@ sub fetch_all_by_GenomicFeature_constraints {
 
   while ( my ($key, $value) = each (%$constraints_hash)) {
     if ($key eq 'allelic_requirement') {
-      # we can have more than one allelic_requirement
-      foreach my $v (split(',', $value)) {
-        my $allelic_requriement_attrib = $attribute_adaptor->get_attrib('allelic_requirement', $v);
-        push @constraints, "gfd.allelic_requirement_attrib='$allelic_requriement_attrib'";
-      }
+      my $allelic_requriement_attrib = $attribute_adaptor->get_attrib('allelic_requirement', $value);
+      push @constraints, "gfd.allelic_requirement_attrib='$allelic_requriement_attrib'";
     } elsif ($key eq 'allelic_requirement_attrib') {
-      foreach my $v (split(',', $value)) {
-        push @constraints, "gfd.allelic_requirement_attrib='$v'";
-      }
+      push @constraints, "gfd.allelic_requirement_attrib='$value'";
     } elsif ($key eq 'mutation_consequence') {
       my $mutation_consequence_attrib = $attribute_adaptor->get_attrib('mutation_consequence', $value); 
       push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
