@@ -86,6 +86,7 @@ Supported columns:
 - add after review
 
 =back
+
 =cut
 
 use strict;
@@ -159,12 +160,6 @@ my @required_fields = (
   'mutation consequence',
   'panel'
 );
-
-# test run
-# find problematic data
-# find existing entries in the database
-# full run
-
 
 my $report_file = $config->{report_file};
 my $import_stats = {};
@@ -374,12 +369,24 @@ sub add_annotations {
 
 }
 
+=head2 check_annotations
+  Arg [1]    : hash %data contains keys (column header) and values (column value) for one row in the
+               input spreadsheet.
+  Description: The provided phenotype ids and organ names must match the phenotype ids and organ names
+               that are store in the gene2phenotype database in the phenotye and organ tables.
+               Report any erros when trying to find the entry in the database.
+               PMIDs are not preloaded in the database. We list all PMIDs that are planned to be imported
+               for visual inspection. 
+  Returntype : None 
+  Exceptions : None
+  Status     : Stable
+=cut
+
 sub check_annotations {
-  my ($entry, %data) = @_;
+  my %data = shift;
   my $phenotypes = $data{'phenotypes'};
   my $organs = $data{'organ specificity list'};
   my $pmids = $data{'pmids'};
-  
   my @phenotype_list = get_list($data{'phenotypes'});
   foreach my $hpo_id (@phenotype_list) {
     my $phenotype = $phenotype_adaptor->fetch_by_stable_id($hpo_id);
@@ -400,9 +407,17 @@ sub check_annotations {
   foreach my $pmid (@pmid_list) {
     print STDERR "    ADD: Planning to add PMID $pmid\n";
   }
-
 }
 
+
+=head2 get_list
+  Arg [1]    : ';' or ',' separated list of values
+  Description: Helper method to split a given string and remove any whitespace or other
+               unwanted characters.
+  Returntype : list of values
+  Exceptions : None
+  Status     : Stable
+=cut
 
 sub get_list {
   my $string = shift;
