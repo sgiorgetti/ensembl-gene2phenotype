@@ -322,7 +322,7 @@ foreach my $row (@rows) {
   }
 
   if ($config->{check_input_data}) {
-    check_annotations($entry, %data);
+    check_annotations(%data);
     print STDERR "\n";
   }
 
@@ -383,7 +383,7 @@ sub add_annotations {
 =cut
 
 sub check_annotations {
-  my %data = shift;
+  my %data = @_;
   my $phenotypes = $data{'phenotypes'};
   my $organs = $data{'organ specificity list'};
   my $pmids = $data{'pmids'};
