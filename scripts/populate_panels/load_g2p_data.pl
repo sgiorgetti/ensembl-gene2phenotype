@@ -193,9 +193,22 @@ foreach my $row (@rows) {
   my $restricted_mutation_set = $data{'restricted mutation set'};
   my $add_after_review = $data{'add after review'};
 
+  my $entry = "$gene_symbol Target panel: $g2p_panel";
+
+  if (!$panel) {
+    if ($config->{check_input_data}) {
+      print STDERR "$entry\n";
+      print STDERR "    ERROR: No panel information provided\n";
+      print STDERR "    ERROR: Cannot proceed data checking for this entry\n";
+      next;
+    } else {
+      die "ERROR: No panel information provided for $entry\n";
+    }
+  }
+
   next if (!add_new_entry_to_panel($panel));
 
-  my $entry = "$gene_symbol $disease_name $DDD_category $allelic_requirement $mutation_consequence $g2p_panel";
+  $entry = "$gene_symbol $disease_name $DDD_category $allelic_requirement $mutation_consequence Target panel: $g2p_panel";
   print STDERR "$entry\n" if ($config->{check_input_data});
   my $has_missing_data = 0;
   foreach my $field (@required_fields) {
@@ -207,10 +220,6 @@ foreach my $row (@rows) {
   if ($config->{check_input_data} && $has_missing_data) {
     print STDERR "    ERROR: Cannot proceed data checking for this entry\n";
     next;
-  }
-
-  if (!$panel) {
-    die "ERROR: No panel information provided for $entry\n";
   }
 
   my $gf = get_genomic_feature($gene_symbol, $prev_symbols);
@@ -281,7 +290,7 @@ foreach my $row (@rows) {
       my $gfd_panels = join(', ', @{$gfd->panels});
       print STDERR "    Entry exists already in panel(s): $gfd_panels\n";
     } else {
-      print STDERR "    Entries with same gene symbol, mutation consequence and allelic requirement already exist:\n";
+      print STDERR "    ERROR: Entries with same gene symbol, mutation consequence and allelic requirement already exist:\n";
       if (!$data{'add after review'}) {
         print STDERR "        The user must indicate if a new entry should be created (add 1 to 'add after review' column) or\n";
         print STDERR "        the disease name must match the disease name of the existing entry. Additional disease names can\n";
@@ -624,8 +633,8 @@ sub get_confidence_attrib {
   my $confidence_category = shift;
   $confidence_category = lc $confidence_category;
   $confidence_category =~ s/^\s+|\s+$//g;
-  if ($confidence_category eq 'child if' || $confidence_category eq 'rd+if') {
-    $confidence_category = 'both rd and if';
+  if ($confidence_category eq 'child if' || $confidence_category eq 'rd+if' || $confidence_category eq 'both rd and if') {
+    $confidence_category = 'both RD and IF';
   }
   return $attrib_adaptor->get_attrib('confidence_category', $confidence_category);
 }
@@ -645,7 +654,7 @@ sub get_allelic_requirement_attrib {
   my @values = ();
   foreach my $value (split/;|,/, $allelic_requirement) {
     my $ar = lc $value;
-    $ar =~ s/^\s+|\s+$|\s//g;
+    $ar =~ s/^\s+|\s+$//g;
     push @values, $ar;
   }
   return $attrib_adaptor->get_attrib('allelic_requirement', join(',', @values));
