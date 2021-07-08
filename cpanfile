@@ -1,5 +1,6 @@
 requires 'DBI';
 requires 'DBD::mysql';
+requires 'JSON';
 requires 'Spreadsheet::ParseXLSX';
 
 test_requires 'Test::Warnings';
