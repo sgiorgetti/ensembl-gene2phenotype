@@ -36,7 +36,7 @@ ok($gfdpca && $gfdpca->isa('Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor
 my $gfdpc = $gfdpca->fetch_by_dbID(1);
 ok($gfdpc->comment_text eq 'Only in a proportion of cases', 'comment text');
 
-my $gfdp = $gfdpa->fetch_by_dbID(30149);
+my $gfdp = $gfdpa->fetch_by_dbID(30248);
 my $gfdps = $gfdpca->fetch_all_by_GenomicFeatureDiseasePhenotype($gfdp);
 ok(scalar @$gfdps == 1, 'fetch_all_by_GenomicFeatureDiseasePhenotype');
 
