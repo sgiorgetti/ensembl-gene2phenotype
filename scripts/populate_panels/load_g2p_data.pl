@@ -208,7 +208,7 @@ foreach my $row (@rows) {
 
   next if (!add_new_entry_to_panel($panel));
 
-  $entry = "$gene_symbol $disease_name $DDD_category $allelic_requirement $mutation_consequence Target panel: $g2p_panel";
+  $entry = "$gene_symbol; $disease_name; $DDD_category; $allelic_requirement; $mutation_consequence; Target panel: $g2p_panel";
   print STDERR "$entry\n" if ($config->{check_input_data});
   my $has_missing_data = 0;
   foreach my $field (@required_fields) {
@@ -298,7 +298,7 @@ foreach my $row (@rows) {
         print STDERR "        Existing entries:\n";
         foreach my $gfd (@$gfds) {
           my $gfd_panels = join(', ', @{$gfd->panels});
-          print STDERR "        > ", join(', ', $gfd->get_GenomicFeature->gene_symbol, $gfd->get_Disease->name, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd_panels), "\n"; 
+          print STDERR "        > ", join('; ', $gfd->get_GenomicFeature->gene_symbol, $gfd->get_Disease->name, $gfd->allelic_requirement, $gfd->mutation_consequence, $gfd_panels), "\n"; 
         }
       }
     }
@@ -470,7 +470,7 @@ sub create_gfd {
   my $mutation_consequence = $gfd->mutation_consequence;
 
   $import_stats->{new_gfd}++;
-  print $fh_report "Create new GFD: ", $gf->gene_symbol, ", ", $disease->name, ", $allelic_requirement, $mutation_consequence\n"; 
+  print $fh_report "Create new GFD: ", $gf->gene_symbol, "; ", $disease->name, "; $allelic_requirement; $mutation_consequence\n"; 
 
   return $gfd;
 }
@@ -503,7 +503,7 @@ sub add_gfd_to_panel {
  
   $import_stats->{add_to_panel}->{$g2p_panel}++;
  
-  print $fh_report "Add GFD: $gene_symbol, $disease_name, $allelic_requirement, $mutation_consequence to $g2p_panel with confidence $confidence_category\n"; 
+  print $fh_report "Add GFD: $gene_symbol; $disease_name; $allelic_requirement; $mutation_consequence to $g2p_panel with confidence $confidence_category\n"; 
 }
 
 =head2 update_gfd_panel
