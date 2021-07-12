@@ -141,7 +141,7 @@ ok($gfd_panel->is_visible == 1, 'fetch_by_dbID is visible');
 
 #fetch_all_by_panel
 my $gfd_panels = $gfdpa->fetch_all_by_panel('DD');
-ok(scalar @$gfd_panels == 2421, 'fetch_all_by_panel');
+ok(scalar @$gfd_panels == 2409, 'fetch_all_by_panel');
 #fetch_all_by_panel_restricted
 $gfd_panels = $gfdpa->fetch_all_by_panel_restricted('DD');
 ok(scalar @$gfd_panels == 0, 'fetch_all_by_panel_restricted');
