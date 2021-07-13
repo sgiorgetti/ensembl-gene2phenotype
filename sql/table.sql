@@ -38,8 +38,7 @@ CREATE TABLE attrib (
   attrib_type_id smallint(5) unsigned NOT NULL,
   value text NOT NULL,
   PRIMARY KEY (attrib_id),
-  UNIQUE KEY attrib_type_idx (attrib_type_id, value(80)),
-  FOREIGN KEY (attrib_type_id) REFERENCES attrib_type(attrib_type_id)
+  UNIQUE KEY attrib_type_idx (attrib_type_id, value(80))
 ) ENGINE=INNODB;
 
 CREATE TABLE disease (
@@ -94,9 +93,7 @@ CREATE TABLE genomic_feature_disease (
   PRIMARY KEY (genomic_feature_disease_id),
   UNIQUE KEY genomic_feature_disease (genomic_feature_id, allelic_requirement_attrib, mutation_consequence_attrib, disease_id),
   KEY genomic_feature_idx (genomic_feature_id),
-  KEY disease_idx (disease_id),
-  FOREIGN KEY (genomic_feature_id) REFERENCES genomic_feature(genomic_feature_id),
-  FOREIGN KEY (disease_id) REFERENCES disease(disease_id)
+  KEY disease_idx (disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE user (
@@ -133,10 +130,7 @@ CREATE TABLE `genomic_feature_disease_log` (
   user_id int(10) unsigned NOT NULL,
   action varchar(128) NOT NULL,
   PRIMARY KEY (genomic_feature_disease_log_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_id) REFERENCES genomic_feature(genomic_feature_id),
-  FOREIGN KEY (disease_id) REFERENCES disease(disease_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE genomic_feature_disease_panel (
@@ -147,8 +141,7 @@ CREATE TABLE genomic_feature_disease_panel (
   panel_attrib tinyint(1) DEFAULT NULL,
   PRIMARY KEY (genomic_feature_disease_panel_id),
   UNIQUE KEY gfd_panel_idx (genomic_feature_disease_id, panel_attrib),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE genomic_feature_disease_panel_log (
@@ -163,9 +156,7 @@ CREATE TABLE genomic_feature_disease_panel_log (
   action varchar(128) NOT NULL,
   PRIMARY KEY (genomic_feature_disease_panel_log_id),
   KEY genomic_feature_disease_panel_idx (genomic_feature_disease_panel_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_panel_id) REFERENCES genomic_feature_disease_panel(genomic_feature_disease_panel_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE genomic_feature_disease_panel_deleted (
@@ -189,9 +180,7 @@ CREATE TABLE genomic_feature_disease_comment (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_comment_id),
-  KEY GFD_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id)
+  KEY GFD_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE GFD_comment_deleted (
@@ -217,9 +206,7 @@ CREATE TABLE genomic_feature_disease_organ (
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   organ_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_organ_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (organ_id) REFERENCES organ(organ_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE genomic_feature_disease_organ_deleted (
@@ -247,9 +234,7 @@ CREATE TABLE genomic_feature_disease_phenotype (
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   phenotype_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_phenotype_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (phenotype_id) REFERENCES phenotype(phenotype_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE GFD_phenotype_log (
@@ -263,11 +248,7 @@ CREATE TABLE GFD_phenotype_log (
   user_id int(10) unsigned NOT NULL,
   action varchar(128) NOT NULL,
   PRIMARY KEY (GFD_phenotype_log_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_phenotype_id) REFERENCES genomic_feature_disease_phenotype(genomic_feature_disease_phenotype_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (phenotype_id) REFERENCES phenotype(phenotype_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE GFD_phenotype_comment (
@@ -277,9 +258,7 @@ CREATE TABLE GFD_phenotype_comment (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (GFD_phenotype_comment_id),
-  KEY GFD_phenotype_idx (genomic_feature_disease_phenotype_id),
-  FOREIGN KEY (genomic_feature_disease_phenotype_id) REFERENCES genomic_feature_disease_phenotype(genomic_feature_disease_phenotype_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id)
+  KEY GFD_phenotype_idx (genomic_feature_disease_phenotype_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE GFD_phenotype_comment_deleted (
@@ -316,9 +295,7 @@ CREATE TABLE genomic_feature_disease_publication (
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   publication_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_publication_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (publication_id) REFERENCES publication(publication_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE GFD_publication_comment (
@@ -328,9 +305,7 @@ CREATE TABLE GFD_publication_comment (
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL, 
   PRIMARY KEY (GFD_publication_comment_id),
-  KEY GFD_publication_idx (genomic_feature_disease_publication_id),
-  FOREIGN KEY (genomic_feature_disease_publication_id) REFERENCES genomic_feature_disease_publication(genomic_feature_disease_publication_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id)
+  KEY GFD_publication_idx (genomic_feature_disease_publication_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE GFD_publication_comment_deleted (
@@ -358,9 +333,7 @@ CREATE TABLE GFD_disease_synonym (
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   disease_id int(10) unsigned NOT NULL,
   PRIMARY KEY (GFD_disease_synonym_id),
-  KEY genomic_feature_disease_idx (genomic_feature_disease_id),
-  FOREIGN KEY (genomic_feature_disease_id) REFERENCES genomic_feature_disease(genomic_feature_disease_id),
-  FOREIGN KEY (disease_id) REFERENCES disease(disease_id)
+  KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE panel (
@@ -395,8 +368,7 @@ CREATE TABLE genomic_feature_statistic (
   genomic_feature_id int(10) unsigned DEFAULT NULL,
   panel_attrib tinyint(1) DEFAULT NULL,
   PRIMARY KEY (genomic_feature_statistic_id),
-  KEY genomic_feature_idx (genomic_feature_id),
-  FOREIGN KEY (genomic_feature_id) REFERENCES genomic_feature(genomic_feature_id)
+  KEY genomic_feature_idx (genomic_feature_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE genomic_feature_statistic_attrib (
