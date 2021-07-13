@@ -22,7 +22,9 @@ CREATE TABLE meta (
   KEY species_value_idx (species_id, meta_value )
 ) ENGINE=INNODB;
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '105');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_a.sql|schema version');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_a.sql|schema version');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_b.sql|drop unique key in genomic_feature_disease_panel_deleted');
+
 
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
@@ -169,7 +171,6 @@ CREATE TABLE genomic_feature_disease_panel_deleted (
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   deleted_by_user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_panel_deleted_id),
-  UNIQUE KEY gfd_panel_idx (genomic_feature_disease_id, panel_attrib),
   KEY genomic_feature_disease_idx (genomic_feature_disease_id)
 ) ENGINE=INNODB;
 

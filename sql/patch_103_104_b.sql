@@ -13,8 +13,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-# update the schema_version entry in the meta table
-UPDATE meta SET meta_value = '105' WHERE meta_key = 'schema_version';
 
+ALTER TABLE genomic_feature_disease_panel_deleted DROP INDEX gfd_panel_idx;
 # patch identifier
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_a.sql|schema version');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_b.sql|drop unique key in genomic_feature_disease_panel_deleted');
