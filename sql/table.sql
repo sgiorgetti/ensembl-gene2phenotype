@@ -24,6 +24,7 @@ CREATE TABLE meta (
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '104');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_a.sql|schema version');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_b.sql|drop unique key in genomic_feature_disease_panel_deleted');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_c.sql|drop panel_attrib column from genomic_feature_disease table');
 
 
 CREATE TABLE attrib_type (
@@ -90,7 +91,6 @@ CREATE TABLE genomic_feature_disease (
   disease_id int(10) unsigned NOT NULL,
   allelic_requirement_attrib set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
   mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  panel_attrib tinyint(1) DEFAULT NULL,
   restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (genomic_feature_disease_id),
   UNIQUE KEY genomic_feature_disease (genomic_feature_id, allelic_requirement_attrib, mutation_consequence_attrib, disease_id),
@@ -379,4 +379,3 @@ CREATE TABLE genomic_feature_statistic_attrib (
   KEY genomic_feature_statistic_idx (genomic_feature_statistic_id),
   KEY type_value_idx (attrib_type_id, value)
 ) ENGINE=INNODB; 
-
