@@ -133,7 +133,6 @@ CREATE TABLE `genomic_feature_disease` (
   `disease_id` int(10) unsigned NOT NULL,
   `allelic_requirement_attrib` set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
   `mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  `panel_attrib` tinyint(1) DEFAULT NULL,
   `restricted_mutation_set` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`genomic_feature_disease_id`),
   UNIQUE KEY `genomic_feature_disease` (`genomic_feature_id`,`allelic_requirement_attrib`,`mutation_consequence_attrib`,`disease_id`),
@@ -296,7 +295,7 @@ CREATE TABLE `meta` (
   PRIMARY KEY (`meta_id`),
   UNIQUE KEY `species_key_value_idx` (`species_id`,`meta_key`,`meta_value`),
   KEY `species_value_idx` (`species_id`,`meta_value`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `organ` (
   `organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,

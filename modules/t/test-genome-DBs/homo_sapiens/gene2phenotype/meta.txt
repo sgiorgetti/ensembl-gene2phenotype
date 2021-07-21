@@ -1,4 +1,5 @@
 3	\N	patch	patch_103_104_a.sql|schema version
 4	\N	patch	patch_103_104_b.sql|drop unique key in genomic_feature_disease_panel_deleted
+5	\N	patch	patch_103_104_c.sql|drop panel_attrib column from genomic_feature_disease table
 1	\N	schema_type	gene2phenotype
 2	\N	schema_version	104
