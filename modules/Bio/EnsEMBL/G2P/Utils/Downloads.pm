@@ -36,8 +36,7 @@ my $mutation_consequence_attribs = {};
   Arg [2]    : String $file_name - name of download file
   Arg [3]    : String $registry_file - for connecting to the G2P database
   Arg [4]    : Boolean $is_logged_in - stores if the user is logged in
-  Arg [5]    : Arrayref $user_panels - all panels that a user can edit
-  Arg [6]    : String $panel_name - download data for this panel
+  Arg [5]    : String $panel_name - download data for this panel
   Description: Download all GenomicFeatureDisease entries for the panel
   Returntype : Boolean 1
   Exceptions : - Throw error if there is problem during creation of Text::CSV 
@@ -51,7 +50,6 @@ sub download_data {
   my $file_name = shift;
   my $registry_file = shift;
   my $is_logged_in = shift;
-  my $user_panels = shift;
   my $panel_name = shift;
   my $registry = 'Bio::EnsEMBL::Registry';
   $registry->load_all($registry_file);
