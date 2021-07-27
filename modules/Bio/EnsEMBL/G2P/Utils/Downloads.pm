@@ -33,7 +33,7 @@ my $mutation_consequence_attribs = {};
 
 =head2 download_data
   Arg [1]    : String $downloads_dir - download file to this directory
-  Arg [2]    : String $file_name - name of downlad file
+  Arg [2]    : String $file_name - name of download file
   Arg [3]    : String $registry_file - for connecting to the G2P database
   Arg [4]    : Boolean $is_logged_in - stores if the user is logged in
   Arg [5]    : Arrayref $user_panels - all panels that a user can edit
@@ -148,7 +148,7 @@ sub download_data {
       }
     } else {
       # only download data for the given panel
-      # user ise logged in and we don't need to restrict to visible only
+      # user is logged in and we don't need to restrict to visible only
       $where = "WHERE a.value = '$panel_name'";
       write_data($dbh, $csv, $fh, $where);
     }
@@ -198,7 +198,7 @@ sub write_data {
   my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created);
   # Bind values from SQL query to variables
   # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
+  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid));
 
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -234,7 +234,7 @@ sub write_data {
 
     $created = $gfd_panel_create_dates->{$gfd_panel_id} || 'No date';
 
-    # The order is important and corresponds to the order of the fields in the heade row 
+    # The order is important and corresponds to the order of the fields in the header row 
     my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created);
 
     $csv->print ($fh, \@row);
