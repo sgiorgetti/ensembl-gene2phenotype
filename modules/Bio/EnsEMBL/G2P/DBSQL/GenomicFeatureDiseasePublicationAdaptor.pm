@@ -25,9 +25,28 @@ use Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication $GFD_publication
+  Example    : $GFD_publication = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication->new(...);
+               $GFD_publication = $GFD_publication_adaptor->store($GFD_publication);
+  Description: This stores a GenomicFeatureDiseasePublication in the database.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication
+  Exceptions : - Throw error if $GFD_publication is not a
+                 Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $GFD_publication = shift;  
+
+  if (!ref($GFD_publication) || !$GFD_publication->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -124,6 +143,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatureDiseasePublications
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeatureDiseasePublication
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
