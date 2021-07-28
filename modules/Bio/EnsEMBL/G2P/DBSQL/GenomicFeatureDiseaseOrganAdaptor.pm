@@ -24,9 +24,28 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan $GFD_organ
+  Example    : $GFD_organ = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan->new(...);
+               $GFD_organ = $GFD_organ_adaptor->store($GFD_organ);
+  Description: This stores a GenomicFeatureDiseaseOrgan in the database.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan
+  Exceptions : - Throw error if $GFD_organ is not a
+                 Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $GFD_organ = shift;  
+
+  if (!ref($GFD_organ) || !$GFD_organ->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -169,6 +188,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatureDiseaseOrgans
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeatureDiseaseOrgan
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
