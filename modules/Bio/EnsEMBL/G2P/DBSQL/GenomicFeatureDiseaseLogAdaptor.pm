@@ -30,7 +30,7 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
   Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog $gfd_log
   Example    : $gfd_log = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog->new(...);
-               $gfd_log = $gfd_log_adaptor->store($gfd_log, $user);
+               $gfd_log = $gfd_log_adaptor->store($gfd_log);
   Description: This stores a GenomicFeatureDiseaseLog in the database.
   Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDiseaseLog
   Exceptions : - Throw error if $gfd_log is not a
