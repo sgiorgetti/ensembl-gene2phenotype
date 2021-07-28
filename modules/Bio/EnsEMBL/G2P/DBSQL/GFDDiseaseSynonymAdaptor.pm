@@ -26,6 +26,20 @@ use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GFDDiseaseSynonym $gfd_disease_synonym
+  Example    : $gfd_disease_synonym = Bio::EnsEMBL::G2P::GFDDiseaseSynonym->new(...);
+               $gfd_disease_synonym = $gfd_disease_synonym_adaptor->store($gfd_disease_synonym);
+  Description: This stores a GFDDiseaseSynonym in the database.
+  Returntype : Bio::EnsEMBL::G2P::GFDDiseaseSynonym
+  Exceptions : - Throw error if $gfd_disease_synonym is not a
+                 Bio::EnsEMBL::G2P::GFDDiseaseSynonym
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $gfd_disease_synonym = shift;
@@ -107,6 +121,17 @@ sub _left_join {
   );
   return @left_join;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GFDDiseaseSynonyms
+  Returntype : listref of Bio::EnsEMBL::G2P::GFDDiseaseSynonym
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
