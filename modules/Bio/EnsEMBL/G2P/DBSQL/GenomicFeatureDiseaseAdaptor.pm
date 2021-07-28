@@ -27,6 +27,29 @@ use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDisease
+  Arg [2]    : Bio::EnsEMBL::G2P::User
+  Example    : $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(...);
+               $gfd = $disease_adaptor->store($gfd, $user);
+  Description: This stores a GenomicFeatureDisease in the database.
+               We check first if the GenomicFeatureDisease already exists
+               in the database and if it does return the exisiting GenomicFeatureDisease.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDisease
+  Exceptions : - Throw error if $gfd is not a Bio::EnsEMBL::G2P::GenomicFeatureDisease
+               - Throw error if $user is not a Bio::EnsEMBL::G2P::User
+               - Throw error if neither allelic_requirement nor allelic_requirement_attrib
+                 is provided
+               - Throw error if neither mutation_consequence nor mutation_consequence_attrib
+                 is provided
+               - Throw error if attrib value couldn't be mapped to attrib id
+               - Throw error if attrib id couldn't be mapped to attrib value
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $gfd = shift;
@@ -351,6 +374,17 @@ sub _left_join {
 
   return @left_join;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatureDiseases
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
