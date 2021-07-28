@@ -27,7 +27,7 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
 =head2 store
 
-  Arg [1]    : Bio::EnsEMBL::G2P::Disease 
+  Arg [1]    : Bio::EnsEMBL::G2P::Disease $disease 
   Example    : $disease = Bio::EnsEMBL::G2P::Disease->new(...);
                $disease = $disease_adaptor->store($disease); 
   Description: This stores a disease in the database.
