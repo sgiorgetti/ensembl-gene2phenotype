@@ -32,7 +32,7 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
   Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Arg [2]    : Bio::EnsEMBL::G2P::User
   Example    : $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(...);
-               $gfd = $disease_adaptor->store($gfd, $user);
+               $gfd = $gfd_adaptor->store($gfd, $user);
   Description: This stores a GenomicFeatureDisease in the database.
                We check first if the GenomicFeatureDisease already exists
                in the database and if it does return the exisiting GenomicFeatureDisease.
