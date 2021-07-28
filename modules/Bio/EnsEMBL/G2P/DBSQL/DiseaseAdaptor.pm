@@ -25,9 +25,27 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::Disease 
+  Example    : $disease = Bio::EnsEMBL::G2P::Disease->new(...);
+               $disease = $disease_adaptor->store($disease); 
+  Description: This stores a disease in the database.
+  Returntype : Bio::EnsEMBL::G2P::Disease
+  Exceptions : Throw error if $disease is not a Bio::EnsEMBL::G2P::Disease
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $disease = shift;
+
+  if (!ref($disease) || !$disease->isa('Bio::EnsEMBL::G2P::Disease')) {
+    die('Bio::EnsEMBL::G2P::Disease arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -44,7 +62,6 @@ sub store {
 
   $sth->finish();
   
-  # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'disease', 'disease_id');
   $disease->{disease_id} = $dbID;
   $disease->{dbID} = $dbID;
@@ -171,6 +188,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of Diseases
+  Returntype : listref of Bio::EnsEMBL::G2P::Disease
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
