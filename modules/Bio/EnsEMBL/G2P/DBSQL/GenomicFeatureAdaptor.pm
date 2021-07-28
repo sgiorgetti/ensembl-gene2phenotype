@@ -27,8 +27,26 @@ use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeature $GF
+  Example    : $GF = Bio::EnsEMBL::G2P::GenomicFeature->new(...);
+               $GF = $genomic_feature_adaptor->store($GF);
+  Description: This stores a GenomicFeature in the database.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeature
+  Exceptions : Throw error if $GF is not a Bio::EnsEMBL::G2P::GenomicFeature
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my ($self, $GF) = @_;
+
+  if (!ref($GF) || !$GF->isa('Bio::EnsEMBL::G2P::GenomicFeature')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeature arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -206,6 +224,17 @@ sub _left_join {
   );
   return @left_join;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatures
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeature
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
