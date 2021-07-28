@@ -25,6 +25,22 @@ use Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment $genomic_feature_disease_comment
+  Arg [2]    : Bio::EnsEMBL::G2P::User $user
+  Example    : $genomic_feature_disease_comment = Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment->new(...);
+               $genomic_feature_disease_comment = $gfd_comment_adaptor->store($genomic_feature_disease_comment, $user);
+  Description: This stores a GenomicFeatureDiseaseComment in the database.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment
+  Exceptions : - Throw error if $genomic_feature_disease_comment is not a
+                 Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment
+               - Throw error if $user is not a Bio::EnsEMBL::G2P::User
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $genomic_feature_disease_comment = shift; 
@@ -139,6 +155,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatureDiseaseComments
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeatureDiseaseComment
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
