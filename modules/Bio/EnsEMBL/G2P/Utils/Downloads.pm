@@ -58,7 +58,14 @@ sub download_data {
   
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
-  my $panels = $attribute_adaptor->get_values_by_type('g2p_panel');
+  my $panel_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'panel');
+
+  my @g2p_panels;
+  if ($is_logged_in) {
+    @g2p_panels = map {$_->name} @{$panel_adaptor->fetch_all};
+  } else {
+    @g2p_panels = map {$_->name} @{$panel_adaptor->fetch_all_visible};
+  }
 
   # get hashes which map attrib id to value for all supported values in each category:
   # confidence_category, allelic_requirement and mutation_consequence  
@@ -83,6 +90,16 @@ sub download_data {
     publication => {sql => 'SELECT gfdp.genomic_feature_disease_id, p.pmid FROM genomic_feature_disease_publication gfdp, publication p WHERE gfdp.publication_id = p.publication_id;'},
   };
 
+  foreach my $table (keys %$gfd_attribute_tables) {
+    my $sql = $gfd_attribute_tables->{$table}->{sql};
+    my $sth = $dbh->prepare($sql);
+    $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
+    while (my $row = $sth->fetchrow_arrayref()) {
+      my ($id, $value) = @$row;
+      $gfd_attributes->{$id}->{$table}->{$value} = 1;
+    }
+  }
+
   # $gfd_attributes = {
   #    $gfd_id => {
   #       phenotype => {
@@ -101,15 +118,7 @@ sub download_data {
   #   
   #
   # }
-  foreach my $table (keys %$gfd_attribute_tables) {
-    my $sql = $gfd_attribute_tables->{$table}->{sql};
-    my $sth = $dbh->prepare($sql);
-    $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
-    while (my $row = $sth->fetchrow_arrayref()) {
-      my ($id, $value) = @$row;
-      $gfd_attributes->{$id}->{$table}->{$value} = 1;
-    }
-  }
+
 
   # For each genomic feature preload all genomic feature synonyms.
   # The synonyms will be stored as prev symbols in the download file
@@ -132,28 +141,24 @@ sub download_data {
   }
   $sth->finish();
 
-  # create where clause to decide which data to download
-  # default where clause: only download entries which are visible
-  my $where = ($panel_name eq 'ALL') ? 'WHERE gfdp.is_visible = 1' : "WHERE a.value = '$panel_name' AND gfdp.is_visible = 1";
-
-  if ($is_logged_in) {
-    if ($panel_name eq 'ALL') {
-      # download data from all panels
-      foreach my $panel (keys %$panels) {
-        next if ($panel eq 'ALL');
+  my $where;
+  if ($panel_name eq 'ALL') {
+    foreach my $panel (@g2p_panels) {
+      if ($is_logged_in) {
         $where = "WHERE a.value = '$panel'"; # user is logged in and can see all entries, we don't need to restrict to visible only
-        write_data($dbh, $csv, $fh, $where);
+      } else {
+        $where = "WHERE a.value = '$panel' AND gfdp.is_visible = 1";
       }
-    } else {
-      # only download data for the given panel
-      # user is logged in and we don't need to restrict to visible only
-      $where = "WHERE a.value = '$panel_name'";
       write_data($dbh, $csv, $fh, $where);
     }
   } else {
-    # user is not logged in and we don't change the default where clause
+    if ($is_logged_in) {
+      $where = "WHERE a.value = '$panel_name'"; # user is logged in and can see all entries, we don't need to restrict to visible only
+    } else {
+      $where = "WHERE a.value = '$panel_name' AND gfdp.is_visible = 1";
+    }
     write_data($dbh, $csv, $fh, $where);
-  } 
+  }
 
   close $fh or die "$csv: $!";
   system("/usr/bin/gzip $file");
