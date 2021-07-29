@@ -33,7 +33,9 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
                $user = $user_adaptor->store($user);
   Description: This stores a User in the database.
   Returntype : Bio::EnsEMBL::G2P::User
-  Exceptions : Throw error if $user is not a Bio::EnsEMBL::G2P::User
+  Exceptions : - Throw error if $user is not a Bio::EnsEMBL::G2P::User
+               - Throw error if neither panel nor panel_attrib
+                 is provided
   Caller     :
   Status     : Stable
 
