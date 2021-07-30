@@ -189,6 +189,28 @@ sub update_log {
   $GFD_log_adaptor->store($gfdl);
 }
 
+=head2 fetch_by_dbID
+
+  Arg [1]    : Integer $genomic_feature_disease_id - dbID
+  Arg [2]    : Arrayref $panels - list of panels that are visible to every user
+               and panels that can be edited by the user if the user is logged in
+  Arg [3]    : Boolean $is_authorised - indicates if user is logged in or not
+  Example    : my $gfd = $gfd_adaptor->fetch_by_dbID($dbID, $authorised_panels, $logged_in);
+  Description: Get GenomicFeatureDisease object by its dbID.
+               The fetch can be further refined by providing information on the user
+               log in status and on which panels can be seen and edited by a user.
+               We can restrict the call to only return a GFD if it is in a panel that can be
+               seen by a user or that can be edited by a user.
+               For example:
+               - user is not logged in: only return GFD if the GFD is in a visible panel
+                 (if the panel can be seen by all users no matter what the login status is)
+  Returntype : Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDisease 
+  Exceptions : None
+  Caller     : Gene2phenotype::Model::GenomicFeatureDisease::fetch_by_dbID
+  Status     : Stable
+
+=cut
+
 sub fetch_by_dbID {
   my $self = shift;
   my $genomic_feature_disease_id = shift;
@@ -217,6 +239,18 @@ sub fetch_by_dbID {
   }
 }
 
+=head2 fetch_all_by_GenomicFeatureDisease
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub fetch_all_by_GenomicFeatureDisease {
   my $self = shift;
   my $gfd = shift;  
@@ -232,6 +266,18 @@ sub fetch_all_by_GenomicFeatureDisease {
   });
 }
 
+=head2 fetch_all_by_Disease
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub fetch_all_by_Disease {
   my $self = shift;
   my $disease = shift;
@@ -239,6 +285,18 @@ sub fetch_all_by_Disease {
   my $constraint = "(gfd.disease_id=$disease_id OR gfdds.disease_id=$disease_id);";
   return $self->generic_fetch($constraint);
 }
+
+=head2 fetch_all_by_Disease_panels
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
 
 sub fetch_all_by_Disease_panels {
   my $self = shift;
@@ -263,6 +321,18 @@ sub fetch_all_by_Disease_panels {
   return $self->generic_fetch(join(" AND ",  @constraints));
 }
 
+=head2 fetch_all_by_GenomicFeature
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub fetch_all_by_GenomicFeature {
   my $self = shift;
   my $genomic_feature = shift;
@@ -270,6 +340,18 @@ sub fetch_all_by_GenomicFeature {
   my $constraint = "gfd.genomic_feature_id=$genomic_feature_id";
   return $self->generic_fetch($constraint);
 }
+
+=head2 fetch_all_by_GenomicFeature_panels
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
 
 sub fetch_all_by_GenomicFeature_panels {
   my $self = shift;
@@ -293,6 +375,18 @@ sub fetch_all_by_GenomicFeature_panels {
   }
   return $self->generic_fetch(join(" AND ",  @constraints));
 }
+
+=head2 fetch_all_by_GenomicFeature_constraints
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
 
 sub fetch_all_by_GenomicFeature_constraints {
   my $self = shift;
@@ -323,6 +417,18 @@ sub fetch_all_by_GenomicFeature_constraints {
   push @constraints, "gfd.genomic_feature_id=$genomic_feature_id";
   return $self->generic_fetch(join(' AND ', @constraints));
 }
+
+=head2 fetch_all_by_GenomicFeature_Disease
+
+  Arg [1]    :
+  Example    :
+  Description:
+  Returntype :
+  Exceptions : None
+  Caller     :
+  Status     : Stable
+
+=cut
 
 sub fetch_all_by_GenomicFeature_Disease {
   my $self = shift;
