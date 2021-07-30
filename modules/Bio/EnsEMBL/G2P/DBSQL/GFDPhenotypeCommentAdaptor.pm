@@ -25,6 +25,23 @@ use Bio::EnsEMBL::G2P::GFDPhenotypeComment;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GFDPhenotypeComment $GFD_phenotype_comment
+  Arg [2]    : Bio::EnsEMBL::G2P::User $user
+  Example    : $GFD_phenotype_comment = Bio::EnsEMBL::G2P::GFDPhenotypeComment->new(...);
+               $GFD_phenotype_comment = $GFD_phenotype_comment_adaptor->store($GFD_phenotype_comment, $user);
+  Description: This stores a GFDPhenotypeComment in the database.
+  Returntype : Bio::EnsEMBL::G2P::GFDPhenotypeComment
+  Exceptions : - Throw error if $GFD_phenotype_comment is not a
+                 Bio::EnsEMBL::G2P::GFDPhenotypeComment
+               - Throw error if $user is not a Bio::EnsEMBL::G2P::User
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $GFD_phenotype_comment = shift; 
@@ -140,6 +157,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GFDPhenotypeComments
+  Returntype : listref of Bio::EnsEMBL::G2P::GFDPhenotypeComment
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;

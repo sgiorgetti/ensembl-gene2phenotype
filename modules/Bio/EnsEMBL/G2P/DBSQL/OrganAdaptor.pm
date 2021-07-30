@@ -24,9 +24,28 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::Organ;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::Organ $organ
+  Example    : $organ = Bio::EnsEMBL::G2P::Organ->new(...);
+               $organ = $organ_adaptor->store($organ);
+  Description: This stores a Organ in the database.
+  Returntype : Bio::EnsEMBL::G2P::Organ
+  Exceptions : Throw error if $organ is not a Bio::EnsEMBL::G2P::Organ
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $organ = shift;  
+
+  if (!ref($organ) || !$organ->isa('Bio::EnsEMBL::G2P::Organ')) {
+    die('Bio::EnsEMBL::G2P::Organ arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -105,6 +124,17 @@ sub _left_join {
   );
   return @left_join;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of Organs
+  Returntype : listref of Bio::EnsEMBL::G2P::Organ
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;

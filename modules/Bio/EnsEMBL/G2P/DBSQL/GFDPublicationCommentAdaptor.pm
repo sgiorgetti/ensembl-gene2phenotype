@@ -25,6 +25,22 @@ use Bio::EnsEMBL::G2P::GFDPublicationComment;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GFDPublicationComment $GFD_publication_comment
+  Arg [2]    : Bio::EnsEMBL::G2P::User $user
+  Example    : $GFD_publication_comment = Bio::EnsEMBL::G2P::GFDPublicationComment->new(...);
+               $GFD_publication_comment = $GFD_publication_comment_adaptor->store($GFD_publication_comment, $user);
+  Description: This stores a GFDPublicationComment in the database.
+  Returntype : Bio::EnsEMBL::G2P::GFDPublicationComment
+  Exceptions : - Throw error if $GFD_publication_comment is not a
+                 Bio::EnsEMBL::G2P::GFDPublicationComment
+               - Throw error if $user is not a Bio::EnsEMBL::G2P::User
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $GFD_publication_comment = shift; 
@@ -140,6 +156,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GFDPublicationComments
+  Returntype : listref of Bio::EnsEMBL::G2P::GFDPublicationComment
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;

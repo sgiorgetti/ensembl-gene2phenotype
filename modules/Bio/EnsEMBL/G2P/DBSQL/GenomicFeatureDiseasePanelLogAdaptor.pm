@@ -26,6 +26,20 @@ use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog $gfd_panel_log
+  Example    : $gfd_panel_log = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog->new(...);
+               $gfd_panel_log = $gfd_panel_log_adaptor->store($gfd_panel_log);
+  Description: This stores a GenomicFeatureDiseasePanelLog in the database.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog
+  Exceptions : - Throw error if $gfd_panel_log is not a
+                 Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog
+  Caller     : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelAdaptor::update_log
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $gfd_panel_log = shift;
@@ -131,6 +145,17 @@ sub _left_join {
   );
   return @left_join;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatureDiseasePanelLogs
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;

@@ -29,9 +29,27 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
 my $oxo_endpoint = 'https://www.ebi.ac.uk/spot/oxo/api/search/';
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::Phenotype $phenotype
+  Example    : $phenotype = Bio::EnsEMBL::G2P::Phenotype->new(...);
+               $phenotype = $phenotype_adaptor->store($phenotype);
+  Description: This stores a Phenotype in the database.
+  Returntype : Bio::EnsEMBL::G2P::Phenotype
+  Exceptions : Throw error if $phenotype is not a Bio::EnsEMBL::G2P::Phenotype
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $phenotype = shift;  
+
+  if (!ref($phenotype) || !$phenotype->isa('Bio::EnsEMBL::G2P::Phenotype')) {
+    die('Bio::EnsEMBL::G2P::Phenotype arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -322,6 +340,17 @@ sub _tables {
   return @tables;
 }
 
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of Phenotypes
+  Returntype : listref of Bio::EnsEMBL::G2P::Phenotype
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
+
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
@@ -367,7 +396,5 @@ sub _get_paged_urls {
   }
   return [$url];
 }
-
-
 
 1;

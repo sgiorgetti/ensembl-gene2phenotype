@@ -24,9 +24,27 @@ use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
 use Bio::EnsEMBL::G2P::Publication;
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::Publication $publication
+  Example    : $publication = Bio::EnsEMBL::G2P::Publication->new(...);
+               $publication = $publication_adaptor->store($publication);
+  Description: This stores a Publication in the database.
+  Returntype : Bio::EnsEMBL::G2P::Publication
+  Exceptions : Throw error if $publication is not a Bio::EnsEMBL::G2P::Publication
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $publication = shift;  
+
+  if (!ref($publication) || !$publication->isa('Bio::EnsEMBL::G2P::Publication')) {
+    die('Bio::EnsEMBL::G2P::Publication arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -88,6 +106,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of Publications
+  Returntype : listref of Bio::EnsEMBL::G2P::Publication
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;

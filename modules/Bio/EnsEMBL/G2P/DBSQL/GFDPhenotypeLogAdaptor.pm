@@ -26,6 +26,20 @@ use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GFDPhenotypeLog $gfd_phenotype_log
+  Example    : $gfd_phenotype_log = Bio::EnsEMBL::G2P::GFDPhenotypeLog->new(...);
+               $gfd_phenotype_log = $gfd_phenotype_log_adaptor->store($gfd_log);
+  Description: This stores a GFDPhenotypeLog in the database.
+  Returntype : Bio::EnsEMBL::G2P::GFDPhenotypeLog
+  Exceptions : - Throw error if $gfd_phenotype_log is not a
+                 Bio::EnsEMBL::G2P::GFDPhenotypeLog
+  Caller     : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotypeAdaptor::update_log
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $gfd_phenotype_log = shift;
@@ -106,6 +120,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GFDPhenotypeLogs
+  Returntype : listref of Bio::EnsEMBL::G2P::GFDPhenotypeLog
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;

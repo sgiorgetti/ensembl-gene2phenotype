@@ -25,10 +25,35 @@ use Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype;
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
 
+=head2 store
+
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype $GFD_phenotype
+  Arg [2]    : Bio::EnsEMBL::G2P::User $user
+  Example    : $GFD_phenotype = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype->new(...);
+               $GFD_phenotype = $GFD_phenotype_adaptor->store($GFD_phenotype, $user);
+  Description: This stores a GenomicFeatureDiseasePhenotype in the database.
+  Returntype : Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype
+  Exceptions : - Throw error if $GFD_phenotype is not a
+                 Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype
+               - Throw error if $user is not a Bio::EnsEMBL::G2P::User
+  Caller     :
+  Status     : Stable
+
+=cut
+
 sub store {
   my $self = shift;
   my $GFD_phenotype = shift;  
   my $user = shift;
+
+  if (!ref($GFD_phenotype) || !$GFD_phenotype->isa('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype')) {
+    die('Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype arg expected');
+  }
+
+  if (!ref($user) || !$user->isa('Bio::EnsEMBL::G2P::User')) {
+    die('Bio::EnsEMBL::G2P::User arg expected');
+  }
+
   my $dbh = $self->dbc->db_handle;
 
   my $sth = $dbh->prepare(q{
@@ -44,7 +69,6 @@ sub store {
 
   $sth->finish();
 
-  # get dbID
   my $dbID = $dbh->last_insert_id(undef, undef, 'genomic_feature_disease_phenotype', 'genomic_feature_disease_phenotype_id');
   $GFD_phenotype->dbID($dbID);
   $self->update_log($GFD_phenotype, $user, 'create');
@@ -153,6 +177,17 @@ sub _tables {
   );
   return @tables;
 }
+
+=head2 _objs_from_sth
+
+  Arg [1]    : StatementHandle $sth
+  Description: Responsible for the creation of GenomicFeatureDiseasePhenotypes
+  Returntype : listref of Bio::EnsEMBL::G2P::GenomicFeatureDiseasePhenotype
+  Exceptions : None
+  Caller     : Internal
+  Status     : Stable
+
+=cut
 
 sub _objs_from_sth {
   my ($self, $sth) = @_;
