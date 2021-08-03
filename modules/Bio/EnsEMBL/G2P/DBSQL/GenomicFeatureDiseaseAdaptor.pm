@@ -241,12 +241,12 @@ sub fetch_by_dbID {
 
 =head2 fetch_all_by_GenomicFeatureDisease
 
-  Arg [1]    :
-  Example    :
-  Description:
-  Returntype :
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeatureDisease $gfd
+  Example    : my $gfds = $self->fetch_all_by_GenomicFeatureDisease($gfd);
+  Description: Can be used to check if a GenomicFeatureDisease already exists.
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Exceptions : None
-  Caller     :
+  Caller     : Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor::store
   Status     : Stable
 
 =cut
@@ -268,10 +268,10 @@ sub fetch_all_by_GenomicFeatureDisease {
 
 =head2 fetch_all_by_Disease
 
-  Arg [1]    :
-  Example    :
-  Description:
-  Returntype :
+  Arg [1]    : Bio::EnsEMBL::G2P::Disease $disease
+  Example    : my $gfds = $self->fetch_all_by_Disease($disease);
+  Description: Get all GenomicFeatureDiseases by Disease
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Exceptions : None
   Caller     :
   Status     : Stable
@@ -288,12 +288,17 @@ sub fetch_all_by_Disease {
 
 =head2 fetch_all_by_Disease_panels
 
-  Arg [1]    :
-  Example    :
-  Description:
-  Returntype :
+  Arg [1]    : Bio::EnsEMBL::G2P::Disease $disease
+  Arg [2]    : Arrayref $panels - list of panels that are visible to every user
+               and panels that can be edited by the user if the user is logged in
+  Arg [3]    : Boolean $is_authorised - indicates if user is logged in or not
+  Example    : my $gfds = $gfd_adaptor->fetch_all_by_Disease_panels($disease, $search_panels, $is_authorised);
+  Description: Get Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDisease objects by
+               Disease and panels. Only return GenomicFeatureDisease if it is in one
+               of the specified panels.
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDisease
   Exceptions : None
-  Caller     :
+  Caller     : for example Gene2phenotype::Model::Search::fetch_all_by_disease_name
   Status     : Stable
 
 =cut
@@ -323,10 +328,10 @@ sub fetch_all_by_Disease_panels {
 
 =head2 fetch_all_by_GenomicFeature
 
-  Arg [1]    :
-  Example    :
-  Description:
-  Returntype :
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeature $genomic_feature
+  Example    : my $gfds = $self->fetch_all_by_GenomicFeature($genomic_feature);
+  Description: Get all GenomicFeatureDiseases by GenomicFeature
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Exceptions : None
   Caller     :
   Status     : Stable
@@ -343,12 +348,17 @@ sub fetch_all_by_GenomicFeature {
 
 =head2 fetch_all_by_GenomicFeature_panels
 
-  Arg [1]    :
-  Example    :
-  Description:
-  Returntype :
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeature $genomic_feature
+  Arg [2]    : Arrayref $panels - list of panels that are visible to every user
+               and panels that can be edited by the user if the user is logged in
+  Arg [3]    : Boolean $is_authorised - indicates if user is logged in or not
+  Example    : my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_panels($gene, $search_panels, $is_authorised);
+  Description: Get Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDisease objects by
+               GenomicFeature and panels. Only return GenomicFeatureDisease if it is in one
+               of the specified panels.
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Exceptions : None
-  Caller     :
+  Caller     : for example Gene2phenotype::Model::Search::fetch_all_by_gene_symbol
   Status     : Stable
 
 =cut
@@ -420,12 +430,13 @@ sub fetch_all_by_GenomicFeature_constraints {
 
 =head2 fetch_all_by_GenomicFeature_Disease
 
-  Arg [1]    :
-  Example    :
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeature $genomic_feature
+  Arg [2]    : Bio::EnsEMBL::G2P::Disease $disease
+  Example    : my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease($genomic_feature, $disease);
   Description:
   Returntype :
   Exceptions : None
-  Caller     :
+  Caller     : for example Gene2phenotype::Model::GenomicFeatureDisease::fetch_all_by_GenomicFeature_Disease
   Status     : Stable
 
 =cut
