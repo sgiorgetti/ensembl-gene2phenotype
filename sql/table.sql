@@ -25,7 +25,7 @@ INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type',
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_a.sql|schema version');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_b.sql|drop unique key in genomic_feature_disease_panel_deleted');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_c.sql|drop panel_attrib column from genomic_feature_disease table');
-
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_103_104_d.sql|drop tables');
 
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
@@ -50,15 +50,6 @@ CREATE TABLE disease (
   mim int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (disease_id),
   KEY name_idx (name)
-) ENGINE=INNODB;
-
-CREATE TABLE disease_ontology_accession (
-  disease_id int(11) unsigned NOT NULL,
-  accession varchar(255) NOT NULL,
-  mapped_by_attrib set('437','438','439','440','441','442','443','444') DEFAULT NULL,
-  mapping_type enum('is','involves') DEFAULT NULL,
-  PRIMARY KEY (disease_id, accession),
-  KEY accession_idx (accession)
 ) ENGINE=INNODB;
 
 CREATE TABLE genomic_feature (
@@ -349,14 +340,6 @@ CREATE TABLE organ_panel (
   panel_id int(10) unsigned NOT NULL,
   PRIMARY KEY (organ_id, panel_id),
   KEY organ_panel_idx (organ_id, panel_id)
-) ENGINE=INNODB;
-
-CREATE TABLE phenotype_mapping (
-  mesh_id int(10) unsigned NOT NULL,
-  phenotype_id int(10) unsigned NOT NULL,
-  source varchar(255) DEFAULT NULL,
-  PRIMARY KEY (mesh_id, phenotype_id),
-  KEY phenotype_mapping_idx (mesh_id, phenotype_id)
 ) ENGINE=INNODB;
 
 CREATE TABLE search (

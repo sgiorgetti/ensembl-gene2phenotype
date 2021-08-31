@@ -68,25 +68,10 @@ sub email {
 
 sub panel {
   my $self = shift;
-  my $panel = shift;
+
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-  if ($panel) {
-    my @values = split(',', $panel);
-    my @ids = ();
-    foreach my $value (@values) {
-      push @ids, $attribute_adaptor->attrib_id_for_value($value);
-    }
-    $self->{panel_attrib} = join(',', @ids);
-    $self->{panel} = $panel;
-  } else {
-    if (!$self->{panel} && $self->{panel_attrib}) {
-      my @ids = split(',', $self->{panel_attrib});
-      my @values = ();
-      foreach my $id (@ids) {
-        push @values, $attribute_adaptor->get_value('g2p_panel', $id);
-      }
-      $self->{panel} = join(',', @values);
-    }
+  if (!$self->{panel} && $self->{panel_attrib} ) {
+    $self->{panel} = $attribute_adaptor->get_value('g2p_panel', $self->{panel_attrib});
   }
   return $self->{panel};
 }
