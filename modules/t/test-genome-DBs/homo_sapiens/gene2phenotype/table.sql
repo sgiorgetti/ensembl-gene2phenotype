@@ -101,15 +101,6 @@ CREATE TABLE `disease` (
   KEY `name_idx` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4658 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `disease_ontology_accession` (
-  `disease_id` int(11) unsigned NOT NULL,
-  `accession` varchar(255) NOT NULL,
-  `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
-  `mapping_type` enum('is','involves') DEFAULT NULL,
-  PRIMARY KEY (`disease_id`,`accession`),
-  KEY `accession_idx` (`accession`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 CREATE TABLE `genomic_feature` (
   `genomic_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `gene_symbol` varchar(128) DEFAULT NULL,
@@ -295,7 +286,7 @@ CREATE TABLE `meta` (
   PRIMARY KEY (`meta_id`),
   UNIQUE KEY `species_key_value_idx` (`species_id`,`meta_key`,`meta_value`),
   KEY `species_value_idx` (`species_id`,`meta_value`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `organ` (
   `organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -328,14 +319,6 @@ CREATE TABLE `phenotype` (
   KEY `name_idx` (`name`),
   KEY `stable_idx` (`stable_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15233 DEFAULT CHARSET=latin1;
-
-CREATE TABLE `phenotype_mapping` (
-  `mesh_id` int(10) unsigned NOT NULL,
-  `phenotype_id` int(10) unsigned NOT NULL,
-  `source` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`mesh_id`,`phenotype_id`),
-  KEY `phenotype_mapping_idx` (`mesh_id`,`phenotype_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `publication` (
   `publication_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
