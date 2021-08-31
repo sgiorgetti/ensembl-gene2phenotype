@@ -83,6 +83,7 @@ sub store {
     INSERT INTO genomic_feature_disease_panel(
       genomic_feature_disease_id,
       confidence_category_attrib,
+      clinical_review,
       is_visible,
       panel_attrib
     ) VALUES (?, ?, ?, ?)
@@ -91,6 +92,7 @@ sub store {
   $sth->execute(
     $gfd_panel->{genomic_feature_disease_id},
     $gfd_panel->{confidence_category_attrib},
+    $gfd_panel->clinical_review,
     $gfd_panel->is_visible || 1,
     $gfd_panel->{panel_attrib}
   );
@@ -125,7 +127,9 @@ sub delete {
     INSERT INTO genomic_feature_disease_panel_deleted (
       genomic_feature_disease_panel_id,
       genomic_feature_disease_id,
+      original_confidence_category_attrib,
       confidence_category_attrib,
+      clinical_review,
       is_visible,
       panel_attrib,
       deleted,
@@ -136,7 +140,9 @@ sub delete {
   $sth->execute(
     $gfd_panel->dbID,
     $gfd_panel->genomic_feature_disease_id,
+    $gfd_panel->original_confidence_category_attrib,
     $gfd_panel->confidence_category_attrib,
+    $gfd_panel->clinical_review,
     $gfd_panel->is_visible,
     $gfd_panel->panel_attrib,
     $user->user_id
@@ -168,12 +174,14 @@ sub update {
     UPDATE genomic_feature_disease_panel
     SET
       confidence_category_attrib = ?,
+      clinical_review = ?,
       is_visible = ?,
       panel_attrib = ?
     WHERE genomic_feature_disease_panel_id = ?;
   });
   $sth->execute(
     $gfd_panel->confidence_category_attrib,
+    $gfd_panel->clinical_review,
     $gfd_panel->is_visible,
     $gfd_panel->panel_attrib,
     $gfd_panel->dbID
@@ -195,8 +203,10 @@ sub update_log {
   my $gfd_panel_log = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanelLog->new(
     -genomic_feature_disease_panel_id => $gfd_panel->dbID,
     -genomic_feature_disease_id => $gfd_panel->genomic_feature_disease_id,
+    -original_confidence_category_attrib => $gfd_panel->original_confidence_category_attrib,
     -confidence_category_attrib => $gfd_panel->confidence_category_attrib,
     -panel_attrib => $gfd_panel->panel_attrib,
+    -clinical_review => $gfd_panel->clinical_review,
     -is_visible => $gfd_panel->is_visible,
     -user_id => $user->dbID,
     -action => $action, 
@@ -312,7 +322,9 @@ sub _columns {
   my @cols = (
     'gfd_panel.genomic_feature_disease_panel_id',
     'gfd_panel.genomic_feature_disease_id',
+    'gfd_panel.original_confidence_category_attrib',
     'gfd_panel.confidence_category_attrib',
+    'gfd_panel.clinical_review',
     'gfd_panel.is_visible',
     'gfd_panel.panel_attrib',
   );
@@ -344,7 +356,9 @@ sub _objs_from_sth {
   my (
     $genomic_feature_disease_panel_id,
     $genomic_feature_disease_id,
+    $original_confidence_category_attrib,
     $confidence_category_attrib,
+    $clinical_review,
     $is_visible,
     $panel_attrib,
     $restricted_mutation_set
@@ -352,7 +366,9 @@ sub _objs_from_sth {
   $sth->bind_columns(\(
     $genomic_feature_disease_panel_id,
     $genomic_feature_disease_id,
+    $original_confidence_category_attrib,
     $confidence_category_attrib,
+    $clinical_review,
     $is_visible,
     $panel_attrib,
   ));
@@ -362,11 +378,17 @@ sub _objs_from_sth {
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
   while ($sth->fetch()) {
+    my $original_confidence_category = undef;
     my $confidence_category = undef; 
     my $panel = undef; 
+    if ($original_confidence_category_attrib) {
+      $original_confidence_category = $attribute_adaptor->get_value('original_confidence_category', $original_confidence_category_attrib);
+    }
+
     if ($confidence_category_attrib) {
       $confidence_category = $attribute_adaptor->get_value('confidence_category', $confidence_category_attrib);
     }
+
     if ($panel_attrib) {
       $panel = $attribute_adaptor->get_value('g2p_panel', $panel_attrib);
     }
@@ -374,8 +396,11 @@ sub _objs_from_sth {
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
       -genomic_feature_disease_panel_id => $genomic_feature_disease_panel_id,
       -genomic_feature_disease_id => $genomic_feature_disease_id,
+      -original_confidence_category => $original_confidence_category,
+      -original_confidence_category_attrib => $original_confidence_category_attrib,
       -confidence_category => $confidence_category, 
       -confidence_category_attrib => $confidence_category_attrib,
+      -clinical_review => $clinical_review,
       -is_visible => $is_visible,
       -panel => $panel,
       -panel_attrib => $panel_attrib,
