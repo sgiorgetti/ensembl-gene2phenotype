@@ -73,9 +73,4 @@ sub source {
   return $self->{source};
 }
 
-sub update_text_minig_results {
-  my $self = shift;
-  my $text_mining_disease_adaptor = $self->{adaptor}->db->get_TextMiningDiseaseAdaptor;
-}
-
 1;
