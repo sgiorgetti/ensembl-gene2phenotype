@@ -101,22 +101,4 @@ sub get_all_synonyms {
   return \@synonyms;
 }
 
-sub get_all_Variations {
-  my $self = shift;
-  my $variation_adaptor = $self->{adaptor}->db->get_VariationAdaptor; 
-  return $variation_adaptor->fetch_all_by_genomic_feature_id($self->genomic_feature_id);
-}
-
-sub get_organ_specificity_list {
-  my $self = shift;
-  unless ($self->{organ_specificity_list}) {
-    my $registry = $self->{registry};
-    my $organ_specificty_adaptor = $registry->get_adaptor('organ_specificity');
-    my $organ_list = '';
-    $organ_list = $organ_specificty_adaptor->fetch_list_by_GenomicFeature($self);
-    $self->{organ_specificity_list} = $organ_list;
-  }
-  return $self->{organ_specificity_list};
-}
-
 1;
