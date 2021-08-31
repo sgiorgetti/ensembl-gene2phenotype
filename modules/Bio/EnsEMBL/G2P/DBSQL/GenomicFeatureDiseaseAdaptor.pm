@@ -388,12 +388,20 @@ sub fetch_all_by_GenomicFeature_panels {
 
 =head2 fetch_all_by_GenomicFeature_constraints
 
-  Arg [1]    :
-  Example    :
-  Description:
-  Returntype :
+  Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeature $genomic_feature
+  Arg [2]    : Hashref of constraints
+  Example    : # get all GFDs with the same gene, allelic requirement and mutation consequence
+               my $constraints = {
+                'allelic_requirement' => 'biallelic',
+                'mutation_consequence' => 'loss of function',
+               }
+               my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_constraints($genomic_feature, $constraints);
+  Description: This method can be used to query GenomicFeatureDisease objects by a selection of constraints.
+               It will be most useful for finding GFDs with the same allelic requirement and mutation consequence
+               for a given gene.
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Exceptions : None
-  Caller     :
+  Caller     : for example Gene2phenotype::Model::GenomicFeatureDisease::fetch_all_by_GenomicFeature_constraints
   Status     : Stable
 
 =cut
@@ -433,8 +441,8 @@ sub fetch_all_by_GenomicFeature_constraints {
   Arg [1]    : Bio::EnsEMBL::G2P::GenomicFeature $genomic_feature
   Arg [2]    : Bio::EnsEMBL::G2P::Disease $disease
   Example    : my $gfds = $gfd_adaptor->fetch_all_by_GenomicFeature_Disease($genomic_feature, $disease);
-  Description:
-  Returntype :
+  Description: Get all GFDs with the same gene and disease.
+  Returntype : Arrayref of Bio::EnsEMBL::G2P::GenomicFeatureDisease
   Exceptions : None
   Caller     : for example Gene2phenotype::Model::GenomicFeatureDisease::fetch_all_by_GenomicFeature_Disease
   Status     : Stable
