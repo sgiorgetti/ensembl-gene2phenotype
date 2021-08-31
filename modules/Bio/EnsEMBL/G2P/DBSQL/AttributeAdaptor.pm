@@ -36,7 +36,7 @@ our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
                This method also deals with the case where more than one value can be translated
                to each respective attribute id. This is only supported for the allelic_requirement
                attribute type.
-  Returntype : Integer $attrib_id
+  Returntype : Integer $attrib_id, or String of comma separated attrib ids 
   Exceptions : Throw error if attribute id for given value does not exisit
   Caller     : For example Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureDiseaseAdaptor::new
   Status     : Stable
@@ -46,7 +46,7 @@ sub get_attrib {
   my $self = shift;
   my $type = shift;
   my $value = shift;
-  if ($type eq 'allelic_requirement') {
+  if ($value =~ m/,/) {
     my @ids = ();
     foreach my $v (split(',', $value)) {
       my $id = $self->attrib_id_for_type_value($type, $v);
@@ -86,7 +86,7 @@ sub get_value {
   my $self = shift;
   my $type = shift;
   my $attrib = shift;
-  if ($type eq 'allelic_requirement') {
+  if ($attrib =~ m/,/) {
     my @values = ();
     foreach my $id (split(',', $attrib)) {
       my $value =  $self->attrib_value_for_type_id($type, $id);
