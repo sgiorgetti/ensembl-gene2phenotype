@@ -21,7 +21,7 @@ use warnings;
 use Bio::EnsEMBL::Registry;
 use Getopt::Long;
 
-use Data::Dumper;
+use FileHandle;
 
 my $config = {};
 GetOptions(
@@ -94,14 +94,24 @@ my $attribute_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'Attr
 
 my $dbh = $registry->get_DBAdaptor('human', 'gene2phenotype')->dbc->db_handle;
 
-#update_gfd_like_table('genomic_feature_disease', 'genomic_feature_disease_id');
-#update_gfd_like_table('genomic_feature_disease_deleted', 'genomic_feature_disease_id');
-#update_gfd_like_table('genomic_feature_disease_log', 'genomic_feature_disease_log_id');
+my $fh = FileHandle->new('updates.txt', 'w');
+
+update_gfd_like_table('genomic_feature_disease', 'genomic_feature_disease_id');
+update_gfd_like_table('genomic_feature_disease_deleted', 'genomic_feature_disease_id');
+update_gfd_like_table('genomic_feature_disease_log', 'genomic_feature_disease_log_id');
 
 update_gfd_panel_like_table('genomic_feature_disease_panel', 'genomic_feature_disease_panel_id');
 update_gfd_panel_like_table('genomic_feature_disease_panel_deleted', 'genomic_feature_disease_panel_id');
 update_gfd_panel_like_table('genomic_feature_disease_panel_log', 'genomic_feature_disease_panel_log_id');
 
+$fh->close();
+
+$fh = FileHandle->new('updates.txt', 'r');
+while (<$fh>) {
+  chomp;
+  $dbh->do(qq{$_}) or die $dbh->errstr;
+}
+$fh->close();
 
 sub update_gfd_panel_like_table {
   my $table = shift;
@@ -123,7 +133,7 @@ sub update_gfd_panel_like_table {
     my $confidence_category = $mappings->{'original_confidence_category'}->{$original_confience_category};  
     my $confidence_category_attrib = $attribute_adaptor->get_attrib('confidence_category', $confidence_category);
 
-    print "UPDATE $table SET confidence_category_attrib =  $confidence_category_attrib WHERE $db_id_column_name = $db_id;\n";
+    print $fh "UPDATE $table SET confidence_category_attrib =  $confidence_category_attrib WHERE $db_id_column_name = $db_id;\n";
   }
   $sth->finish();
 
@@ -183,7 +193,7 @@ sub update_gfd_like_table {
       push @updates, "mutation_consequence_flag_attrib = '$mutation_consequence_flag_attrib'";
     }
 
-    print "UPDATE $table SET ", join(", ", @updates), " WHERE $db_id_column_name = $db_id;\n";
+    print $fh "UPDATE $table SET ", join(", ", @updates), " WHERE $db_id_column_name = $db_id;\n";
   }
   $sth->finish();
 }
