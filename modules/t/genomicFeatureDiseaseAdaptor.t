@@ -131,18 +131,8 @@ ok($gfd_log->mutation_consequence eq 'uncertain', 'from log table, after update:
 $multi->restore('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_disease_log');
 
 #fetch_by_dbID
-my $dbID = 1797; 
-$gfd = $gfda->fetch_by_dbID($dbID);
-ok($gfd->dbID == $dbID, 'fetch_by_dbID');
-ok($gfd->original_allelic_requirement eq 'biallelic', 'fetch_by_dbID originial allelic_requirement');
-ok($gfd->allelic_requirement eq 'biallelic_autosomal', 'fetch_by_dbID allelic_requirement');
-ok($gfd->original_mutation_consequence eq 'all missense/in frame', 'fetch_by_dbID original_mutation_consequence');
-ok($gfd->mutation_consequence eq 'altered gene product structure', 'fetch_by_dbID mutation_consequence');
-ok($gfd->get_Disease->name eq 'AUTOSOMAL RECESSIVE MENTAL RETARDATION', 'fetch_by_dbID disease name');
-ok($gfd->get_GenomicFeature->gene_symbol eq 'PRMT9', 'fetch_by_dbID gene symbol');
 
-
-$dbID = 1401; 
+my $dbID = 1401; 
 $gfd = $gfda->fetch_by_dbID($dbID);
 ok($gfd->dbID == $dbID, 'fetch_by_dbID');
 ok($gfd->original_allelic_requirement eq 'mosaic', 'fetch_by_dbID originial allelic_requirement');
@@ -153,6 +143,16 @@ ok($gfd->mutation_consequence eq 'altered gene product structure', 'fetch_by_dbI
 ok($gfd->mutation_consequence_flag eq 'restricted mutation set', 'fetch_by_dbID mutation_consequence_flag');
 ok($gfd->get_Disease->name eq 'MEGALENCEPHALY-CAPILLARY MALFORMATION-POLYMICROGYRIA SYNDROME, SOMATIC 3', 'fetch_by_dbID disease name');
 ok($gfd->get_GenomicFeature->gene_symbol eq 'PIK3CA', 'fetch_by_dbID gene symbol');
+
+$dbID = 1797; 
+$gfd = $gfda->fetch_by_dbID($dbID);
+ok($gfd->dbID == $dbID, 'fetch_by_dbID');
+ok($gfd->original_allelic_requirement eq 'biallelic', 'fetch_by_dbID originial allelic_requirement');
+ok($gfd->allelic_requirement eq 'biallelic_autosomal', 'fetch_by_dbID allelic_requirement');
+ok($gfd->original_mutation_consequence eq 'all missense/in frame', 'fetch_by_dbID original_mutation_consequence');
+ok($gfd->mutation_consequence eq 'altered gene product structure', 'fetch_by_dbID mutation_consequence');
+ok($gfd->get_Disease->name eq 'AUTOSOMAL RECESSIVE MENTAL RETARDATION', 'fetch_by_dbID disease name');
+ok($gfd->get_GenomicFeature->gene_symbol eq 'PRMT9', 'fetch_by_dbID gene symbol');
 
 #fetch_all_by_GenomicFeature_Disease
 $gene_symbol = 'PRMT9';
