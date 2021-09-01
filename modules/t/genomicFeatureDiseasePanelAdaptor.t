@@ -59,7 +59,7 @@ my $genomic_feature_disease_id = 2409;
 
 my $gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
   -genomic_feature_disease_id => $genomic_feature_disease_id,
-  -confidence_category => 'confirmed',
+  -confidence_category => 'definitive',
   -is_visible => 1,
   -adaptor => $gfdpa,
 );
@@ -84,7 +84,7 @@ throws_ok { $gfdpa->store($gfd_panel, $user); } qr/Could not get attrib for valu
 
 $gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
   -genomic_feature_disease_id => $genomic_feature_disease_id,
-  -confidence_category => 'confirmed',
+  -confidence_category => 'definitive',
   -panel => 'Brain',
   -is_visible => 1,
   -adaptor => $gfdpa,
@@ -96,30 +96,32 @@ $multi->hide('gene2phenotype', 'genomic_feature_disease_panel', 'genomic_feature
 
 $gfd_panel = Bio::EnsEMBL::G2P::GenomicFeatureDiseasePanel->new(
   -genomic_feature_disease_id => $genomic_feature_disease_id,
-  -confidence_category => 'confirmed',
+  -confidence_category => 'definitive',
   -panel => 'DD',
   -is_visible => 1,
   -adaptor => $gfdpa,
 );
+
 $gfd_panel = $gfdpa->store($gfd_panel, $user);
+
 ok($gfd_panel->genomic_feature_disease_id == $genomic_feature_disease_id, 'store genomic_feature_disease_id');
-ok($gfd_panel->confidence_category eq 'confirmed', 'store confidence_category');
+ok($gfd_panel->confidence_category eq 'definitive', 'store confidence_category');
 ok($gfd_panel->panel eq 'DD', 'store panel');
 ok($gfd_panel->is_visible == 1, 'store is_visible');
 my $gfd_panel_logs = $gfd_panel_log_adaptor->fetch_all_by_GenomicFeatureDiseasePanel($gfd_panel);
 my ($gfd_panel_log) = grep {$_->action eq 'create'} @$gfd_panel_logs;
 ok($gfd_panel_log->genomic_feature_disease_id == $genomic_feature_disease_id, 'from log table: genomic_feature_disease_id');
-ok($gfd_panel_log->confidence_category eq 'confirmed', 'from log table: confidence_category');
+ok($gfd_panel_log->confidence_category eq 'definitive', 'from log table: confidence_category');
 ok($gfd_panel_log->panel eq 'DD', 'from log table: panel');
 ok($gfd_panel_log->is_visible == 1, 'from log table: is_visible');
 
-$gfd_panel->confidence_category('possible');
+$gfd_panel->confidence_category('limited');
 $gfd_panel = $gfdpa->update($gfd_panel, $user);
 $gfd_panel = $gfdpa->fetch_by_dbID($gfd_panel->dbID);
-ok($gfd_panel->confidence_category eq 'possible', 'update confidence_category');
+ok($gfd_panel->confidence_category eq 'limited', 'update confidence_category');
 $gfd_panel_logs = $gfd_panel_log_adaptor->fetch_all_by_GenomicFeatureDiseasePanel($gfd_panel);
 ($gfd_panel_log) = grep {$_->action eq 'update'} @$gfd_panel_logs;
-ok($gfd_panel_log->confidence_category eq 'possible', 'from log table, after update: confidence_category');
+ok($gfd_panel_log->confidence_category eq 'limited', 'from log table, after update: confidence_category');
 
 $gfdpa->delete($gfd_panel, $user);
 my $gfd_panel_deleted = $gfdpa->fetch_by_dbID($gfd_panel->dbID);
@@ -136,7 +138,7 @@ $gfd_panel = $gfdpa->fetch_by_dbID($dbID);
 ok($gfd_panel->dbID == $dbID, 'fetch_by_dbID');
 
 ok($gfd_panel->panel eq 'DD', 'fetch_by_dbID panel');
-ok($gfd_panel->confidence_category eq 'confirmed', 'fetch_by_dbID confidence category');
+ok($gfd_panel->confidence_category eq 'definitive', 'fetch_by_dbID confidence category');
 ok($gfd_panel->is_visible == 1, 'fetch_by_dbID is visible');
 
 #fetch_all_by_panel

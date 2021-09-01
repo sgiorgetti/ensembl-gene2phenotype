@@ -57,8 +57,8 @@ my $username = 'user1';
 my $user = $ua->fetch_by_username($username);
 ok($user->username eq $username, 'user object');
 
-my $allelic_requirement = 'monoallelic';
-my $mutation_consequence = 'all missense/in frame';
+my $allelic_requirement = 'monoallelic_autosomal';
+my $mutation_consequence = 'altered gene product structure';
 
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
@@ -88,7 +88,7 @@ throws_ok { $gfda->store($gfd, $user); } qr/Could not get attrib for value: cis-
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -allelic_requirement => 'monoallelic,x-linked',
+  -allelic_requirement => 'monoallelic_autosomal,x-linked',
   -mutation_consequence => 'cis-regulatory or promotor mutation',
   -adaptor => $gfda,
 );
@@ -100,32 +100,32 @@ $multi->hide('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_disea
 $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -genomic_feature_id => $genomic_feature->dbID,
   -disease_id => $disease->dbID,
-  -allelic_requirement => 'monoallelic',
+  -allelic_requirement => 'monoallelic_autosomal',
   -mutation_consequence => 'cis-regulatory or promotor mutation',
   -adaptor => $gfda,
 );
 $gfd = $gfda->store($gfd, $user);
-ok($gfd->allelic_requirement eq 'monoallelic', 'store allelic_requirement');
+ok($gfd->allelic_requirement eq 'monoallelic_autosomal', 'store allelic_requirement');
 ok($gfd->mutation_consequence eq 'cis-regulatory or promotor mutation', 'store mutation_consequence');
 ok($gfd->get_Disease->name eq 'KABUKI SYNDROME', 'store disease name');
 ok($gfd->get_GenomicFeature->gene_symbol eq 'P3H1', 'store gene symbol');
 my $gfd_logs = $gfd_log_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
 my ($gfd_log) = grep {$_->action eq 'create'} @$gfd_logs;
-ok($gfd_log->allelic_requirement eq 'monoallelic', 'from log table: allelic_requirement');
+ok($gfd_log->allelic_requirement eq 'monoallelic_autosomal', 'from log table: allelic_requirement');
 ok($gfd_log->mutation_consequence eq 'cis-regulatory or promotor mutation', 'from log table: mutation_consequence');
 ok($gfd_log->get_Disease->name eq 'KABUKI SYNDROME', 'from log table: disease name');
 ok($gfd_log->get_GenomicFeature->gene_symbol eq 'P3H1', 'from log table: gene symbol');
 
-$gfd->allelic_requirement('hemizygous');
+$gfd->allelic_requirement('monoallelic_X_hem');
 $gfd->mutation_consequence('uncertain');
 $gfd = $gfda->update($gfd, $user);
 $gfd = $gfda->fetch_by_dbID($gfd->dbID);
-ok($gfd->allelic_requirement eq 'hemizygous', 'update allelic_requirement');
+ok($gfd->allelic_requirement eq 'monoallelic_X_hem', 'update allelic_requirement');
 ok($gfd->mutation_consequence eq 'uncertain', 'update mutation_consequence');
 
 $gfd_logs = $gfd_log_adaptor->fetch_all_by_GenomicFeatureDisease($gfd);
 ($gfd_log) = grep {$_->action eq 'update'} @$gfd_logs;
-ok($gfd_log->allelic_requirement eq 'hemizygous', 'from log table, after update: allelic_requirement');
+ok($gfd_log->allelic_requirement eq 'monoallelic_X_hem', 'from log table, after update: allelic_requirement');
 ok($gfd_log->mutation_consequence eq 'uncertain', 'from log table, after update: mutation_consequence');
 
 $multi->restore('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_disease_log');
@@ -134,10 +134,25 @@ $multi->restore('gene2phenotype', 'genomic_feature_disease', 'genomic_feature_di
 my $dbID = 1797; 
 $gfd = $gfda->fetch_by_dbID($dbID);
 ok($gfd->dbID == $dbID, 'fetch_by_dbID');
-ok($gfd->allelic_requirement eq 'biallelic', 'fetch_by_dbID allelic_requirement');
-ok($gfd->mutation_consequence eq 'all missense/in frame', 'fetch_by_dbID mutation_consequence');
+ok($gfd->original_allelic_requirement eq 'biallelic', 'fetch_by_dbID originial allelic_requirement');
+ok($gfd->allelic_requirement eq 'biallelic_autosomal', 'fetch_by_dbID allelic_requirement');
+ok($gfd->original_mutation_consequence eq 'all missense/in frame', 'fetch_by_dbID original_mutation_consequence');
+ok($gfd->mutation_consequence eq 'altered gene product structure', 'fetch_by_dbID mutation_consequence');
 ok($gfd->get_Disease->name eq 'AUTOSOMAL RECESSIVE MENTAL RETARDATION', 'fetch_by_dbID disease name');
 ok($gfd->get_GenomicFeature->gene_symbol eq 'PRMT9', 'fetch_by_dbID gene symbol');
+
+
+$dbID = 1401; 
+$gfd = $gfda->fetch_by_dbID($dbID);
+ok($gfd->dbID == $dbID, 'fetch_by_dbID');
+ok($gfd->original_allelic_requirement eq 'mosaic', 'fetch_by_dbID originial allelic_requirement');
+ok($gfd->allelic_requirement eq 'mosaic', 'fetch_by_dbID allelic_requirement');
+ok($gfd->cross_cutting_modifier eq 'typically mosaic', 'fetch_by_dbID cross_cutting_modifier');
+ok($gfd->original_mutation_consequence eq 'activating', 'fetch_by_dbID original_mutation_consequence');
+ok($gfd->mutation_consequence eq 'altered gene product structure', 'fetch_by_dbID mutation_consequence');
+ok($gfd->mutation_consequence_flag eq 'restricted mutation set', 'fetch_by_dbID mutation_consequence_flag');
+ok($gfd->get_Disease->name eq 'MEGALENCEPHALY-CAPILLARY MALFORMATION-POLYMICROGYRIA SYNDROME, SOMATIC 3', 'fetch_by_dbID disease name');
+ok($gfd->get_GenomicFeature->gene_symbol eq 'PIK3CA', 'fetch_by_dbID gene symbol');
 
 #fetch_all_by_GenomicFeature_Disease
 $gene_symbol = 'PRMT9';
@@ -162,7 +177,7 @@ ok(scalar @$gfds == 48, 'fetch_all_by_Disease_panels');
 #fetch_all_by_GenomicFeature_constraints
 $gene_symbol = 'CACNA1G';
 $genomic_feature = $gfa->fetch_by_gene_symbol($gene_symbol);
-$gfds = $gfda->fetch_all_by_GenomicFeature_constraints($genomic_feature, {'allelic_requirement' => 'biallelic', 'mutation_consequence' => 'loss of function'});
+$gfds = $gfda->fetch_all_by_GenomicFeature_constraints($genomic_feature, {'allelic_requirement' => 'biallelic_autosomal', 'mutation_consequence' => 'absent gene product'});
 ok(scalar @$gfds == 1, 'fetch_all_by_GenomicFeature_constraints');
 
 done_testing();

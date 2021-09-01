@@ -1,6 +1,6 @@
-1	allelic_requirement	Allelic requirement	Allelic requirement
-2	mutation_consequence	Mutation consequence	Mutation consequence
-3	confidence_category	confidence category	confidence category
+1	original_allelic_requirement	Allelic requirement	Original allelic requirement terms. Before GenCC alignment.
+2	original_mutation_consequence	Mutation consequence	Original mutation consequence terms. Before GenCC alignment.
+3	original_confidence_category	confidence category	Original confidence category terms. Before GenCC alignment.
 4	g2p_panel	G2P panel	G2P panel
 5	retired	retired attrib type	retired attrib type
 6	ontology_mapping	Ontology Mapping	Method used to link a description to an ontology term
@@ -8,3 +8,8 @@
 8	p_value	P-value	Minimum P-value from testing of the DDD dataset or the meta-analysis dataset
 9	dataset	dataset	DDD or meta-analysis dataset
 10	clustering	clustering	Mutations are considered clustered if the P-value from proximity clustering of DNMs is less than 0.01
+11	confidence_category	Confidence category	Confidence category terms
+12	cross_cutting_modifier	Cross cutting modifier	Cross cutting modifier
+13	allelic_requirement	Allelic requirement	Allelic requirement
+14	mutation_consequence_flag	Mutation consequence flag	Mutation consequence flag
+15	mutation_consequence	Mutation consequence	Mutation consequence
