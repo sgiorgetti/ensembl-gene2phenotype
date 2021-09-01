@@ -13,6 +13,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+ALTER TABLE attrib_type MODIFY code varchar(255) NOT NULL DEFAULT '';
+
 UPDATE attrib_type SET code = 'original_allelic_requirement', description = 'Original allelic requirement terms. Before GenCC alignment.' WHERE attrib_type_id = 1;
 UPDATE attrib_type SET code = 'original_mutation_consequence', description = 'Original mutation consequence terms. Before GenCC alignment.' WHERE attrib_type_id = 2;
 UPDATE attrib_type SET code = 'original_confidence_category', description = 'Original confidence category terms. Before GenCC alignment.' WHERE attrib_type_id = 3;
