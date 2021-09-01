@@ -119,7 +119,7 @@ sub original_confidence_category_attrib {
     }
   }
   if (!defined $self->{original_confidence_category_attrib}) {
-    die "Original confidence category attrib not set\n";
+    return undef;
   }
   return $self->{original_confidence_category_attrib};
 }

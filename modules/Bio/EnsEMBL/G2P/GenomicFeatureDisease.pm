@@ -158,7 +158,7 @@ sub allelic_requirement_attrib {
 
 sub cross_cutting_modifier {
   my $self = shift;
-  my $allelic_requirement = shift;
+  my $cross_cutting_modifier = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
 
   if ($cross_cutting_modifier) {
