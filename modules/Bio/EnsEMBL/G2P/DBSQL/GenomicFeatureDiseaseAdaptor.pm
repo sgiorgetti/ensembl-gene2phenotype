@@ -108,7 +108,7 @@ sub store {
       mutation_consequence_attrib,
       mutation_consequence_flag_attrib,
       restricted_mutation_set
-    ) VALUES (?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -163,7 +163,9 @@ sub update {
     $gfd->genomic_feature_id,
     $gfd->disease_id,
     $gfd->allelic_requirement_attrib,
+    $gfd->cross_cutting_modifier_attrib,
     $gfd->mutation_consequence_attrib,
+    $gfd->mutation_consequence_flag_attrib,
     $gfd->restricted_mutation_set || 0,
     $gfd->dbID
   );
