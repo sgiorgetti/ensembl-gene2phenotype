@@ -55,12 +55,13 @@ sub store {
       genomic_feature_disease_id,
       original_confidence_category_attrib,
       confidence_category_attrib,
+      clinical_review,
       is_visible,
       panel_attrib,
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
   });
 
   $sth->execute(

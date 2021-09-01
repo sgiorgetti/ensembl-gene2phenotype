@@ -78,7 +78,7 @@ sub store {
   if (defined $gfd_panel->{confidence_category} && ! defined $gfd_panel->{confidence_category_attrib}) {
     $gfd_panel->{confidence_category_attrib} = $attribute_adaptor->get_attrib('confidence_category', $gfd_panel->{confidence_category});
   }
-
+  
   my $sth = $dbh->prepare(q{
     INSERT INTO genomic_feature_disease_panel(
       genomic_feature_disease_id,
@@ -86,7 +86,7 @@ sub store {
       clinical_review,
       is_visible,
       panel_attrib
-    ) VALUES (?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -134,7 +134,7 @@ sub delete {
       panel_attrib,
       deleted,
       deleted_by_user_id
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
   });
 
   $sth->execute(

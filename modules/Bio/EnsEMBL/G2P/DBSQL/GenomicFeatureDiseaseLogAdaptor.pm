@@ -59,13 +59,11 @@ sub store {
       cross_cutting_modifier_attrib,
       original_mutation_consequence_attrib,
       mutation_consequence_attrib,
-      allelic_requirement_attrib,
-      mutation_consequence_attrib,
       mutation_consequence_flag_attrib,
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
   });
 
   $sth->execute(
