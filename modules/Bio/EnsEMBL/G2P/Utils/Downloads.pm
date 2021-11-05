@@ -193,7 +193,7 @@ sub write_data {
   # only select visible entries if constraint is given in the where clause 
 
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_attrib, gfd.mutation_consequence_flag_attrib, a.value, gf.genomic_feature_id
+    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
@@ -203,10 +203,10 @@ sub write_data {
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
-  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $ccm_attrib, $mc_attrib, $mcf_attrib, $panel, $gfid, $prev_symbols, $created);
+  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib);
   # Bind values from SQL query to variables
   # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $ccm_attrib, $mc_attrib, $mcf_attrib, $panel, $gfid));
+  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib));
 
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -218,8 +218,8 @@ sub write_data {
     # map attrib ids to values
     my $confidence_category = ($confidence_category_attrib) ? $confidence_category_attribs->{$confidence_category_attrib} : 'No confidence category';
     my $allelic_requirement = ($ar_attrib) ? $allelic_requirement_attribs->{$ar_attrib} : undef;
-    my $cross_cutting_modifier = ($ccm_attrib) ? join(',', map{$cross_cutting_modifier_attribs->{$_} } split(',', $ccm_attrib) ): "No cross cutting modifier";
     my $mutation_consequence = ($mc_attrib) ? $mutation_consequence_attribs->{$mc_attrib} : undef;
+    my $cross_cutting_modifier = ($ccm_attrib) ? join(',', map{$cross_cutting_modifier_attribs->{$_} } split(',', $ccm_attrib) ): "No cross cutting modifier";
     my $mutation_consequence_flag = ($mcf_attrib) ? $mutation_consequence_flag_attribs->{$mcf_attrib} : "No mutation consequence flag";
 
     # get all annotations for a GenomicFeatureDisease
