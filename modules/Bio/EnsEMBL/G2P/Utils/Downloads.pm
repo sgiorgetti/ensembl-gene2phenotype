@@ -84,7 +84,7 @@ sub download_data {
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
 
   # Write header to file
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'cross cutting modifier', 'mutation consequence', 'mutation consequence flag', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag']);
 
   $csv->eol ("\r\n");
 
@@ -217,9 +217,9 @@ sub write_data {
 
     # map attrib ids to values
     my $confidence_category = ($confidence_category_attrib) ? $confidence_category_attribs->{$confidence_category_attrib} : 'No confidence category';
-    my $allelic_requirement = ($ar_attrib) ? join(',', map { $allelic_requirement_attribs->{$_} } split(',', $ar_attrib)) : undef;
-    my $cross_cutting_modifier = ($ccm_attrib) ? $cross_cutting_modifier_attribs->{$ccm_attrib} : "No cross cutting modifier";
-    my $mutation_consequence = ($mc_attrib) ? join(',', map { $mutation_consequence_attribs->{$_} } split(',', $mc_attrib)) : undef;
+    my $allelic_requirement = ($ar_attrib) ? $allelic_requirement_attribs->{$ar_attrib} : undef;
+    my $cross_cutting_modifier = ($ccm_attrib) ? join(',', map{$cross_cutting_modifier_attribs->{$_} } split(',', $ccm_attrib) ): "No cross cutting modifier";
+    my $mutation_consequence = ($mc_attrib) ? $mutation_consequence_attribs->{$mc_attrib} : undef;
     my $mutation_consequence_flag = ($mcf_attrib) ? $mutation_consequence_flag_attribs->{$mcf_attrib} : "No mutation consequence flag";
 
     # get all annotations for a GenomicFeatureDisease
