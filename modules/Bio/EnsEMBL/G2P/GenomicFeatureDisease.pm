@@ -160,15 +160,25 @@ sub cross_cutting_modifier {
   my $self = shift;
   my $cross_cutting_modifier = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-
   if ($cross_cutting_modifier) {
-    $self->{cross_cutting_modifier_attrib} = $attribute_adaptor->get_attrib('cross_cutting_modifier', $cross_cutting_modifier);
+    my @values = split(',', $cross_cutting_modifier); 
+    my @ids = ();
+    foreach my $value (@values) {
+      push @ids, $attribute_adaptor->get_attrib('cross_cutting_modifier', $value);
+    }        
+    $self->{cross_cutting_modifier_attrib} = join(',', sort @ids);
     $self->{cross_cutting_modifier} = $cross_cutting_modifier;
   } else {
-    if (!$self->{cross_cutting_modifier} && $self->{cross_cutting_modifier_attrib}) {
-      $self->{cross_cutting_modifier} = $attribute_adaptor->get_value('cross_cutting_modifier', $self->{cross_cutting_modifier_attrib});
+    if (!$self->{cross_cutting_modifier} && $self->{cross_cutting_modifier_attrib} ) {
+      my @ids = split(',', $self->{cross_cutting_modifier_attrib});
+      my @values = ();
+      foreach my $id (@ids) {
+        push @values, $attribute_adaptor->get_value('cross_cutting_modifier', $id);
+      }
+      $self->{cross_cutting_modifier} = join(',', sort @values);
     }
   }
+  
   return $self->{cross_cutting_modifier};
 }
 

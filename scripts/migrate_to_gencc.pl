@@ -41,20 +41,17 @@ my $mappings = {
   'original_allelic_requirement' => {
     'allelic_requirement' => {
       'biallelic' => 'biallelic_autosomal',
-      'digenic' => 'digenic',
       'hemizygous' => 'monoallelic_X_hem',
-      'imprinted' => 'imprinted',
       'mitochondrial' => 'mitochondrial',
       'monoallelic' => 'monoallelic_autosomal',
       'monoallelic (Y)' => 'monoallelic_Y_hem',
-      'mosaic' => 'mosaic',
-      'uncertain' => 'uncertain',
       'x-linked dominant' => 'monoallelic_X_het',
       'x-linked over-dominance' => 'monoallelic_X_het',
     },
     'cross_cutting_modifier' => {
       'mosaic' => 'typically mosaic',
-      'x-linked over-dominance' => 'requires heterozygosity' 
+      'x-linked over-dominance' => 'requires heterozygosity',
+      'imprinted' => 'imprinted'
     }
   },
   'original_mutation_consequence' => {
