@@ -51,7 +51,7 @@ my $mappings = {
     'cross_cutting_modifier' => {
       'mosaic' => 'typically mosaic',
       'x-linked over-dominance' => 'requires heterozygosity',
-      'imprinted' => 'imprinted'
+      'imprinted' => 'imprinted',
     }
   },
   'original_mutation_consequence' => {

@@ -97,6 +97,7 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (49, 11, 'bo
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (50, 11, 'definitive');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (51, 11, 'limited');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (52, 11, 'strong');
+INSERT IGNORE INTO attrib (atrrib_id, attrib_type_id, value) VALUES (81, 11, 'moderate');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (53, 11, 'child IF');
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (54, 12, 'requires heterozygosity');
@@ -104,19 +105,17 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (55, 12, 'ty
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (56, 12, 'typically mosaic');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (57, 12, 'typified by age related penetrance');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (58, 12, 'typified by reduced penetrance');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (70, 12, 'imprinted');
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (59, 13, 'biallelic_autosomal');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (60, 13, 'biallelic_PAR');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (61, 13, 'digenic');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (62, 13, 'imprinted');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (63, 13, 'mitochondrial');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (64, 13, 'monoallelic_autosomal');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (65, 13, 'monoallelic_PAR');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (66, 13, 'monoallelic_X_hem');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (67, 13, 'monoallelic_X_het');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (68, 13, 'monoallelic_Y_hem');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (69, 13, 'mosaic');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (70, 13, 'uncertain');
+
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (71, 14, 'likely to escape nonsense mediated decay');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (72, 14, 'part of contiguous gene duplication');
