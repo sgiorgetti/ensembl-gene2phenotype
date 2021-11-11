@@ -46,6 +46,7 @@ my $mappings = {
       'monoallelic' => 'monoallelic_autosomal',
       'monoallelic (Y)' => 'monoallelic_Y_hem',
       'x-linked dominant' => 'monoallelic_X_het',
+      'imprinted' => 'imprinted',
       'x-linked over-dominance' => 'monoallelic_X_het',
     },
     'cross_cutting_modifier' => {
