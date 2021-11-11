@@ -43,6 +43,7 @@ my $mappings = {
       'biallelic' => 'biallelic_autosomal',
       'hemizygous' => 'monoallelic_X_hem',
       'mitochondrial' => 'mitochondrial',
+      'digenic' => 'mitochondrial',
       'monoallelic' => 'monoallelic_autosomal',
       'monoallelic (Y)' => 'monoallelic_Y_hem',
       'mosaic' => 'monoallelic_autosomal',
