@@ -24,18 +24,18 @@ ALTER TABLE genomic_feature_disease_deleted CHANGE COLUMN mutation_consequence_a
 ALTER TABLE genomic_feature_disease_log CHANGE COLUMN mutation_consequence_attrib original_mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL;
 
 # in genomic_feature_disease, genomic_feature_disease_deleted, genomic_feature_disease_log create allelic_requirement_attrib, cross_cutting_modifier_attrib, mutation_consequence_attrib, mutation_consequence_flag_attrib
-ALTER TABLE genomic_feature_disease ADD COLUMN allelic_requirement_attrib set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL AFTER original_allelic_requirement_attrib;
-ALTER TABLE genomic_feature_disease ADD COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58') DEFAULT NULL AFTER allelic_requirement_attrib;
+ALTER TABLE genomic_feature_disease ADD COLUMN allelic_requirement_attrib set('59','60','63','64','65','66','67','68') DEFAULT NULL AFTER original_allelic_requirement_attrib;
+ALTER TABLE genomic_feature_disease ADD COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58','70') DEFAULT NULL AFTER allelic_requirement_attrib;
 ALTER TABLE genomic_feature_disease ADD COLUMN mutation_consequence_attrib int(10) unsigned DEFAULT '0' AFTER original_mutation_consequence_attrib;
 ALTER TABLE genomic_feature_disease ADD COLUMN mutation_consequence_flag_attrib set('71','72','73','74') DEFAULT NULL AFTER mutation_consequence_attrib;
 
-ALTER TABLE genomic_feature_disease_deleted ADD COLUMN allelic_requirement_attrib set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL AFTER original_allelic_requirement_attrib;
-ALTER TABLE genomic_feature_disease_deleted ADD COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58') DEFAULT NULL AFTER allelic_requirement_attrib;
+ALTER TABLE genomic_feature_disease_deleted ADD COLUMN allelic_requirement_attrib set('59','60','63','64','65','66','67','68') DEFAULT NULL AFTER original_allelic_requirement_attrib;
+ALTER TABLE genomic_feature_disease_deleted ADD COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58','70') DEFAULT NULL AFTER allelic_requirement_attrib;
 ALTER TABLE genomic_feature_disease_deleted ADD COLUMN mutation_consequence_attrib int(10) unsigned DEFAULT '0' AFTER original_mutation_consequence_attrib;
 ALTER TABLE genomic_feature_disease_deleted ADD COLUMN mutation_consequence_flag_attrib set('71','72','73','74') DEFAULT NULL AFTER mutation_consequence_attrib;
 
-ALTER TABLE genomic_feature_disease_log ADD COLUMN allelic_requirement_attrib set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL AFTER original_allelic_requirement_attrib;
-ALTER TABLE genomic_feature_disease_log ADD COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58') DEFAULT NULL AFTER allelic_requirement_attrib;
+ALTER TABLE genomic_feature_disease_log ADD COLUMN allelic_requirement_attrib set('59','60','63','64','65','66','67','68') DEFAULT NULL AFTER original_allelic_requirement_attrib;
+ALTER TABLE genomic_feature_disease_log ADD COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58','70') DEFAULT NULL AFTER allelic_requirement_attrib;
 ALTER TABLE genomic_feature_disease_log ADD COLUMN mutation_consequence_attrib int(10) unsigned DEFAULT '0' AFTER original_mutation_consequence_attrib;
 ALTER TABLE genomic_feature_disease_log ADD COLUMN mutation_consequence_flag_attrib set('71','72','73','74') DEFAULT NULL AFTER mutation_consequence_attrib;
 
