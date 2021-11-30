@@ -51,7 +51,7 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (68, 13, 'mo
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (71, 14, 'likely to escape nonsense mediated decay');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (72, 14, 'part of contiguous gene duplication');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (73, 14, 'part of contiguous genomic interval deletion');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (74, 14, 'restricted mutation set');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (74, 14, 'restricted repertoire of mutations');
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (75, 15, '5_prime or 3_prime UTR mutation');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (76, 15, 'absent gene product');

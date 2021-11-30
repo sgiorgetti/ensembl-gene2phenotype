@@ -73,9 +73,9 @@ my $mappings = {
       'uncertain' => 'uncertain',
     },
     'mutation_consequence_flag' => {
-      'activating' => 'restricted mutation set',
-      'dominant negative' => 'restricted mutation set',
-      'gain of function' => 'restricted mutation set',
+      'activating' => 'restricted repertoire of mutations',
+      'dominant negative' => 'restricted repertoire of mutations',
+      'gain of function' => 'restricted repertoire of mutations',
       'part of contiguous gene duplication' => 'part of contiguous gene duplication',
       'part of contiguous genomic interval deletion' => 'part of contiguous genomic interval deletion',
     }
