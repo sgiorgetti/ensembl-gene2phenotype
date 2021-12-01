@@ -44,9 +44,11 @@ my $mappings = {
       'hemizygous' => 'monoallelic_X_hem',
       'mitochondrial' => 'mitochondrial',
       'monoallelic' => 'monoallelic_autosomal',
+      'digenic' => 'mitochondrial', # still a placeholder, digenic has been deleted before migration
       'monoallelic (Y)' => 'monoallelic_Y_hem',
       'mosaic' => 'monoallelic_autosomal',
       'x-linked dominant' => 'monoallelic_X_het',
+      'uncertain' => 'mitochondrial', # still a placeholder, uncertain has been deleted before migration
       'imprinted' => 'monoallelic_autosomal',
       'x-linked over-dominance' => 'monoallelic_X_het',
     },
