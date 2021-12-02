@@ -46,6 +46,38 @@
 46	4	Demo
 47	4	Rapid_PICU_NICU
 48	4	PaedNeuro
+49	11	both RD and IF
+50	11	definitive
+51	11	limited
+52	11	strong
+53	11	child IF
+54	12	requires heterozygosity
+55	12	typically de novo
+56	12	typically mosaic
+57	12	typified by age related penetrance
+58	12	typified by reduced penetrance
+59	13	biallelic_autosomal
+60	13	biallelic_PAR
+61	13	digenic
+62	13	imprinted
+63	13	mitochondrial
+64	13	monoallelic_autosomal
+65	13	monoallelic_PAR
+66	13	monoallelic_X_hem
+67	13	monoallelic_X_het
+68	13	monoallelic_Y_hem
+69	13	mosaic
+70	13	uncertain
+71	14	likely to escape nonsense mediated decay
+72	14	part of contiguous gene duplication
+73	14	part of contiguous genomic interval deletion
+74	14	restricted mutation set
+75	15	5_prime or 3_prime UTR mutation
+76	15	absent gene product
+77	15	altered gene product structure
+78	15	cis-regulatory or promotor mutation
+79	15	increased gene product level
+80	15	uncertain
 437	6	Data source
 438	6	OLS exact
 439	6	OLS partial

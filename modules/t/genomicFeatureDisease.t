@@ -29,8 +29,9 @@ my $gfda = $g2pdb->get_GenomicFeatureDiseaseAdaptor;
 
 my $genomic_feature_id = 59384;
 my $disease_id = 326;
-my $allelic_requirement_attrib = 3;
-my $mutation_consequence_attrib = 25;
+my $allelic_requirement_attrib = 59;
+my $mutation_consequence_attrib = 76;
+my $mutation_consequence_flag_attrib = 71;
 my $restricted_mutation_set = 0;
 
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
@@ -38,13 +39,15 @@ my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -disease_id => $disease_id,
   -allelic_requirement_attrib => $allelic_requirement_attrib,
   -mutation_consequence_attrib => $mutation_consequence_attrib,
+  -mutation_consequence_flag_attrib => $mutation_consequence_flag_attrib,
   -restricted_mutation_set => $restricted_mutation_set,
   -adaptor => $gfda,
 );
 ok($gfd->genomic_feature_id == $genomic_feature_id, 'genomic_feature_id');
 ok($gfd->disease_id == $disease_id, 'disease_id');
-ok($gfd->allelic_requirement eq 'biallelic', 'allelic_requirement');
-ok($gfd->mutation_consequence eq 'loss of function', 'mutation_consequence');
+ok($gfd->allelic_requirement eq 'biallelic_autosomal', 'allelic_requirement');
+ok($gfd->mutation_consequence eq 'absent gene product', 'mutation_consequence');
+ok($gfd->mutation_consequence_flag eq 'likely to escape nonsense mediated decay', 'mutation_consequence_flag');
 ok($gfd->restricted_mutation_set == 0, 'restricted_mutation_set');
 
 my $dbID = 133;
@@ -56,9 +59,9 @@ ok($gf->gene_symbol eq 'KIFBP', 'get_GenomicFeature');
 my $disease = $gfd->get_Disease();
 ok($disease->name eq 'GOLDBERG-SHPRINTZEN MEGACOLON SYNDROME', 'get_Disease');
 
-ok($gfd->allelic_requirement eq 'biallelic', 'allelic_requirement');
+ok($gfd->allelic_requirement eq 'biallelic_autosomal', 'allelic_requirement');
 
-ok($gfd->mutation_consequence eq 'loss of function', 'mutation_consequence');
+ok($gfd->mutation_consequence eq 'absent gene product', 'mutation_consequence');
 
 ok($gfd->restricted_mutation_set == 0, 'restricted_mutation_set');
 

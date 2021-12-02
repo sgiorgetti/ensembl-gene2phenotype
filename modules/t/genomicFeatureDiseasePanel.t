@@ -28,7 +28,7 @@ my $g2pdb = $multi->get_DBAdaptor('gene2phenotype');
 my $gfdpa = $g2pdb->get_GenomicFeatureDiseasePanelAdaptor;
 
 my $genomic_feature_disease_id = 3857;
-my $confidence_category = 'confirmed';
+my $confidence_category = 'definitive';
 my $is_visible = 1;
 my $panel = 'Skin';
 
@@ -44,7 +44,7 @@ ok($gfd_panel->confidence_category eq $confidence_category, 'confidence_category
 ok($gfd_panel->is_visible == $is_visible, 'is_visible');
 ok($gfd_panel->panel eq $panel, 'panel');
 ok($gfd_panel->panel_attrib == 41, 'panel_attrib');
-ok($gfd_panel->confidence_category_attrib == 32, 'confidence_category_attrib');
+ok($gfd_panel->confidence_category_attrib == 50, 'confidence_category_attrib');
 
 my $dbID = 3722;
 $gfd_panel = $gfdpa->fetch_by_dbID($dbID);
@@ -52,8 +52,8 @@ $gfd_panel = $gfdpa->fetch_by_dbID($dbID);
 ok($gfd_panel->dbID == $dbID, 'dbID');
 ok($gfd_panel->genomic_feature_disease_id == 4671, 'genomic_feature_disease_id');
 
-ok($gfd_panel->confidence_category eq 'probable', 'confidence_category');
-ok($gfd_panel->confidence_category_attrib == 34, 'confidence_category_attrib');
+ok($gfd_panel->confidence_category eq 'strong', 'confidence_category');
+ok($gfd_panel->confidence_category_attrib == 52, 'confidence_category_attrib');
 ok($gfd_panel->is_visible == 1, 'is_visible');
 ok($gfd_panel->panel eq 'DD', 'panel');
 ok($gfd_panel->panel_attrib == 38, 'panel_attrib');

@@ -2,5 +2,7 @@
 4	\N	patch	patch_103_104_b.sql|drop unique key in genomic_feature_disease_panel_deleted
 5	\N	patch	patch_103_104_c.sql|drop panel_attrib column from genomic_feature_disease table
 6	\N	patch	patch_103_104_d.sql|drop tables
+7	\N	patch	patch_103_104_e.sql|add new terms
+8	\N	patch	patch_103_104_f.sql|update and add new columns to genomic_feature_disease, genomic_feature_disease_panel, deleted and log tables
 1	\N	schema_type	gene2phenotype
 2	\N	schema_version	104

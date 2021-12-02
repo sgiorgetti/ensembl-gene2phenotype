@@ -40,10 +40,10 @@ ok($gfd_log_adaptor && $gfd_log_adaptor->isa('Bio::EnsEMBL::G2P::DBSQL::GenomicF
 my $dbID = 22; 
 my $gfd_log = $gfd_log_adaptor->fetch_by_dbID($dbID);
 ok($gfd_log->dbID == $dbID, 'fetch_by_dbID');
-ok($gfd_log->allelic_requirement eq 'monoallelic', 'fetch_by_dbID allelic_requirement');
-ok($gfd_log->allelic_requirement_attrib eq '14', 'fetch_by_dbID allelic_requirement_attrib');
-ok($gfd_log->mutation_consequence eq 'dominant negative', 'fetch_by_dbID mutation_consequence');
-ok($gfd_log->mutation_consequence_attrib eq '24', 'fetch_by_dbID mutation_consequence_attrib');
+ok($gfd_log->allelic_requirement eq 'monoallelic_autosomal', 'fetch_by_dbID allelic_requirement');
+ok($gfd_log->allelic_requirement_attrib eq '64', 'fetch_by_dbID allelic_requirement_attrib');
+ok($gfd_log->mutation_consequence eq 'altered gene product structure', 'fetch_by_dbID mutation_consequence');
+ok($gfd_log->mutation_consequence_attrib eq '77', 'fetch_by_dbID mutation_consequence_attrib');
 ok($gfd_log->created eq '2015-07-22 16:14:09', 'fetch_by_dbID created');
 ok($gfd_log->user_id == 4, 'fetch_by_dbID user_id');
 ok($gfd_log->action eq 'create', 'fetch_by_dbID action');
