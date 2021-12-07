@@ -30,9 +30,9 @@ if (!$config->{'dump_name'}) {
   die("Argument --dump_name NAME is required.");
 }
 
-my $registry_file = $config->{registry_file} || '/nfs/production/panda/ensembl/variation/G2P/live_database/registry_file_live';
+my $registry_file = $config->{registry_file} || '/nfs/production/flicek/ensembl/variation/G2P/live_database/registry_file_live';
 my $dump_name = $config->{dump_name};
-my $dump_dir = $config->{dump_dir} || '/nfs/production/panda/ensembl/variation/G2P/backups' ;
+my $dump_dir = $config->{dump_dir} || '/nfs/production/flicek/ensembl/variation/G2P/backups' ;
 
 if (-e "$dump_dir/$dump_name.sql") {
   die "ERROR: A database dump with the name $dump_name already exists.\n";  
