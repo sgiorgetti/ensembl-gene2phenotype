@@ -160,7 +160,8 @@ sub get_gene_xrefs_for_GFD {
   my $sth = $dbh->prepare(q{
     SELECT gf.genomic_feature_id, a.value, gf.gene_symbol, gf.mim FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
-    LEFT JOIN attrib a ON gfd.panel_attrib = a.attrib_id;
+    LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
+    LEFT JOIN attrib a ON gfdp.panel_attrib = a.attrib_id
   });
   $sth->execute() or die 'Could not execute statement ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
