@@ -221,7 +221,7 @@ sub write_data {
     my $mutation_consequence = ($mc_attrib) ? $mutation_consequence_attribs->{$mc_attrib} : undef;
     my $cross_cutting_modifier = ($ccm_attrib) ? join(',', map{$cross_cutting_modifier_attribs->{$_} } split(',', $ccm_attrib) ): undef;
     my $mutation_consequence_flag = ($mcf_attrib) ? $mutation_consequence_flag_attribs->{$mcf_attrib} : undef;
-    my $clinical_review_flag = "Requires clinical review" ? $clinical_review == 1 : undef;
+    my $clinical_review_flag =  $clinical_review == 1 "Requires clinical review" : undef;
     # get all annotations for a GenomicFeatureDisease
     # The order (phenotype organ publication) is the same as in the download file header
     # and needs to be kept
