@@ -14,20 +14,7 @@
 -- limitations under the License.
 
 
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (50, 11, 'definitive');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (51, 11, 'limited');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (52, 11, 'strong');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (81, 11, 'moderate');
-
-
-
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (54, 12, 'requires heterozygosity');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (55, 12, 'typically de novo');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (56, 12, 'typically mosaic');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (57, 12, 'typified by age related penetrance');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (58, 12, 'typified by reduced penetrance');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (70, 12, 'imprinted');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (49, 12, 'potential IF');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (82, 12, 'potential IF');
 
 # patch identifier
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_b.sql|schema version');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_b.sql|adding potential IF as a cross cutting modifier');
