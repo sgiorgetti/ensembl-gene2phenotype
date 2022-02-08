@@ -79,7 +79,7 @@ CREATE TABLE genomic_feature_disease (
   genomic_feature_id int(10) unsigned NOT NULL,
   disease_id int(10) unsigned NOT NULL,
   original_allelic_requirement_attrib set('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20') DEFAULT NULL,
-  allelic_requirement_attrib set('59','60','63','64','65','66','67','68') DEFAULT NULL,
+  allelic_requirement_attrib set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL,
   cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL,
   original_mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
   mutation_consequence_attrib int(10) unsigned DEFAULT '0',
