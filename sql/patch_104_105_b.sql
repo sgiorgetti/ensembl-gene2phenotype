@@ -16,5 +16,11 @@
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (82, 12, 'potential IF');
 
+ALTER TABLE genomic_feature_disease MODIFY COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL AFTER allelic_requirement_attrib;
+
+ALTER TABLE genomic_feature_disease_deleted MODIFY COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL AFTER allelic_requirement_attrib;
+
+ALTER TABLE genomic_feature_disease_log MODIFY COLUMN cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL AFTER allelic_requirement_attrib;
+
 # patch identifier
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_b.sql|adding potential IF as a cross cutting modifier');
