@@ -24,6 +24,7 @@ CREATE TABLE meta (
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '105');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_a.sql|schema version');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_b.sql|adding potential IF as a cross cutting modifier');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|adding a column is_public to the comments table'); 
 
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,

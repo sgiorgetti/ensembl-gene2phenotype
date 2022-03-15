@@ -13,9 +13,9 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-ALTER TABLE genomic_feature_disease_comment ADD COLUMN is_public tinyint(1) NOT NULL DEFAULT '0';
+ALTER TABLE genomic_feature_disease_comment ADD COLUMN is_public tinyint(1) unsigned NOT NULL DEFAULT '0';
 
-ALTER TABLE GFD_comment_deleted ADD COLUMN is_public tinyint(1) NOT NULL DEFAULT '0';
+ALTER TABLE GFD_comment_deleted ADD COLUMN is_public tinyint(1) unsigned NOT NULL DEFAULT '0';
 
 # patch identifier
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|adding a column is_public to the comments table'); 
