@@ -13,14 +13,6 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-<<<<<<< HEAD
-ALTER TABLE genomic_feature_disease_comment ADD COLUMN is_public tinyint(1) unsigned NOT NULL DEFAULT '0';
-
-ALTER TABLE GFD_comment_deleted ADD COLUMN is_public tinyint(1) unsigned NOT NULL DEFAULT '0';
-
-# patch identifier
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|adding a column is_public to the comments table'); 
-=======
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (83, 4, 'Skeletal');
 
@@ -28,4 +20,3 @@ ALTER TABLE user MODIFY COLUMN panel_attrib set('36','37','38','39','40','41','4
 
 # patch identifier
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|Adding Skeletal panel');
->>>>>>> 3b9727aa6326ff89ddbae0aedd1485a2ca255d7a
