@@ -409,7 +409,7 @@ sub add_annotations {
   print $fh_report "    Added $count comments\n" if ($count > 0);
 
   $count = add_public_comments($gfd, $public_comments, $user);
-  print $fh_report "    Added $count comments\n" if ($count > 0);
+  print $fh_report "    Added $count public comments\n" if ($count > 0);
 
 }
 
