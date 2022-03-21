@@ -500,7 +500,7 @@ sub create_gfd {
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
       -allelic_requirement_attrib => $allelic_requirement_attrib,
-      -cross_cutting_modifier_atrrib => $cross_cutting_modifier_attrib,
+      -cross_cutting_modifier_attrib => $cross_cutting_modifier_attrib,
       -mutation_consequence_attrib => $mutation_consequence_attrib,
       -mutation_consequence_flag_attrib => $mutation_consequence_flag_attrib,
       -adaptor => $gfd_adaptor,
@@ -511,7 +511,7 @@ sub create_gfd {
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
       -allelic_requirement_attrib => $allelic_requirement_attrib,
-      -cross_cutting_modifier_atrrib => $cross_cutting_modifier_attrib,
+      -cross_cutting_modifier_attrib => $cross_cutting_modifier_attrib,
       -mutation_consequence_attrib => $mutation_consequence_attrib,
       -adaptor => $gfd_adaptor,
     );
