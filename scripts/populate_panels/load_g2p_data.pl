@@ -189,7 +189,7 @@ foreach my $row (@rows) {
   my $allelic_requirement = $data{'allelic requirement'};
   my $cross_cutting_modifier = $data{'cross cutting modifier'};
   my $mutation_consequence = $data{'mutation consequence'};
-  my $mutation_consequence_flag = $data{'mutation consequences flags'};
+  my $mutation_consequence_flag = $data{'mutation consequences flag'};
   my $panel = $data{'panel'};
   my $prev_symbols = $data{'prev symbols'};
   my $hgnc_id = $data{'hgnc id'};
@@ -210,7 +210,7 @@ foreach my $row (@rows) {
   }
  
   next if (!add_new_entry_to_panel($panel));
-  $entry = "Gene symbol: $gene_symbol; Disease name: $disease_name; Confidence category: $confidence_category; Allelic requirement: $allelic_requirement; Mutation consequence: $mutation_consequence; Target panel: $g2p_panel ";
+  $entry = "Gene symbol: $gene_symbol; Disease name: $disease_name; Confidence category: $confidence_category; Allelic requirement: $allelic_requirement; Mutation consequence: $mutation_consequence; Target panel: $g2p_panel; ";
   $entry = $entry . "Cross cutting modifier: $cross_cutting_modifier; " if $cross_cutting_modifier;
   $entry = $entry . "Mutation consequence flags: $mutation_consequence_flag; " if $mutation_consequence_flag;
   
