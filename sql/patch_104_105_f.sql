@@ -16,8 +16,8 @@
 
 INSERT into attrib_type(code, name, description) VALUES('variant_consequence', 'Variant consequence', 'Variant consequence using certain SO terms');
 
-INSERT into attrib(attrib_id, attrib_type_id, value) VALUES (100, 16, 'splice_region_variant'), (101, 16, 'splice_acceptor_variant'), (102, 16, 'splice_donor_variant')
-(103, 16, 'start_lost'), (104, 16, 'frameshift_variant'), (105, 16, 'stop_gained'), (106, 16, 'stop_lost'),(107, 16, 'missense_variant'), (108, 16, 'inframe_deletion'),
+INSERT into attrib(attrib_id, attrib_type_id, value) VALUES (100, 16, 'splice_region_variant'), (101, 16, 'splice_acceptor_variant'), (102, 16, 'splice_donor_variant'),
+(103, 16, 'start_lost'), (104, 16, 'frameshift_variant'), (105, 16, 'stop_gained'), (106, 16, 'stop_lost'), (107, 16, 'missense_variant'), (108, 16, 'inframe_deletion'),
 (109, 16, 'inframe_deletion'), (110, 16, '5_prime_UTR_variant'), (111, 16, '3_prime_UTR_variant'), (112, 16, 'synonymous_variant'), (113, 16, 'intron_variant'), 
 (114, 16, 'regulatory_region_variant'), (115, 16, 'intergenic_variant');
 
