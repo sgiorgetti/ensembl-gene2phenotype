@@ -26,7 +26,7 @@ INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patc
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_b.sql|adding potential IF as a cross cutting modifier');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|Adding Skeletal panel');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_d.sql|adding Skeletal to the panel table'); 
-
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_e.sql|adding a column is_public to the comments table'); 
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
   code varchar(20) NOT NULL DEFAULT '',
@@ -187,6 +187,7 @@ CREATE TABLE genomic_feature_disease_comment (
   genomic_feature_disease_comment_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   comment_text text DEFAULT NULL,
+  is_public tinyint(1) unsigned NOT NULL DEFAULT '0',
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL,
   PRIMARY KEY (genomic_feature_disease_comment_id),
@@ -197,6 +198,7 @@ CREATE TABLE GFD_comment_deleted (
   GFD_comment_deleted_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   genomic_feature_disease_id int(10) unsigned NOT NULL,
   comment_text text DEFAULT NULL,
+  is_public tinyint(1) unsigned NOT NULL DEFAULT '0',
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   user_id int(10) unsigned NOT NULL,
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',

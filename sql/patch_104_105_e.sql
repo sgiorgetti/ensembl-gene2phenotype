@@ -14,9 +14,9 @@
 -- limitations under the License.
 
 
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (83, 4, 'Skeletal');
+ALTER TABLE genomic_feature_disease_comment ADD COLUMN is_public tinyint(1) unsigned NOT NULL DEFAULT '0';
 
-ALTER TABLE user MODIFY COLUMN panel_attrib set('36','37','38','39','40','41','42','43','45','46','47','48','83') DEFAULT NULL;
+ALTER TABLE GFD_comment_deleted ADD COLUMN is_public tinyint(1) unsigned NOT NULL DEFAULT '0';
 
 # patch identifier
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|Adding Skeletal panel');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_e.sql|adding a column is_public to the comments table'); 
