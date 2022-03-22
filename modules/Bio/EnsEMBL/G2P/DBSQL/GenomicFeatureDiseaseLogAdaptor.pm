@@ -60,10 +60,11 @@ sub store {
       original_mutation_consequence_attrib,
       mutation_consequence_attrib,
       mutation_consequence_flag_attrib,
+      variant_consequence_attrib,
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? CURRENT_TIMESTAMP, ?, ?)
   });
 
   $sth->execute(
@@ -76,6 +77,7 @@ sub store {
     $gfd_log->{original_mutation_consequence_attrib},
     $gfd_log->{mutation_consequence_attrib},
     $gfd_log->{mutation_consequence_flag_attrib},
+    $gfd_log->{variant_consequence},
     $gfd_log->user_id,
     $gfd_log->action,
   );
@@ -127,6 +129,7 @@ sub _columns {
     'gfdl.original_mutation_consequence_attrib',
     'gfdl.mutation_consequence_attrib',
     'gfdl.mutation_consequence_flag_attrib',
+    'gfdl.variant_consequence_attrib',
     'gfdl.created',
     'gfdl.user_id',
     'gfdl.action',
@@ -177,6 +180,7 @@ sub _objs_from_sth {
     $original_mutation_consequence_attrib,
     $mutation_consequence_attrib,
     $mutation_consequence_flag_attrib,
+    $variant_consequence_attrib,
     $created,
     $user_id,
     $action,
@@ -192,6 +196,7 @@ sub _objs_from_sth {
     $original_mutation_consequence_attrib,
     $mutation_consequence_attrib,
     $mutation_consequence_flag_attrib,
+    $variant_consequence_attrib,
     $created,
     $user_id,
     $action,
@@ -210,6 +215,7 @@ sub _objs_from_sth {
       -original_mutation_consequence_attrib => $original_mutation_consequence_attrib,
       -mutation_consequence_attrib => $mutation_consequence_attrib,
       -mutation_consequence_flag_attrib => $mutation_consequence_flag_attrib,
+      -variant_consequence_attrib => $variant_consequence_attrib,
       -created => $created,
       -user_id => $user_id,
       -action => $action,

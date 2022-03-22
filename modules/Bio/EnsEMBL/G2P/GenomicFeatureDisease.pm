@@ -44,6 +44,8 @@ sub new {
     $mutation_consequence_attrib,
     $mutation_consequence_flag,
     $mutation_consequence_flag_attrib,
+    $variant_consequence, 
+    $variant_consequence_attrib,
     $restricted_mutation_set,
     $adaptor) =
   rearrange([
@@ -62,6 +64,8 @@ sub new {
     'mutation_consequence_attrib',
     'mutation_consequence_flag',
     'mutation_consequence_flag_attrib',
+    'variant_consequence',
+    'variant_consequence_attrib',
     'restricted_mutation_set',
     'adaptor'], @_);
 
@@ -83,6 +87,8 @@ sub new {
     'mutation_consequence' => $mutation_consequence,
     'mutation_consequence_flag' => $mutation_consequence_flag,
     'mutation_consequence_flag_attrib' => $mutation_consequence_flag_attrib,
+    'variant_consequence' => $variant_consequence,
+    'variant_consequence_attrib' => $variant_consequence_attrib,
     'restricted_mutation_set' => $restricted_mutation_set,
   }, $class;
   return $self;
@@ -250,6 +256,36 @@ sub mutation_consequence_flag_attrib {
   my $self = shift;
   $self->{mutation_consequence_flag_attrib} = shift if @_;
   return $self->{mutation_consequence_flag_attrib};
+}
+
+sub variant_consequence {
+  my $self = shift;
+  my $variant_consequence = shift;
+  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+
+  if ($variant_consequence){
+    my @values = split(',', $variant_consequence);
+    my @ids = ();
+    foreach my $value (@values){
+      push @ids, $attribute_adaptor->get_attrib('variant_consequence', $value);
+    }
+    $self->{variant_consequence_attrib} = join(',' sort @ids);
+    $self->{variant_consequence} = $variant_consequence;
+  } else {
+    if (!$self->{variant_consequence} && $self->{variant_consequence_attrib}){
+      my @ids = split(',', $self->{variant_consequence_attrib});
+      foreach my $id (@ids){
+        $self->variant_consequence = push @values, $attribute_adaptor->get_value('variant_consequence', $id);
+      }
+      $self->variant_consequence = join(',' sort @values); 
+  }
+  return $self->{variant_consequence};
+}
+
+sub variant_consequence_attrib{
+  my $self = shift;
+  $self->{variant_consequence_attrib} = shift if @_;
+  return $self->{variant_consequence_attrib};
 }
 
 sub restricted_mutation_set {
