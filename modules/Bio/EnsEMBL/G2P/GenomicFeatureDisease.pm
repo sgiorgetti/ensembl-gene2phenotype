@@ -272,12 +272,14 @@ sub variant_consequence {
     $self->{variant_consequence_attrib} = join(',', sort @ids);
     $self->{variant_consequence} = $variant_consequence;
   } else {
+    my @values;
     if (!$self->{variant_consequence} && $self->{variant_consequence_attrib}){
       my @ids = split(',', $self->{variant_consequence_attrib});
       foreach my $id (@ids){
         $self->variant_consequence = push @values, $attribute_adaptor->get_value('variant_consequence', $id);
       }
-      $self->variant_consequence = join(',' sort @values); 
+      $self->variant_consequence = join(',', sort @values); 
+    }
   }
   return $self->{variant_consequence};
 }
