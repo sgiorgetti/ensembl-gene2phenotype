@@ -492,7 +492,7 @@ sub _columns {
     'gfd.original_mutation_consequence_attrib',
     'gfd.mutation_consequence_attrib',
     'gfd.mutation_consequence_flag_attrib',
-    'gfd.variant_consequence',
+    'gfd.variant_consequence_attrib',
     'gfd.restricted_mutation_set',
     'gfdp.panel_attrib',
   );
