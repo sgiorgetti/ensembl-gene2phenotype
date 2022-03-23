@@ -284,7 +284,7 @@ sub variant_consequence {
   return $self->{variant_consequence};
 }
 
-sub variant_consequence_attrib{
+sub variant_consequence_attrib {
   my $self = shift;
   $self->{variant_consequence_attrib} = shift if @_;
   return $self->{variant_consequence_attrib};
