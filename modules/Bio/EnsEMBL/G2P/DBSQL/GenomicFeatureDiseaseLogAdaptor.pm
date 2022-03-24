@@ -64,7 +64,7 @@ sub store {
       created,
       user_id,
       action
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? CURRENT_TIMESTAMP, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
   });
 
   $sth->execute(
