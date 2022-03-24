@@ -587,7 +587,7 @@ sub _obj_from_row {
       $mutation_consequence_flag = $attribute_adaptor->get_value('mutation_consequence_flag', $row->{mutation_consequence_flag_attrib});
     }
 
-    if (defined $row->{variant_consequence_attrib}){
+    if (defined $row->{variant_consequence_attrib}) {
       $variant_consequence = $attribute_adaptor->get_value('variant_consequence', $row->{variant_consequence_attrib});
     }
 
