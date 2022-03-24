@@ -32,6 +32,7 @@ my $disease_id = 326;
 my $allelic_requirement_attrib = 59;
 my $mutation_consequence_attrib = 76;
 my $mutation_consequence_flag_attrib = 71;
+my $variant_consequence_attrib = 111;
 my $restricted_mutation_set = 0;
 
 my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
@@ -40,6 +41,7 @@ my $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
   -allelic_requirement_attrib => $allelic_requirement_attrib,
   -mutation_consequence_attrib => $mutation_consequence_attrib,
   -mutation_consequence_flag_attrib => $mutation_consequence_flag_attrib,
+  -variant_consequence_attrib => $variant_consequence_attrib,
   -restricted_mutation_set => $restricted_mutation_set,
   -adaptor => $gfda,
 );
@@ -48,6 +50,7 @@ ok($gfd->disease_id == $disease_id, 'disease_id');
 ok($gfd->allelic_requirement eq 'biallelic_autosomal', 'allelic_requirement');
 ok($gfd->mutation_consequence eq 'absent gene product', 'mutation_consequence');
 ok($gfd->mutation_consequence_flag eq 'likely to escape nonsense mediated decay', 'mutation_consequence_flag');
+ok($gfd->variant_consequence eq 'synonymous_variant', 'variant_consequence');
 ok($gfd->restricted_mutation_set == 0, 'restricted_mutation_set');
 
 my $dbID = 133;
