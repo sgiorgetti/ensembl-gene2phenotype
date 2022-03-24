@@ -107,7 +107,7 @@ sub store {
       cross_cutting_modifier_attrib,
       mutation_consequence_attrib,
       mutation_consequence_flag_attrib,
-      variant_consequence_attrib, 
+      variant_consequence_attrib,
       restricted_mutation_set
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   });

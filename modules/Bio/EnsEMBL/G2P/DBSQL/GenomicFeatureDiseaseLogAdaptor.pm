@@ -77,7 +77,7 @@ sub store {
     $gfd_log->{original_mutation_consequence_attrib},
     $gfd_log->{mutation_consequence_attrib},
     $gfd_log->{mutation_consequence_flag_attrib},
-    $gfd_log->{variant_consequence},
+    $gfd_log->{variant_consequence_attrib},
     $gfd_log->user_id,
     $gfd_log->action,
   );
