@@ -263,7 +263,7 @@ sub variant_consequence {
   my $variant_consequence = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
 
-  if ($variant_consequence){
+  if ($variant_consequence) {
     my @values = split(',', $variant_consequence);
     my @ids = ();
     foreach my $value (@values){
@@ -272,14 +272,13 @@ sub variant_consequence {
     $self->{variant_consequence_attrib} = join(',', sort @ids);
     $self->{variant_consequence} = $variant_consequence;
   } else {
-    my @values;
     if (!$self->{variant_consequence} && $self->{variant_consequence_attrib} ) {
       my @ids = split(',', $self->{variant_consequence_attrib});
       my @values = ();
       foreach my $id (@ids){
         push @values, $attribute_adaptor->get_value('variant_consequence', $id);
       }
-      $self->variant_consequence = join(',', sort @values); 
+      $self->{variant_consequence} = join(',', sort @values); 
     }
   }
   return $self->{variant_consequence};
