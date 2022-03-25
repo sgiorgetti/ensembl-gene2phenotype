@@ -273,8 +273,9 @@ sub variant_consequence {
     $self->{variant_consequence} = $variant_consequence;
   } else {
     my @values;
-    if (!$self->{variant_consequence} && $self->{variant_consequence_attrib}){
+    if (!$self->{variant_consequence} && $self->{variant_consequence_attrib} ) {
       my @ids = split(',', $self->{variant_consequence_attrib});
+      my @values = ();
       foreach my $id (@ids){
         push @values, $attribute_adaptor->get_value('variant_consequence', $id);
       }
