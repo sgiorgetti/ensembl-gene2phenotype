@@ -14,7 +14,7 @@
 -- limitations under the License.
 
 
-INSERT IGNORE into attrib_type (attrib_type_id, code, name, description) VALUES(16, 'variant_consequence', 'Variant consequence', 'Variant consequence using certain terms');
+INSERT IGNORE into attrib_type (attrib_type_id, code, name, description) VALUES (16, 'variant_consequence', 'Variant consequence', 'Variant consequence using certain terms');
 
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (100, 16, 'splice_region_variant');
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (101, 16, 'splice_acceptor_variant');

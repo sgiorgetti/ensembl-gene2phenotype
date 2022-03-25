@@ -307,8 +307,8 @@ foreach my $row (@rows) {
 
   if ($variant_consequence){
     eval {$variant_consequence_attrib = get_variant_consequence_attrib($variant_consequence)};
-    if ($@{
-      if ($config->{check_input_data}){
+    if ($@) {
+      if ($config->{check_input_data}) {
         print STDERR "     ERROR: There was a problem retrieving the variant consequence attrib $@";
         print STDERR "     ERROR: Cannot proceed data checking for this entry \n";
         next;
@@ -778,7 +778,7 @@ sub get_cross_cutting_modifier_attrib{
   my $cross_cutting_modifier = shift; 
   my @values = ();
   foreach my $value (split/;|,/, $cross_cutting_modifier){
-    my $ccm = lc $value;
+    my $ccm = $value;
     $ccm =~ s/^\s+|\s+$//g;
     push @values, $ccm;
   }
@@ -812,14 +812,14 @@ sub get_mutation_consequence_attrib {
   Status     : Stable
 =cut
 
-sub get_mutation_consequence_flag_attrib{
+sub get_mutation_consequence_flag_attrib {
   my $mutation_consequences_flag = shift; 
   $mutation_consequences_flag = lc $mutation_consequences_flag;
   $mutation_consequences_flag  =~ s/^\s+|\s+$//g;
   return  $attrib_adaptor->get_attrib('mutation_consequence_flag', $mutation_consequences_flag);
 }
 
-sub get_variant_consequence_attrib{
+sub get_variant_consequence_attrib {
   my $variant_consequence = shift; 
   my @values = ();
   foreach my $value (split/;|,/, $variant_consequence){
