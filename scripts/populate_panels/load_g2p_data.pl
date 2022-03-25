@@ -79,6 +79,7 @@ Supported columns:
 - cross cutting modifier
 - mutation consequence
 - mutation consequences flag 
+- variant consequences 
 - phenotypes
 - organ specificity list
 - pmids
@@ -190,6 +191,7 @@ foreach my $row (@rows) {
   my $cross_cutting_modifier = $data{'cross cutting modifier'};
   my $mutation_consequence = $data{'mutation consequence'};
   my $mutation_consequence_flag = $data{'mutation consequences flag'};
+  my $variant_consequence = $data{'variant consequences'};
   my $panel = $data{'panel'};
   my $prev_symbols = $data{'prev symbols'};
   my $hgnc_id = $data{'hgnc id'};
@@ -244,6 +246,7 @@ foreach my $row (@rows) {
   my $cross_cutting_modifier_attrib;
   my $mutation_consequence_attrib; 
   my $mutation_consequence_flag_attrib;
+  my $variant_consequence_attrib;
 
   eval { $confidence_attrib = get_confidence_attrib($confidence_category) };
   if ($@) {
@@ -294,6 +297,19 @@ foreach my $row (@rows) {
     if ($@) {
       if ($config->{check_input_data}) {
         print STDERR "     ERROR: There was a problem retrieving the mutation consequence flag attrib $@";
+        print STDERR "     ERROR: Cannot proceed data checking for this entry \n";
+        next;
+      } else {
+        die "There was a problem retrieving the mutation consequence flag attrib for entry $entry $@";
+      }
+    }
+  }
+
+  if ($variant_consequence){
+    eval {$variant_consequence_attrib = get_variant_consequence_attrib($variant_consequence)};
+    if ($@{
+      if ($config->{check_input_data}){
+        print STDERR "     ERROR: There was a problem retrieving the variant consequence attrib $@";
         print STDERR "     ERROR: Cannot proceed data checking for this entry \n";
         next;
       } else {
@@ -493,9 +509,21 @@ sub get_list {
 =cut
 
 sub create_gfd {
-  my ($gf, $disease, $allelic_requirement_attrib, $cross_cutting_modifier_attrib, $mutation_consequence_attrib, $mutation_consequence_flag_attrib) = @_;
+  my ($gf, $disease, $allelic_requirement_attrib, $cross_cutting_modifier_attrib, $mutation_consequence_attrib, $mutation_consequence_flag_attrib, $variant_consequence_attrib) = @_;
   my $gfd; 
-  if (defined ($mutation_consequence_flag_attrib) && defined ($cross_cutting_modifier_attrib) ){
+  if (defined ($mutation_consequence_flag_attrib) && defined ($cross_cutting_modifier_attrib) && defined($variant_consequence_attrib)){
+    $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
+      -genomic_feature_id => $gf->dbID,
+      -disease_id => $disease->dbID,
+      -allelic_requirement_attrib => $allelic_requirement_attrib,
+      -cross_cutting_modifier_attrib => $cross_cutting_modifier_attrib,
+      -mutation_consequence_attrib => $mutation_consequence_attrib,
+      -mutation_consequence_flag_attrib => $mutation_consequence_flag_attrib,
+      -variant_consequence_attrib => $variant_consequence_attrib,
+      -adaptor => $gfd_adaptor,
+    );
+  }
+  elsif (defined ($mutation_consequence_flag_attrib) && defined ($cross_cutting_modifier_attrib)){
     $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_id => $gf->dbID,
       -disease_id => $disease->dbID,
@@ -523,6 +551,16 @@ sub create_gfd {
       -allelic_requirement_attrib => $allelic_requirement_attrib,
       -mutation_consequence_attrib => $mutation_consequence_attrib,
       -mutation_consequence_flag_attrib => $mutation_consequence_flag_attrib,
+      -adaptor => $gfd_adaptor,
+    );
+  }
+  elsif (defined ($variant_consequence_attrib)) {
+    $gfd = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
+      -genomic_feature_id => $gf->dbID,
+      -disease_id => $disease->dbID,
+      -allelic_requirement_attrib => $allelic_requirement_attrib,
+      -mutation_consequence_attrib => $mutation_consequence_attrib,
+      -variant_consequence_attrib => $variant_consequence_attrib,
       -adaptor => $gfd_adaptor,
     );
   }
@@ -779,6 +817,17 @@ sub get_mutation_consequence_flag_attrib{
   $mutation_consequences_flag = lc $mutation_consequences_flag;
   $mutation_consequences_flag  =~ s/^\s+|\s+$//g;
   return  $attrib_adaptor->get_attrib('mutation_consequence_flag', $mutation_consequences_flag);
+}
+
+sub get_variant_consequence_attrib{
+  my $variant_consequence = shift; 
+  my @values = ();
+  foreach my $value (split/;|,/, $variant_consequence){
+    my $vc = lc $value;
+    $vc =~ s/^\s+|\s+$//g;
+    push @values, $vc;
+  }
+  return $attrib_adaptor->get_attrib('variant_consequence', join(',', @values));
 }
 
 =head2 add_other_disease_names
