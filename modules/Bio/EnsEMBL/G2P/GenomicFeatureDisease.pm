@@ -223,12 +223,12 @@ sub mutation_consequence {
     $self->{mutation_consequence} = $mutation_consequence;
   } else { 
     if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
-      my @ids = split(',', $self->{mutation_consequence_attrib})
+      my @ids = split(',', $self->{mutation_consequence_attrib});
       my @values = ();
       foreach my $id (@ids){
         push @values, $attribute_adaptor->get_value('mutation_consequence', $id);
       }
-      $self->{mutation_consequence} = join(',' @values);
+      $self->{mutation_consequence} = join(',', @values);
     }
   }
   return $self->{mutation_consequence};
