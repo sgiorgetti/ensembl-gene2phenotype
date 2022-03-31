@@ -214,11 +214,21 @@ sub mutation_consequence {
   my $mutation_consequence = shift;
   my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
   if ($mutation_consequence) {
-    $self->{mutation_consequence_attrib} = $attribute_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
+    my @values = split(',', $mutation_consequence);
+    my @ids = ();
+    foreach my $value (@values) {
+      push @ids, $attribute_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
+    }
+    $self->{mutation_consequence_attrib} = join(',', sort @ids);
     $self->{mutation_consequence} = $mutation_consequence;
   } else { 
     if (!$self->{mutation_consequence} && $self->{mutation_consequence_attrib}) {
-      $self->{mutation_consequence} = $attribute_adaptor->get_value('mutation_consequence', $self->{mutation_consequence_attrib});
+      my @ids = split(',', $self->{mutation_consequence_attrib})
+      my @values = ();
+      foreach my $id (@ids){
+        push @values, $attribute_adaptor->get_value('mutation_consequence', $id);
+      }
+      $self->{mutation_consequence} = join(',' @values);
     }
   }
   return $self->{mutation_consequence};
