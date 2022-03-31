@@ -430,9 +430,16 @@ sub fetch_all_by_GenomicFeature_constraints {
     } elsif ($key eq 'allelic_requirement_attrib') {
       push @constraints, "gfd.allelic_requirement_attrib='$value'";
     } elsif ($key eq 'mutation_consequence') {
-      my $mutation_consequence_attrib = $attribute_adaptor->get_attrib('mutation_consequence', $value); 
-      push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
+      my @values = split(',', $value);
+      my @ids = ();
+      foreach my $val (@values) {
+        push @ids, $attribute_adaptor->get_attrib('mutation_consequence', $val); 
+        my $mutation_consequence_attrib = join(',', sort @ids);
+        push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
+      } 
     } elsif ($key eq 'mutation_consequence_attrib') {
+      my @ids = split(',', $value);
+      my $value = join(',' sort @ids);
       push @constraints, "gfd.mutation_consequence_attrib='$value'";
     } elsif ($key eq 'disease_id') {
       push @constraints, "(gfd.disease_id=$value OR gfdds.disease_id=$value)";
