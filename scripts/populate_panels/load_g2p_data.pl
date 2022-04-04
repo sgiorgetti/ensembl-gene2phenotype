@@ -766,7 +766,7 @@ sub get_mutation_consequence_attrib {
     $mc =~ s/^\s+|\s+$//g;
     push @values, $mc;
   }
-  return $attrib_adaptor->get_attrib('mutation_consequence', join(',' @values));
+  return $attrib_adaptor->get_attrib('mutation_consequence', join(',', @values));
 }
 
 =head2 get_mutation_consequence_flag_attrib
