@@ -439,7 +439,7 @@ sub fetch_all_by_GenomicFeature_constraints {
       } 
     } elsif ($key eq 'mutation_consequence_attrib') {
       my @ids = split(',', $value);
-      my $value = join(',' sort @ids);
+      my $value = join(',', sort @ids);
       push @constraints, "gfd.mutation_consequence_attrib='$value'";
     } elsif ($key eq 'disease_id') {
       push @constraints, "(gfd.disease_id=$value OR gfdds.disease_id=$value)";
