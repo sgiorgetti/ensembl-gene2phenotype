@@ -20,8 +20,8 @@ use warnings;
 
 package Bio::EnsEMBL::G2P::DBSQL::OntologyTermAdaptor;
 
-use Bio::EnsEMBL::G2P::OntologyTerm;
 use Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor;
+use Bio::EnsEMBL::G2P::OntologyTerm;
 use DBI qw(:sql_types);
 
 our @ISA = ('Bio::EnsEMBL::G2P::DBSQL::BaseAdaptor');
