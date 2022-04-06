@@ -44,16 +44,15 @@ sub store {
   });
 
   $sth->execute(
-      $OntologyTerm->ontology_accession,
-      $OntologyTerm->description || undef,
+      $OntologyTerm->{ontology_accession},
+      $OntologyTerm->{description} || undef
   );
 
   $sth->finish();
 
   #get dbID 
-  my $dbID = $dbh->last_insert_id(undef, undef, 'OntologyTerm', 'ontology_accession_id' );
+  my $dbID = $dbh->last_insert_id(undef, undef, 'ontology_term', 'ontology_accession_id' );
   $OntologyTerm->{ontology_accession_id} = $dbID;
-  $OntologyTerm->{dbID} = $dbID;
   
   return $OntologyTerm;
 }
@@ -83,8 +82,6 @@ sub update {
   $sth->finish();
 
   return $OntologyTerm;
-
-
 }
 
 sub fetch_all {
