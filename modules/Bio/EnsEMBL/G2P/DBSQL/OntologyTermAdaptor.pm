@@ -30,7 +30,7 @@ sub store {
   my $self = shift;
   my $OntologyTerm = shift; 
 
-  if (!ref($OntologyTerm) || !$OntologyTerm->isa('Bio::EnsEMBL::G2P::OntologyTerm')){
+  if (!ref($OntologyTerm) || !$OntologyTerm->isa('Bio::EnsEMBL::G2P::OntologyTerm')) {
       die("Bio::EnsEMBL::G2P::OntologyTerm arg expected");
   }
 
@@ -48,7 +48,7 @@ sub store {
       $OntologyTerm->description || undef,
   );
 
-  $sth->finish;
+  $sth->finish();
 
   #get dbID 
   my $dbID = $dbh->last_insert_id(undef, undef, 'OntologyTerm', 'ontology_accession_id' );
@@ -60,13 +60,13 @@ sub store {
 sub update {
   my $self = shift;
   my $OntologyTerm = shift; 
-  my $db = $self->dbc->db_handle;
+  my $dbh = $self->dbc->db_handle;
 
-  if (!ref($OntologyTerm) || !$OntologyTerm->isa('Bio::EnsEMBL::G2P::OntologyTerm')){
+  if (!ref($OntologyTerm) || !$OntologyTerm->isa('Bio::EnsEMBL::G2P::OntologyTerm')) {
       die('Bio::EnsEMBL::G2P::OntologyTerm arg expecte');
   }
 
-  my $sth = $db->prepare(q{
+  my $sth = $dbh->prepare(q{
       UPDATE ontology_term 
         SET ontology_accession = ?,
           description = ?,
@@ -146,7 +146,7 @@ sub _objs_from_sth {
   $sth->bind_columns(\($ontology_accession_id, $ontology_accession, $description));
 
   my @objs;
-  while ($sth->fetch()){
+  while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::OntologyTerm->new(
       -ontology_accession_id => $ontology_accession_id,
       -ontology_accession => $ontology_accession,
