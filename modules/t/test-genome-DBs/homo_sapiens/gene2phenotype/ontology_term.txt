@@ -1,0 +1,2 @@
+1 MONDO:0004192 urethra cancer
+2 MONDO::25689 A mammal
