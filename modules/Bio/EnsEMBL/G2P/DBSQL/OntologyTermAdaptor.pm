@@ -40,12 +40,12 @@ sub store {
     INSERT INTO ontology_term (
       ontology_accession, 
       description
-    ) VALUES (?,?);
+    ) VALUES (?,?)
   });
 
   $sth->execute(
-      $ontology_accession->{ontology_accession},
-      $ontology_accession->{description} || undef,
+      $ontology_accession->ontology_accession,
+      $ontology_accession->description || undef,
   );
 
   $sth->finish();
@@ -74,9 +74,10 @@ sub update {
   }); 
 
   $sth->execute(
-    $ontology_accession->{ontology_accession},
-    $ontology_accession->{description},
-    $ontology_accession->dbID
+    $ontology_accession->ontology_accession_id,
+    $ontology_accession->ontology_accession,
+    $ontology_accession->description,
+    $ontology_accession->dbID  
   );
 
   $sth->finish();
@@ -126,7 +127,7 @@ sub _columns {
   my @cols = (
     'ontology_accession.ontology_accession_id',
     'ontology_accession.ontology_accession',
-    'ontology_accession.description'
+    'ontology_accession.description',
   );
   return @cols;
 }
@@ -134,7 +135,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-      ['ontology_term', 'ontology_accession'],
+    ['ontology_term', 'ontology_accession'],
   );
   return @tables;
 }
