@@ -66,3 +66,5 @@ sub description {
   $self->{description} = shift if ( @_ );
   return $self->{description};
 } 
+
+1;
