@@ -32,7 +32,7 @@ my $ot = $g2pdb->get_OntologyTermAdaptor;
 my $ontology_accession = "MONDO_0006700";
 my $description = "Cancer";
 
-my $ot = Bio::EnsEMBL::G2P::OntologyTerm->new(
+$ot = Bio::EnsEMBL::G2P::OntologyTerm->new(
   -ontology_accession => $ontology_accession,
   -description => $description,
 );
