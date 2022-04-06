@@ -378,7 +378,5 @@ CREATE TABLE `disease_ontology_mapping` (
   `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
   PRIMARY KEY (`disease_ontology_mapping_id`),
   KEY `ontology_accession_id` (`ontology_accession_id`),
-  KEY `disease_id` (`disease_id`),
-  CONSTRAINT `disease_ontology_mapping_ibfk_1` FOREIGN KEY (`ontology_accession_id`) REFERENCES `ontology_term` (`ontology_accession_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `disease_ontology_mapping_ibfk_2` FOREIGN KEY (`disease_id`) REFERENCES `disease` (`disease_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `disease_id` (`disease_id`)
 ) ENGINE=InnoDB ;
