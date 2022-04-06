@@ -372,7 +372,7 @@ CREATE TABLE `ontology_term`  (
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `disease_ontology_mapping` (
-  `disease_ontology_mapping_id` int(10) NOT NULL AUTO_INCREMENT,
+  `disease_ontology_mapping_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `disease_id` int(10) unsigned NOT NULL,
   `ontology_accession_id` int(10) NOT NULL,
   `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
