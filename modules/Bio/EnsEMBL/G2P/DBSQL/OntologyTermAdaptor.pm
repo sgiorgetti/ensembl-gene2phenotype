@@ -124,9 +124,9 @@ sub fetch_by_accession {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'ot.ontology_accession_id',
-    'ot.ontology_accession',
-    'ot.description'
+    'OntologyTerm.ontology_accession_id',
+    'OntologyTerm.ontology_accession',
+    'OntologyTerm.description'
   );
   return @cols;
 }
@@ -134,7 +134,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-      ['ot', 'OntologyTerm'],
+      ['ontology_term', 'ontology_accession'],
   );
   return @tables;
 }
