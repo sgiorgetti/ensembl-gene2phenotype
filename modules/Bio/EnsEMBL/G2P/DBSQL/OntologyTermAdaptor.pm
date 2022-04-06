@@ -134,7 +134,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-      ['ontology_term', 'ontology_accession'],
+      ['ontology_accession', 'ontology_term'],
   );
   return @tables;
 }
