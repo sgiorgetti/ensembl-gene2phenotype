@@ -40,12 +40,12 @@ sub store {
     INSERT INTO ontology_term (
       ontology_accession, 
       description
-    ) VALUES (?,?)
+    ) VALUES (?,?);
   });
 
   $sth->execute(
       $OntologyTerm->{ontology_accession},
-      $OntologyTerm->{description} || undef
+      $OntologyTerm->{description} || undef,
   );
 
   $sth->finish();
