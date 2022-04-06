@@ -74,8 +74,8 @@ sub update {
   }); 
 
   $sth->execute(
-    $OntologyTerm->ontology_accession,
-    $OntologyTerm->description,
+    $OntologyTerm->{ontology_accession},
+    $OntologyTerm->{description},
     $OntologyTerm->dbID
   );
 
@@ -124,9 +124,9 @@ sub fetch_by_accession {
 sub _columns {
   my $self = shift;
   my @cols = (
-    'OntologyTerm.ontology_accession_id',
-    'OntologyTerm.ontology_accession',
-    'OntologyTerm.description'
+    'ot.ontology_accession_id',
+    'ot.ontology_accession',
+    'ot.description'
   );
   return @cols;
 }
@@ -134,7 +134,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-      ['ontology_term', 'OntologyTerm'],
+      ['ot', 'OntologyTerm'],
   );
   return @tables;
 }
