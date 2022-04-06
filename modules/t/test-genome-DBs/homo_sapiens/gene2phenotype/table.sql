@@ -365,17 +365,17 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB  ;
 
 CREATE TABLE `ontology_term` (
-  `ontology_accession_id` int(10) NOT NULL,
+  `ontology_accession_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ontology_accession` VARCHAR(255) DEFAULT NULL,
   `description` VARCHAR(255) DEFAULT NULL, 
   PRIMARY KEY (`ontology_accession_id`)
 ) ENGINE=INNODB; 
 
-CREATE TABLE disease_ontology_mapping (
-  `disease_ontology_mapping_id` int(10) NOT NULL, 
+CREATE TABLE `disease_ontology_mapping` (
+  `disease_ontology_mapping_id` int(10) unsigned NOT NULL AUTO_INCREMENT, 
   `disease_id` INT(10) NOT NULL,
   `ontology_accession_id` INT(10) NOT NULL, 
-  `mapped_by_attrib` set('437', '438', '439', '440', '441', '442', '443', '444') DEFAULT NULL,
+  `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
   PRIMARY KEY (`disease_ontology_mapping_id`),
   KEY `ontology_term_idx` (`ontology_accession_id`),
   KEY `disease_idx` (`disease_id`)
