@@ -45,24 +45,24 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  $self->{ontology_accession_id} = shift if @_;
+  $self->{ontology_accession_id} = shift if ( @_ );
   return $self->{ontology_accession_id};
 }
 
 sub ontology_accession_id {
   my $self = shift;
-  $self->{ontology_accession_id} = shift if @_;
+  $self->{ontology_accession_id} = shift if ( @_ );
   return $self->{ontology_accession_id};
 }
 
 sub ontology_accession {
   my $self = shift;
-  $self->{ontology_accession} = shift if @_;
+  $self->{ontology_accession} = shift if ( @_ );
   return $self->{ontology_accession};
 }
 
 sub description {
   my $self = shift;
-  $self->{description} = shift if @_;
+  $self->{description} = shift if ( @_ );
   return $self->{description};
 } 

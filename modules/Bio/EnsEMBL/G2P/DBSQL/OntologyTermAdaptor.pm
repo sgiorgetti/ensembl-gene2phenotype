@@ -54,6 +54,7 @@ sub store {
   my $dbID = $dbh->last_insert_id(undef, undef, 'OntologyTerm', 'ontology_accession_id' );
   $OntologyTerm->{ontology_accession_id} = $dbID;
   $OntologyTerm->{dbID} = $dbID;
+  
   return $OntologyTerm;
 }
 
@@ -70,15 +71,17 @@ sub update {
       UPDATE ontology_term 
         SET ontology_accession = ?,
           description = ?,
-        WHERE ontology_accession_id = ?;
+        WHERE ontology_accession_id = ?
   }); 
 
   $sth->execute(
     $OntologyTerm->ontology_accession,
     $OntologyTerm->description,
+    $OntologyTerm->dbID
   );
 
   $sth->finish();
+
   return $OntologyTerm;
 
 
