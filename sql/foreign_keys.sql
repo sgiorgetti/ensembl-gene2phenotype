@@ -65,4 +65,4 @@ ALTER TABLE genomic_feature_statistic ADD FOREIGN KEY (genomic_feature_id) REFER
 
 ALTER TABLE disease_ontology_mapping 
 ADD FOREIGN KEY (disease_id) REFERENCES disease(disease_id) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD FOREIGN KEY (ontology_accession_id) REFERENCES ontology_accession(ontology_accession_id) ON DELETE CASCADE ON UPDATE CASCADE;
+ADD FOREIGN KEY (ontology_term_id) REFERENCES ontology_term(ontology_term_id) ON DELETE CASCADE ON UPDATE CASCADE;

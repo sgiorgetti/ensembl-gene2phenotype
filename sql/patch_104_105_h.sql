@@ -14,20 +14,20 @@
 -- limitations under the License.
 
 CREATE TABLE ontology_term (
-  ontology_accession_id  int(10) unsigned NOT NULL AUTO_INCREMENT,
+  ontology_term_id  int(10) unsigned NOT NULL AUTO_INCREMENT,
   ontology_accession VARCHAR(255) DEFAULT NULL,
   description VARCHAR(255) DEFAULT NULL, 
-  PRIMARY KEY (ontology_accession_id)
+  PRIMARY KEY (ontology_term_id)
 ) ENGINE=INNODB; 
 
 
 CREATE TABLE disease_ontology_mapping (
   disease_ontology_mapping_id int(10) unsigned  NOT NULL AUTO_INCREMENT,
   disease_id INT(10) unsigned NOT NULL,
-  ontology_accession_id INT(10) NOT NULL, 
+  ontology_term_id INT(10) NOT NULL, 
   mapped_by_attrib set('437', '438', '439', '440', '441', '442', '443', '444') DEFAULT NULL,
   PRIMARY KEY (disease_ontology_mapping_id),
-  FOREIGN KEY (ontology_accession_id) REFERENCES ontology_term (ontology_accession_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (ontology_term_id) REFERENCES ontology_term (ontology_term_id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (disease_id) REFERENCES disease (disease_id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=INNODB; 
 

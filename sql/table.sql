@@ -27,7 +27,7 @@ INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patc
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|Adding Skeletal panel');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_d.sql|adding Skeletal to the panel table'); 
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_e.sql|adding a column is_public to the comments table'); 
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_h.sql|creating ontology_term and ontology_accession table'); 
+
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
   code varchar(20) NOT NULL DEFAULT '',
@@ -385,18 +385,18 @@ CREATE TABLE genomic_feature_statistic_attrib (
 ) ENGINE=INNODB; 
 
 CREATE TABLE ontology_term (
-  ontology_accession_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  ontology_term_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   ontology_accession VARCHAR(255) DEFAULT NULL,
-  description VARCHAR(255) DEFAULT NULL, 
-  PRIMARY KEY (ontology_accession_id)
+  description VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (ontology_term_id)
 ) ENGINE=INNODB; 
 
 CREATE TABLE disease_ontology_mapping (
   disease_ontology_mapping_id int(10) unsigned NOT NULL AUTO_INCREMENT, 
   disease_id INT(10) NOT NULL,
-  ontology_accession_id INT(10) NOT NULL, 
+  ontology_term_id INT(10) NOT NULL, 
   mapped_by_attrib set('437', '438', '439', '440', '441', '442', '443', '444') DEFAULT NULL,
   PRIMARY KEY (disease_ontology_mapping_id),
-  KEY ontology_term_idx (ontology_accession_id),
+  KEY ontology_term_idx (ontology_term_id),
   KEY disease_idx (disease_id)
 ) ENGINE=INNODB; 

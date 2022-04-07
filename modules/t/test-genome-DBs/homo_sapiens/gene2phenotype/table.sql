@@ -377,6 +377,6 @@ CREATE TABLE `disease_ontology_mapping` (
   `ontology_term_id` int(10) NOT NULL,
   `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
   PRIMARY KEY (`disease_ontology_mapping_id`),
-  KEY `ontology_accession_id` (`ontology_term_id`),
+  KEY `ontology_term_id` (`ontology_term_id`),
   KEY `disease_id` (`disease_id`)
 ) ENGINE=InnoDB ;

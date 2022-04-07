@@ -29,13 +29,13 @@ sub new {
   my $caller = shift; 
   my $class = ref($caller) || $caller;
 
-  my ($disease_ontology_mapping_id, $disease_id, $ontology_accession_id, $mapped_by_attrib, $adaptor) = 
-  rearrange(['disease_ontology_mapping_id', 'disease_id', 'ontology_accession_id', 'mapped_by_attrib', 'mapped_by', 'adaptor' ]);
+  my ($disease_ontology_mapping_id, $disease_id, $ontology_term_id, $mapped_by_attrib, $adaptor) = 
+  rearrange(['disease_ontology_mapping_id', 'disease_id', 'ontology_term_id', 'mapped_by_attrib', 'mapped_by', 'adaptor' ]);
 
   my $self = bless {
     'disease_ontology_mapping_id' => $disease_ontology_mapping_id,
     'disease_id' => $disease_id, 
-    'ontology_accession_id' => $ontology_accession_id,
+    'ontology_term_id' => $ontology_term_id,
     'mapped_by_attrib' => $mapped_by_attrib,
     'adaptor' => $adaptor,
   }, $class;
@@ -45,31 +45,31 @@ sub new {
 
 sub dbID {
   my $self = shift; 
-  $self->{disease_ontology_mapping_id} = shift if @_;
+  $self->{disease_ontology_mapping_id} = shift if (@_);
   return $self->{disease_ontology_mapping_id};
 }
 
 sub disease_ontology_mapping_id {
   my $self = shift; 
-  $self->{disease_ontology_mapping_id} = shift if @_;
+  $self->{disease_ontology_mapping_id} = shift if (@_);
   return $self->{disease_ontology_mapping_id};
 }
 
 sub disease_id {
   my $self = shift;
-  $self->{disease_id} = shift if @_;
+  $self->{disease_id} = shift if (@_);
   return $self->{disease_id};
 }
 
-sub ontology_accession_id {
+sub ontology_tern_id {
   my $self = shift;
-  $self->{ontology_accession_id} = shift if @_;
-  return $self->{ontology_accession_id};
+  $self->{ontology_term_id} = shift if (@_);
+  return $self->{ontology_term_id};
 }
 
 sub mapped_by_attrib {
   my $self = shift; 
-  $self->{mapped_by_attrib} = shift if @_;
+  $self->{mapped_by_attrib} = shift if (@_);
   return $self->{mapped_by_attrib};
 }
 

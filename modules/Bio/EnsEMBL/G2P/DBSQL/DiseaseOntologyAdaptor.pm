@@ -50,14 +50,14 @@ sub store {
   my $sth = $dbh->prepare(q{
     INSERT INTO disease_ontology_mapping (
       disease_id,
-      ontology_accession_id, 
+      ontology_term_id, 
       mapped_by_attrib
     ) VALUES (?, ?, ?)
   });
 
   $sth->execute(
     $DO->{disease_id},
-    $DO->{ontology_accession_id},
+    $DO->{ontology_term_id},
     $DO->{mapped_by_attrib}
   );
 
@@ -82,7 +82,7 @@ sub update {
     UPDATE disease_ontology_mapping
     SET 
       mapped_by_attrib = ?
-    WHERE disease_ontology_mapping_id = ?;
+    WHERE disease_ontology_mapping_id = ?
   });
 
   $sth->execute(
@@ -118,8 +118,8 @@ sub fetch_by_disease {
 sub fetch_by_ontology {
   my $self = shift;
   my $ontology = shift;
-  my $ontology_accession_id = $ontology->ontology_accession_id;
-  my $constraint = "DO.ontology_accession_id=$ontology_accession_id";
+  my $ontology_term_id = $ontology_term->ontology_term_id;
+  my $constraint = "DO.ontology_term_id=$ontology_term_id";
   return $self->generic_fetch($constraint);
 }
 
@@ -128,7 +128,7 @@ sub _columns {
   my @cols = (
     'DO.disease_ontology_mapping_id',
     'DO.disease_id',
-    'DO.disease_ontology_id',
+    'DO.ontology_term_id',
     'DO.mapped_by_attrib',
   );
   return @cols;
@@ -138,11 +138,20 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['disease_ontology_mapping', 'DO'],
+    ['ontology_term', 'ot'],
+    ['disease', 'd'],
   );
   return @tables;
 }
 
+sub _left_join {
+  my $self = shift;
 
+  my @left_join = (
+    ['ontology_term', 'DO.ontology_term_id' = 'ot.ontology_term_id'],
+    ['disease', 'DO.disease_id' = 'd.disease_id'],
+  )
+}
 sub _objs_from_sth {
   my $self = shift;
   my $sth = shift;
@@ -150,14 +159,14 @@ sub _objs_from_sth {
   my (
     $disease_ontology_mapping_id,
     $disease_id,
-    $ontology_accession_id,
+    $ontology_term_id,
     $mapped_by_attrib
   );
 
   $sth->bind_columns(\(
     $disease_ontology_mapping_id,
     $disease_id,
-    $ontology_accession_id,
+    $ontology_term_id,
     $mapped_by_attrib,   
   ));
 
@@ -174,7 +183,7 @@ sub _objs_from_sth {
     my $obj = Bio::EnsEMBL::G2P::DiseaseOntology->new(
       -disease_ontology_mapping_id => $disease_ontology_mapping_id,
       -disease_id => $disease_id,
-      -ontology_accession_id => $ontology_accession_id,
+      -ontology_term_id => $ontology_term_id,
       -mapped_by_attrib => $mapped_by_attrib,
       -mapped_by => $mapped_by,
       -adaptor => $self,
