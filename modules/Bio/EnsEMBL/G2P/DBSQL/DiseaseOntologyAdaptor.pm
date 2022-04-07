@@ -33,7 +33,7 @@ sub store {
 
   my $dbh = $self->dbc->db_handle;
 
-  if (!ref($DO) || $DO->isa('Bio::EnsEMBL::G2P::DiseaseOntology')){
+  if (!ref($DO) || !$DO->isa('Bio::EnsEMBL::G2P::DiseaseOntology')){
     die("Bio::EnsEMBL::G2P::DiseaseOntology arg expected");
   }
 
@@ -43,9 +43,6 @@ sub store {
     $DO->mapped_by_attrib = $attribute_adaptor->get_attrib('ontology_mapping', $DO->{mapped_by});
   }
 
-  if (defined $DO->{mapped_by_attrib} && ! defined $DO->{mapped_by}){
-    $DO->mapped_by = $attribute_adaptor->get_value('ontology_mapping', $DO->{mapped_by_attrib});
-  }
 
   my $sth = $dbh->prepare(q{
     INSERT INTO disease_ontology_mapping (
@@ -56,9 +53,9 @@ sub store {
   });
 
   $sth->execute(
-    $DO->{disease_id},
-    $DO->{ontology_term_id},
-    $DO->{mapped_by_attrib}
+    $DO->disease_id,
+    $DO->ontology_term_id,
+    $DO->mapped_by_attrib || undef,
   );
 
   $sth->finish();
@@ -74,7 +71,7 @@ sub update {
   my $self = shift;
   my $DO = shift;
   my $dbh = $self->dbc->db_handle;
-  if (!ref($DO) || $DO->isa('Bio::EnsEMBL::G2P::DiseaseOntology')){
+  if (!ref($DO) || !$DO->isa('Bio::EnsEMBL::G2P::DiseaseOntology')){
     die("Bio::EnsEMBL::G2P::DiseaseOntology arg expected");
   }
 
@@ -111,16 +108,18 @@ sub fetch_by_disease {
  my $self = shift;
  my $disease = shift;
  my $disease_id = $disease->dbID;
- my $constraint = "DO.disease_id=$disease_id;";
- return $self->generic_fetch($constraint);
+ my $constraint = "DO.disease_id=$disease_id";
+ my $result = $self->generic_fetch($constraint);
+ return $result->[0];
 }
 
 sub fetch_by_ontology {
   my $self = shift;
-  my $ontology = shift;
+  my $ontology_term = shift;
   my $ontology_term_id = $ontology_term->ontology_term_id;
   my $constraint = "DO.ontology_term_id=$ontology_term_id";
-  return $self->generic_fetch($constraint);
+  my $result = $self->generic_fetch($constraint);
+  return $result->[0];
 }
 
 sub _columns {
@@ -138,20 +137,10 @@ sub _tables {
   my $self = shift;
   my @tables = (
     ['disease_ontology_mapping', 'DO'],
-    ['ontology_term', 'ot'],
-    ['disease', 'd'],
   );
   return @tables;
 }
 
-sub _left_join {
-  my $self = shift;
-
-  my @left_join = (
-    ['ontology_term', 'DO.ontology_term_id' = 'ot.ontology_term_id'],
-    ['disease', 'DO.disease_id' = 'd.disease_id'],
-  )
-}
 sub _objs_from_sth {
   my $self = shift;
   my $sth = shift;

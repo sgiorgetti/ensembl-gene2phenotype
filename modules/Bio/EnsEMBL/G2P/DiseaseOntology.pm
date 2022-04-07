@@ -29,14 +29,15 @@ sub new {
   my $caller = shift; 
   my $class = ref($caller) || $caller;
 
-  my ($disease_ontology_mapping_id, $disease_id, $ontology_term_id, $mapped_by_attrib, $adaptor) = 
-  rearrange(['disease_ontology_mapping_id', 'disease_id', 'ontology_term_id', 'mapped_by_attrib', 'mapped_by', 'adaptor' ]);
+  my ($disease_ontology_mapping_id, $disease_id, $ontology_term_id, $mapped_by_attrib, $mapped_by, $adaptor) = 
+  rearrange(['disease_ontology_mapping_id', 'disease_id', 'ontology_term_id', 'mapped_by_attrib', 'mapped_by', 'adaptor' ], @_);
 
   my $self = bless {
     'disease_ontology_mapping_id' => $disease_ontology_mapping_id,
     'disease_id' => $disease_id, 
     'ontology_term_id' => $ontology_term_id,
     'mapped_by_attrib' => $mapped_by_attrib,
+    'mapped_by' => $mapped_by,
     'adaptor' => $adaptor,
   }, $class;
 
@@ -61,7 +62,7 @@ sub disease_id {
   return $self->{disease_id};
 }
 
-sub ontology_tern_id {
+sub ontology_term_id {
   my $self = shift;
   $self->{ontology_term_id} = shift if (@_);
   return $self->{ontology_term_id};
@@ -69,23 +70,34 @@ sub ontology_tern_id {
 
 sub mapped_by_attrib {
   my $self = shift; 
-  $self->{mapped_by_attrib} = shift if (@_);
+  my $mapped_by_attrib = shift;
+  if ($mapped_by_attrib){
+    $self->{mapped_by_attrib} = $mapped_by_attrib;
+  }
+  else {
+    if (!defined $self->{mapped_by_attrib} && defined $self->{mapped_by}){
+      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+      $mapped_by_attrib = $attribute_adaptor->get_attrib('ontology_mapping', $self->{mapped_by});
+      $self->{mapped_by_attrib} = $mapped_by_attrib;
+    }
+  }
+ 
   return $self->{mapped_by_attrib};
 }
 
 sub mapped_by {
   my $self = shift;
-  my $mapped_by = shift; 
-  my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
-  if ($mapped_by){
+  my $mapped_by = shift;
+  if($mapped_by){
     $self->{mapped_by} = $mapped_by;
-      $self->{mapped_by_attrib} = $attribute_adaptor->get_attrib('ontology_mapping', $self->{mapped_by});
-  }
-  else {
+  } else{
     if ($self->{mapped_by_attrib} && !$self->{mapped_by}){
-       $self->{mapped_by_attrib} = $attribute_adaptor->get_value('ontology_mapping', $self->{mapped_by_attrib});
+      my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
+      $mapped_by = $attribute_adaptor->get_value('ontology_mapping', $self->{mapped_by_attrib});
+      $self->{mapped_by} = $mapped_by;
     }
   }
+
   return $self->{mapped_by};
 }
 
