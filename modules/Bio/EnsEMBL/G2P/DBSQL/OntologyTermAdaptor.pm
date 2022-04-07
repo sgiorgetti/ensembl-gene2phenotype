@@ -51,8 +51,8 @@ sub store {
   $sth->finish();
 
   #get dbID 
-  my $dbID = $dbh->last_insert_id(undef, undef, 'ontology_term', 'ontology_accession_id' );
-  $ontology_accession->{ontology_accession_id} = $dbID;
+  my $dbID = $dbh->last_insert_id(undef, undef, 'ontology_term', 'ontology_term_id');
+  $ontology_accession->{ontology_term_id} = $dbID;
   
   return $ontology_accession;
 }
@@ -69,15 +69,14 @@ sub update {
   my $sth = $dbh->prepare(q{
       UPDATE ontology_term 
         SET ontology_accession = ?,
-          description = ?,
-        WHERE ontology_accession_id = ?
+            description = ?
+        WHERE ontology_term_id = ?
   }); 
 
   $sth->execute(
-    $ontology_accession->ontology_accession_id,
     $ontology_accession->ontology_accession,
     $ontology_accession->description,
-    $ontology_accession->dbID  
+    $ontology_accession->dbID
   );
 
   $sth->finish();
@@ -85,22 +84,17 @@ sub update {
   return $ontology_accession;
 }
 
-sub fetch_all {
-  my $self = shift;
-  return $self->generic_fetch();
-}
-
 sub fetch_by_dbID {
   my $self = shift;
-  my $ontology_accession_id = shift;
-  return $self->SUPER::fetch_by_dbID($ontology_accession_id);
+  my $ontology_term_id = shift;
+  return $self->SUPER::fetch_by_dbID($ontology_term_id);
 }
 
 sub fetch_by_description {
   my $self = shift;
   my $description = shift; 
-  $description = s/'/\\'/g;
-  my $constraint = "ontology_accession.description='$description'";
+  $description =~ s/'/\\'/g;
+  my $constraint = "ot.description='$description'";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];
 }
@@ -108,8 +102,8 @@ sub fetch_by_description {
 sub fetch_all_by_description {
   my $self = shift;
   my $description = shift;
-  $description =  s/'/\\'/g;
-  my $constraint = "ontology_accession.description='$description'";
+  $description =~  s/'/\\'/g;
+  my $constraint = "ot.description='$description'";
   my $result = $self->generic_fetch($constraint);
   return $result; 
 }
@@ -117,17 +111,18 @@ sub fetch_all_by_description {
 sub fetch_by_accession {
   my $self = shift;
   my $ontology_accession = shift;
-  my $constraint = "ontology_accession.ontology_accession='$ontology_accession'";
+  my $constraint = "ot.ontology_accession='$ontology_accession'";
   my $result = $self->generic_fetch($constraint);
   return $result->[0]; 
 }
 
 sub _columns {
   my $self = shift;
+
   my @cols = (
-    'ontology_accession.ontology_accession_id',
-    'ontology_accession.ontology_accession',
-    'ontology_accession.description',
+    'ot.ontology_term_id',
+    'ot.ontology_accession',
+    'ot.description',
   );
   return @cols;
 }
@@ -135,7 +130,7 @@ sub _columns {
 sub _tables {
   my $self = shift;
   my @tables = (
-    ['ontology_term', 'ontology_accession'],
+    ['ontology_term', 'ot'],
   );
   return @tables;
 }
@@ -143,13 +138,13 @@ sub _tables {
 sub _objs_from_sth {
   my ($self, $sth) = @_;
 
-  my ($ontology_accession_id, $ontology_accession, $description);
-  $sth->bind_columns(\($ontology_accession_id, $ontology_accession, $description));
+  my ($ontology_term_id, $ontology_accession, $description);
+  $sth->bind_columns(\($ontology_term_id, $ontology_accession, $description));
 
   my @objs;
   while ($sth->fetch()) {
     my $obj = Bio::EnsEMBL::G2P::OntologyTerm->new(
-      -ontology_accession_id => $ontology_accession_id,
+      -ontology_term_id => $ontology_term_id,
       -ontology_accession => $ontology_accession,
       -description => $description,
       -adaptor => $self,

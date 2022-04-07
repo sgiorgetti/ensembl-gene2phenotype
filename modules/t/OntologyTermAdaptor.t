@@ -31,17 +31,18 @@ my $ot = $g2pdb->get_OntologyTermAdaptor;
 ok($ot && $ot->isa('Bio::EnsEMBL::G2P::DBSQL::OntologyTermAdaptor'), 'isa OntologyTerm_adaptor' );
 
 my $dbID = 1;
-my $ontology_accession_name = "MONDO:0004192";
+my $ontology_accession_name = "MONDO0_004192";
 my $description = "urethra cancer";
 
+
 my $ontology_accession = $ot->fetch_by_dbID($dbID);
-ok($ontology_accession->ontology_accession eq $$ontology_accession_name, 'fetch_by_dbID');
+ok($ontology_accession->ontology_accession eq $ontology_accession_name, 'fetch_by_dbID');
 
 $ontology_accession = $ot->fetch_by_accession($ontology_accession_name);
-ok($ontology_accession->dbID == $dbID, 'fetched by accession');
+ok($ontology_accession->ontology_accession eq $ontology_accession_name, 'fetched by accession');
 
 $ontology_accession = $ot->fetch_by_description($description);
-ok($ontology_accession->ontology_accession eq $ontology_accession_name, 'fetched by description');
+ok($ontology_accession->{ontology_accession} eq $ontology_accession_name, 'fetched by description');
 
 $multi->hide("gene2phenotype", 'ontology_term');
 $ontology_accession = Bio::EnsEMBL::G2P::OntologyTerm->new(
@@ -59,7 +60,7 @@ ok($ot->update($ontology_accession), 'update');
 $ontology_accession = $ot->fetch_by_accession('MONDO-2879');
 ok($ontology_accession && $ontology_accession->ontology_accession eq 'MONDO-2879', 'fetch updated');
 
-$multi->restore('gene2phenotype', 'OntologyTerm');
+$multi->restore('gene2phenotype', 'ontology_term');
 
 
 done_testing();

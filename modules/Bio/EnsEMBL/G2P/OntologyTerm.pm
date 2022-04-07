@@ -28,13 +28,13 @@ our @ISA = ('Bio::EnsEMBL::Storable');
 sub new {
   my $caller = shift; 
   my $class = ref($caller) || $caller;
-  my ($ontology_accession_id, $ontology_accession, $description, $adaptor) = 
-  rearrange(['ontology_accession_id', 'ontology_accession', 'description', 'adaptor'] , @_);
+  my ($ontology_term_id, $ontology_accession, $description, $adaptor) = 
+  rearrange(['ontology_term_id', 'ontology_accession', 'description', 'adaptor'] , @_);
 
 
   my $self = bless {
-    'dbID' => $ontology_accession_id,
-    'ontology_accession_id' => $ontology_accession_id, 
+    'dbID' => $ontology_term_id,
+    'ontology_term_id' => $ontology_term_id, 
     'ontology_accession' => $ontology_accession,
     'description' => $description, 
     'adaptor' => $adaptor,
@@ -45,14 +45,14 @@ sub new {
 
 sub dbID {
   my $self = shift;
-  $self->{ontology_accession_id} = shift if ( @_ );
-  return $self->{ontology_accession_id};
+  $self->{ontology_term_id} = shift if ( @_ );
+  return $self->{ontology_term_id};
 }
 
-sub ontology_accession_id {
+sub ontology_term_id {
   my $self = shift;
-  $self->{ontology_accession_id} = shift if ( @_ );
-  return $self->{ontology_accession_id};
+  $self->{ontology_term_id} = shift if ( @_ );
+  return $self->{ontology_term_id};
 }
 
 sub ontology_accession {
