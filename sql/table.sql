@@ -394,8 +394,8 @@ CREATE TABLE ontology_term (
 
 CREATE TABLE disease_ontology_mapping (
   disease_ontology_mapping_id int(10) unsigned NOT NULL AUTO_INCREMENT, 
-  disease_id INT(10) NOT NULL,
-  ontology_term_id INT(10) NOT NULL, 
+  disease_id INT(10) unsigned NOT NULL,
+  ontology_term_id INT(10) unsigned NOT NULL, 
   mapped_by_attrib set('437', '438', '439', '440', '441', '442', '443', '444') DEFAULT NULL,
   PRIMARY KEY (disease_ontology_mapping_id),
   KEY ontology_term_idx (ontology_term_id),
