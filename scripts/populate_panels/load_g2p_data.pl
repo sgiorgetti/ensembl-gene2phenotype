@@ -1003,13 +1003,15 @@ sub add_public_comments {
 
 sub add_ontology_accession {
    my ($disease, $disease_mim, $disease_mondo) = @_;
-   if ($disease_mim && !$disease_mondo) {
+   my $disease_mim = $data{"disease mim"};
+   my $disease_mondo = $data{"disease mondo"};
+   if (defined($disease_mim) ||  defined(!$disease_mondo)) {
      my @mondo = get_ontology_accession($disease_mim);
      my $attribute = "OLS exact";
      my $disease_id = $disease->dbID;
      my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
      foreach my $mondo (@mondo){
-	print Dumper ($mondo);
+	   print Dumper ($mondo);
         my $ontology_accession_id = $mondo->ontology_term_id;
         my $dom = Bio::EnsEMBL::G2P::DiseaseOntology (
           -disease_id => $disease_id,
@@ -1047,6 +1049,8 @@ sub check_ontology_accession {
 }
 sub get_ontology_accession {
   my ($disease_mim, $disease_mondo) = @_;
+  my $disease_mim = $data{"disease mim"};
+  my $disease_mondo = $data{"disease mondo"};
   my $mondo_description = "OLS extract";
   my $given_mondo_descript = "Term by Curator";
   my @mondos_stored;
@@ -1076,10 +1080,11 @@ sub get_ontology_accession {
         );
         $mondo = $ontology_accession_adaptor->store($mondo);
         push @mondos_stored, $mondo;
-        return @mondos_stored;
+        
 
-       }
-     }
+      }
+    }
+    return @mondos_stored;
   }
   
   if ($disease_mondo){
@@ -1094,7 +1099,8 @@ sub get_ontology_accession {
       );
       $mondo = $ontology_accession_adaptor->store($mondo);
       push @mondos_stored, $mondo;
-      return @mondos_stored;
+     
     }
+    return @mondos_stored;
   }
 }
