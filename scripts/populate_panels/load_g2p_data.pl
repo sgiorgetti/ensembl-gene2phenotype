@@ -98,7 +98,6 @@ use warnings;
 
 use Bio::EnsEMBL::Registry;
 use DBI;
-use Data::Dumper;
 use FileHandle;
 use Getopt::Long;
 use HTTP::Tiny;
@@ -1005,23 +1004,21 @@ sub add_public_comments {
 sub add_ontology_accession {
    my ($disease, $disease_mim, $disease_mondo) = @_;
    my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
-   print Dumper(@mondo);
-     if (scalar @mondo > 0){
-       my $attribute = "Data source";
-       my $disease_id = $disease->dbID;
-       my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
-       foreach my $mondo (@mondo){
-         print Dumper ($mondo);
-         my $ontology_accession_id = $mondo->ontology_term_id;
-         my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
-            -disease_id => $disease_id,
-            -ontology_term_id => $ontology_accession_id,
-            -mapped_by_attrib => $mapped_by_attrib,
-            -adaptor => $disease_ontology_adaptor,
-         );
-         $dom = $disease_ontology_adaptor->store($dom);
-       }
+   if (scalar @mondo > 0){
+     my $attribute = "Data source";
+     my $disease_id = $disease->dbID;
+     my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
+     foreach my $mondo (@mondo){
+       my $ontology_accession_id = $mondo->ontology_term_id;
+       my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
+        -disease_id => $disease_id,
+        -ontology_term_id => $ontology_accession_id,
+        -mapped_by_attrib => $mapped_by_attrib,
+        -adaptor => $disease_ontology_adaptor,
+       );
+       $dom = $disease_ontology_adaptor->store($dom);
      }
+   }
   
   print $fh_report "Disease ontology mapping has been added to the database"; 
  
@@ -1086,6 +1083,5 @@ sub get_ontology_accession {
     }
     
   }
-  print Dumper(@mondos_stored);
   return @mondos_stored;
 }
