@@ -88,7 +88,7 @@ sub download_data {
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
 
   # Write header to file
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'disease mondo' 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'disease mondo', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments']);
 
   $csv->eol ("\r\n");
 
@@ -158,7 +158,7 @@ sub download_data {
   }
   $sth->finish();
   
-  $sth = $dbh->prepare(q{SELECT do.disease_id, ot.ontology_term_id, ot.ontology_accession from ontology_term ot JOIN disease_ontology_mapping do  })
+
   my $where;
   if ($panel_name eq 'ALL') {
     foreach my $panel (@g2p_panels) {
