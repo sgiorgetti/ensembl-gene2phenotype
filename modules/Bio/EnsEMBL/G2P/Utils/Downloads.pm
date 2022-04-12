@@ -21,7 +21,6 @@ use strict;
 use warnings;
 use Text::CSV;
 use Bio::EnsEMBL::Registry;
-use Data::Dumper;
 use base qw(Exporter);
 our @EXPORT_OK = qw( download_data );
 
