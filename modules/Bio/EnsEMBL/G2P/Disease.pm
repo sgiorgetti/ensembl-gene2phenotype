@@ -72,5 +72,10 @@ sub get_all_GenomicFeatureDiseases {
   return $genomic_feature_disease_adaptor->fetch_all_by_disease_id($self->dbID);
 }
 
+sub get_DiseaseOntology {
+  my $self = shift;
+  my $disease_ontology_adaptor = $self->{adaptor}->db->get_DiseaseOntologyAdaptor;
+  return $disease_ontology_adaptor->fetch_by_disease($self->dbID);
+}
 
 1;
