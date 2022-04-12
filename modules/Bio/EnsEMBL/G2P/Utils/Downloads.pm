@@ -21,6 +21,7 @@ use strict;
 use warnings;
 use Text::CSV;
 use Bio::EnsEMBL::Registry;
+use Data::Dumper;
 use base qw(Exporter);
 our @EXPORT_OK = qw( download_data );
 
@@ -63,6 +64,8 @@ sub download_data {
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
   my $panel_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'panel');
+  my $disease_ontology_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'diseaseontology');
+  my $ontology_term_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'ontologyterm');
 
   my @g2p_panels;
   if ($is_logged_in) {
@@ -85,7 +88,7 @@ sub download_data {
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
 
   # Write header to file
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'disease mondo' 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments']);
 
   $csv->eol ("\r\n");
 
@@ -95,7 +98,7 @@ sub download_data {
     organ => {sql => 'SELECT gfdo.genomic_feature_disease_id, o.name FROM genomic_feature_disease_organ gfdo, organ o WHERE gfdo.organ_id = o.organ_id'},
     publication => {sql => 'SELECT gfdp.genomic_feature_disease_id, p.pmid FROM genomic_feature_disease_publication gfdp, publication p WHERE gfdp.publication_id = p.publication_id;'},
   };
-   
+   print Dumper($gfd_attribute_tables);
   foreach my $table (keys %$gfd_attribute_tables) {
     my $sql = $gfd_attribute_tables->{$table}->{sql};
     my $sth = $dbh->prepare($sql);
@@ -154,7 +157,8 @@ sub download_data {
     $comments_text->{$gfd_comment_id} = $text;
   }
   $sth->finish();
-
+  
+  $sth = $dbh->prepare(q{SELECT do.disease_id, ot.ontology_term_id, ot.ontology_accession from ontology_term ot JOIN disease_ontology_mapping do  })
   my $where;
   if ($panel_name eq 'ALL') {
     foreach my $panel (@g2p_panels) {
