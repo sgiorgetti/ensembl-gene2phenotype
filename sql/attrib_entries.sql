@@ -146,3 +146,4 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (111, 16, 's
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (112, 16, 'intron_variant');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (113, 16, 'regulatory_region_variant');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (114, 16, 'intergenic_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (115, 16, 'inframe_insertion');

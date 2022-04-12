@@ -604,7 +604,7 @@ sub _obj_from_row {
       -original_mutation_consequence => $original_mutation_consequence,
       -original_mutation_consequence_attrib => $row->{original_mutation_consequence_attrib},
       -mutation_consequence_attrib => $row->{mutation_consequence_attrib},
-      -mutation_consequnece => $mutation_consequence,
+      -mutation_consequence => $mutation_consequence,
       -mutation_consequence_flag => $mutation_consequence_flag,
       -mutation_consequence_flag_attrib => $row->{mutation_consequence_flag_attrib},
       -variant_consequence => $variant_consequence,

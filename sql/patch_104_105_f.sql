@@ -14,7 +14,7 @@
 -- limitations under the License.
 
 
-INSERT IGNORE into attrib_type (attrib_type_id, code, name, description) VALUES (16, 'variant_consequence', 'Variant consequence', 'Variant consequence using certain terms');
+INSERT IGNORE into attrib_type (attrib_type_id, code, name, description) VALUES (16, 'variant_consequence', 'Variant consequence', 'Variant consequence using certain SO terms');
 
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (100, 16, 'splice_region_variant');
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (101, 16, 'splice_acceptor_variant');
@@ -31,12 +31,13 @@ INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (111, 16, 's
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (112, 16, 'intron_variant');
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (113, 16, 'regulatory_region_variant');
 INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (114, 16, 'intergenic_variant');
+INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (115, 16, 'inframe_insertion');
 
-ALTER TABLE genomic_feature_disease ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
+ALTER TABLE genomic_feature_disease ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
 
-ALTER TABLE genomic_feature_disease_log ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
+ALTER TABLE genomic_feature_disease_log ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
 
-ALTER TABLE genomic_feature_disease_deleted ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
+ALTER TABLE genomic_feature_disease_deleted ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
 
 # patch identifier
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_f.sql|adding new attrib variant consequences'); 

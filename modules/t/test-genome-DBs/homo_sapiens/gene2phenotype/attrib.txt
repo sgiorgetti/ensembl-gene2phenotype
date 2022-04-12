@@ -95,6 +95,7 @@
 112	16	intron_variant
 113	16	regulatory_region_variant
 114	16	intergenic_variant
+115 16  inframe_insertion
 437	6	Data source
 438	6	OLS exact
 439	6	OLS partial
