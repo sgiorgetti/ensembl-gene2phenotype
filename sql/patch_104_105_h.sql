@@ -15,7 +15,7 @@
 
 CREATE TABLE ontology_term (
   ontology_term_id  int(10) unsigned NOT NULL AUTO_INCREMENT,
-  ontology_accession VARCHAR(255) DEFAULT NULL,
+  ontology_accession VARCHAR(255) NOT NULL,
   description VARCHAR(255) DEFAULT NULL, 
   PRIMARY KEY (ontology_term_id)
 ) ENGINE=INNODB; 
