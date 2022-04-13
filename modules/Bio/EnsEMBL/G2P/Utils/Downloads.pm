@@ -33,6 +33,7 @@ my $allelic_requirement_attribs = {};
 my $cross_cutting_modifier_attribs = {};
 my $mutation_consequence_attribs = {};
 my $mutation_consequence_flag_attribs = {};
+my $variant_consequence_attribs = {};
 
 
 =head2 download_data
@@ -78,6 +79,7 @@ sub download_data {
   $cross_cutting_modifier_attribs = $attribute_adaptor->get_attribs_by_type('cross_cutting_modifier');
   $mutation_consequence_attribs = $attribute_adaptor->get_attribs_by_type('mutation_consequence');
   $mutation_consequence_flag_attribs = $attribute_adaptor->get_attribs_by_type('mutation_consequence_flag');
+  $variant_consequence_attribs = $attribute_adaptor->get_attribs_by_type('variant_consequence');
 
   my $dbh = $GFD_adaptor->dbc->db_handle;
 
@@ -85,7 +87,7 @@ sub download_data {
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
 
   # Write header to file
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments', 'variant consequence']);
 
   $csv->eol ("\r\n");
 
@@ -202,7 +204,7 @@ sub write_data {
   # only select visible entries if constraint is given in the where clause 
 
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id
+    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id, gfd.variant_consequence_attrib
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
@@ -213,10 +215,10 @@ sub write_data {
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
-  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id);
+  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib);
   # Bind values from SQL query to variables
   # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id));
+  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib));
 
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -232,6 +234,7 @@ sub write_data {
     my $cross_cutting_modifier = ($ccm_attrib) ? join(' ; ', map{$cross_cutting_modifier_attribs->{$_} } split(',', $ccm_attrib) ): undef;
     my $mutation_consequence_flag = ($mcf_attrib) ? $mutation_consequence_flag_attribs->{$mcf_attrib} : undef;
     my $clinical_review_flag = ($clinical_review && $clinical_review == 1) ? "Requires clinical review" : undef;
+    my $variant_consequence = ($vc_attrib) ? join(';', map{$variant_consequence_attribs->{$_} } split(',', $vc_attrib)) : undef;
     # get all annotations for a GenomicFeatureDisease
     # The order (phenotype organ publication) is the same as in the download file header
     # and needs to be kept
@@ -255,7 +258,7 @@ sub write_data {
     $created = $gfd_panel_create_dates->{$gfd_panel_id} || 'No date';
     my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "No comment";
     # The order is important and corresponds to the order of the fields in the header row 
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments);
+    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence);
 
     $csv->print ($fh, \@row);
   }
