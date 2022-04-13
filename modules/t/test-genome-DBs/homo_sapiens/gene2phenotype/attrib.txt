@@ -80,6 +80,22 @@
 80	15	uncertain
 82	12	potential IF
 83	4	Skeletal
+100	16	splice_region_variant
+101	16	splice_acceptor_variant
+102	16	splice_donor_variant
+103	16	start_lost
+104	16	frameshift_variant
+105	16	stop_gained
+106	16	stop_lost
+107	16	missense_variant
+108	16	inframe_deletion
+109	16	5_prime_UTR_variant
+110	16	3_prime_UTR_variant
+111	16	synonymous_variant
+112	16	intron_variant
+113	16	regulatory_region_variant
+114	16	intergenic_variant
+115     16      inframe_insertion
 437	6	Data source
 438	6	OLS exact
 439	6	OLS partial

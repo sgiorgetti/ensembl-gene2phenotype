@@ -26,6 +26,7 @@ INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES 
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (13, 'allelic_requirement', 'Allelic requirement', 'Allelic requirement');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (14, 'mutation_consequence_flag', 'Mutation consequence flag', 'Mutation consequence flag');
 INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (15, 'mutation_consequence', 'Mutation consequence', 'Mutation consequence');
+INSERT IGNORE INTO attrib_type (attrib_type_id, code, name, description) VALUES (16, 'variant_consequence', 'Variant consequence', 'Variant consequence using certain SO terms'); 
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (3, 1, 'biallelic');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (6, 1, 'monoallelic (Y)');
@@ -130,3 +131,19 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (78, 15, 'ci
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (79, 15, 'increased gene product level');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (80, 15, 'uncertain');
 
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (100, 16, 'splice_region_variant');
+INSERT IGNORE INTO attrib (atrrib_id, attrib_type_id, value) VALUES (101, 16, 'splice_acceptor_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (102, 16, 'splice_donor_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (103, 16, 'start_lost');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (104, 16, 'frameshift_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (105, 16, 'stop_gained');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (106, 16, 'stop_lost');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (107, 16, 'missense_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (108, 16, 'inframe_deletion');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (109, 16, '5_prime_UTR_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (110, 16, '3_prime_UTR_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (111, 16, 'synonymous_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (112, 16, 'intron_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (113, 16, 'regulatory_region_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (114, 16, 'intergenic_variant');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (115, 16, 'inframe_insertion');

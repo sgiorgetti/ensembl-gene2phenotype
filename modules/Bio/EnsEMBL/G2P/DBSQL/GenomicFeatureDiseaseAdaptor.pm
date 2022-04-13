@@ -74,7 +74,7 @@ sub store {
   
   my $attribute_adaptor = $self->db->get_AttributeAdaptor;
 
-  foreach my $key (qw/allelic_requirement mutation_consequence cross_cutting_modifier mutation_consequence_flag/)  {
+  foreach my $key (qw/allelic_requirement mutation_consequence cross_cutting_modifier mutation_consequence_flag variant_consequence/)  {
 
     if (defined $gfd->{$key} && ! defined $gfd->{"$key\_attrib"}) {
       my $attrib = $attribute_adaptor->get_attrib($key, $gfd->{$key});
@@ -107,8 +107,9 @@ sub store {
       cross_cutting_modifier_attrib,
       mutation_consequence_attrib,
       mutation_consequence_flag_attrib,
+      variant_consequence_attrib,
       restricted_mutation_set
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   });
 
   $sth->execute(
@@ -118,6 +119,7 @@ sub store {
     $gfd->{cross_cutting_modifier_attrib},
     $gfd->{mutation_consequence_attrib},
     $gfd->{mutation_consequence_flag_attrib},
+    $gfd->{variant_consequence_attrib},
     $gfd->restricted_mutation_set || 0
   );
 
@@ -155,6 +157,7 @@ sub update {
       cross_cutting_modifier_attrib = ?,
       mutation_consequence_attrib = ?,
       mutation_consequence_flag_attrib = ?,
+      variant_consequence_attrib = ?,
       restricted_mutation_set = ?
     WHERE genomic_feature_disease_id = ? 
   });
@@ -166,6 +169,7 @@ sub update {
     $gfd->cross_cutting_modifier_attrib,
     $gfd->mutation_consequence_attrib,
     $gfd->mutation_consequence_flag_attrib,
+    $gfd->variant_consequence_attrib,
     $gfd->restricted_mutation_set || 0,
     $gfd->dbID
   );
@@ -192,6 +196,7 @@ sub update_log {
     -cross_cutting_modifier_attrib => $gfd->cross_cutting_modifier_attrib,
     -mutation_consequence_attrib => $gfd->mutation_consequence_attrib,
     -mutation_consequence_flag_attrib => $gfd->mutation_consequence_flag_attrib,
+    -variant_consequence_attrib => $gfd->variant_consequence_attrib,
     -user_id => $user->dbID,
     -action => $action, 
     -adaptor => $GFD_log_adaptor,
@@ -430,9 +435,16 @@ sub fetch_all_by_GenomicFeature_constraints {
     } elsif ($key eq 'allelic_requirement_attrib') {
       push @constraints, "gfd.allelic_requirement_attrib='$value'";
     } elsif ($key eq 'mutation_consequence') {
-      my $mutation_consequence_attrib = $attribute_adaptor->get_attrib('mutation_consequence', $value); 
-      push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
+      my @values = split(',', $value);
+      my @ids = ();
+      foreach my $val (@values) {
+        push @ids, $attribute_adaptor->get_attrib('mutation_consequence', $val); 
+        my $mutation_consequence_attrib = join(',', sort @ids);
+        push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
+      } 
     } elsif ($key eq 'mutation_consequence_attrib') {
+      my @ids = split(',', $value);
+      $value = join(',', sort @ids);
       push @constraints, "gfd.mutation_consequence_attrib='$value'";
     } elsif ($key eq 'disease_id') {
       push @constraints, "(gfd.disease_id=$value OR gfdds.disease_id=$value)";
@@ -487,6 +499,7 @@ sub _columns {
     'gfd.original_mutation_consequence_attrib',
     'gfd.mutation_consequence_attrib',
     'gfd.mutation_consequence_flag_attrib',
+    'gfd.variant_consequence_attrib',
     'gfd.restricted_mutation_set',
     'gfdp.panel_attrib',
   );
@@ -555,6 +568,7 @@ sub _obj_from_row {
     my $original_mutation_consequence;
     my $mutation_consequence;
     my $mutation_consequence_flag;
+    my $variant_consequence;
 
     if (defined $row->{original_allelic_requirement_attrib}) {
       $original_allelic_requirement = $attribute_adaptor->get_value('original_allelic_requirement', $row->{original_allelic_requirement_attrib});
@@ -580,6 +594,10 @@ sub _obj_from_row {
       $mutation_consequence_flag = $attribute_adaptor->get_value('mutation_consequence_flag', $row->{mutation_consequence_flag_attrib});
     }
 
+    if (defined $row->{variant_consequence_attrib}) {
+      $variant_consequence = $attribute_adaptor->get_value('variant_consequence', $row->{variant_consequence_attrib});
+    }
+
     my $obj = Bio::EnsEMBL::G2P::GenomicFeatureDisease->new(
       -genomic_feature_disease_id => $row->{genomic_feature_disease_id},
       -genomic_feature_id => $row->{genomic_feature_id},
@@ -593,9 +611,11 @@ sub _obj_from_row {
       -original_mutation_consequence => $original_mutation_consequence,
       -original_mutation_consequence_attrib => $row->{original_mutation_consequence_attrib},
       -mutation_consequence_attrib => $row->{mutation_consequence_attrib},
-      -mutation_consequnece => $mutation_consequence,
+      -mutation_consequence => $mutation_consequence,
       -mutation_consequence_flag => $mutation_consequence_flag,
       -mutation_consequence_flag_attrib => $row->{mutation_consequence_flag_attrib},
+      -variant_consequence => $variant_consequence,
+      -variant_consequence_attrib => $row->{variant_consequence_attrib},
       -restricted_mutation_set => $row->{restricted_mutation_set},
       -adaptor => $self,
     );
