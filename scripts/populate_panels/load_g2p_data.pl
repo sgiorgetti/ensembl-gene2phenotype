@@ -1107,10 +1107,9 @@ sub check_ontology_accession {
 }
 sub get_ontology_accession {
   my ($disease_mim, $disease_mondo) = @_;
-  my $mondo_description = "OLS extract";
-  my $given_mondo_descript = "Term by Curator";
   my @mondos_stored;
-  my @mondos_only;
+  my %mondos_label;
+  my @mondos_only
   if (defined($disease_mim) && !defined($disease_mondo)){
     my $server = 'http://www.ebi.ac.uk/ols/api/search?q=';
     my $ontology = '&ontology=mondo';
@@ -1122,7 +1121,8 @@ sub get_ontology_accession {
     my $result = JSON->new->decode($response->{content});
     foreach my $id  (@{$result->{response}->{docs}}){
       if ($id->{obo_id}  =~   m/MONDO/){
-        push @mondos_only, $id->{obo_id}; 
+        push @mondos_only, $id->{obo_id}
+        $mondos_label->{$id->{obo_id}} = $id->{label};
       }
     }
     
@@ -1131,7 +1131,7 @@ sub get_ontology_accession {
       if (! defined $mondos){
         my $mondo = Bio::EnsEMBL::G2P::OntologyTerm->new(
           -ontology_accession => $mondo_id,
-          -description        => $mondo_description,
+          -description        => $mondos_label->{$mondo_id},
           -adaptor            => $ontology_accession_adaptor,
         );
         $mondo = $ontology_accession_adaptor->store($mondo);
@@ -1149,7 +1149,7 @@ sub get_ontology_accession {
     if (!defined($mondos)){
       my $mondo = Bio::EnsEMBL::G2P::OntologyTerm->new(
           -ontology_accession => $disease_mondo,
-          -description        => $given_mondo_descript,
+          -description        => $data{'other disease names'} || NULL ;
           -adaptor            => $ontology_accession_adaptor,
       );
       $mondo = $ontology_accession_adaptor->store($mondo);
