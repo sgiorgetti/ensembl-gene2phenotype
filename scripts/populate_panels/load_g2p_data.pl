@@ -822,8 +822,13 @@ sub get_cross_cutting_modifier_attrib{
 sub get_mutation_consequence_attrib {
   my $mutation_consequence = shift;
   $mutation_consequence = lc $mutation_consequence;
-  $mutation_consequence =~ s/^\s+|\s+$//g;
-  return $attrib_adaptor->get_attrib('mutation_consequence', $mutation_consequence);
+  my @values = ();
+  foreach my $value (split/;|,/, $mutation_consequence){
+    my $mc = lc $value;
+    $mc =~ s/^\s+|\s+$//g;
+    push @values, $mc;
+  }
+  return $attrib_adaptor->get_attrib('mutation_consequence', join(',', @values));
 }
 
 =head2 get_mutation_consequence_flag_attrib
