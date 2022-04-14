@@ -90,7 +90,7 @@ sub download_data {
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
 
   # Write header to file
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments', 'variant consequence', 'disease ontology]);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments', 'variant consequence', 'disease ontology']);
 
   $csv->eol ("\r\n");
 
