@@ -437,11 +437,12 @@ sub fetch_all_by_GenomicFeature_constraints {
     } elsif ($key eq 'mutation_consequence') {
       my @values = split(',', $value);
       my @ids = ();
+      my $mutation_consequence_attrib;
       foreach my $val (@values) {
         push @ids, $attribute_adaptor->get_attrib('mutation_consequence', $val); 
-        my $mutation_consequence_attrib = join(',', sort @ids);
-        push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
-      } 
+	$mutation_consequence_attrib = join(',', sort @ids);
+      }
+      push @constraints, "gfd.mutation_consequence_attrib='$mutation_consequence_attrib'";
     } elsif ($key eq 'mutation_consequence_attrib') {
       my @ids = split(',', $value);
       $value = join(',', sort @ids);
