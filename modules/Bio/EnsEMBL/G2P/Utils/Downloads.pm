@@ -215,11 +215,7 @@ sub write_data {
   # only select visible entries if constraint is given in the where clause 
 
   my $sth = $dbh->prepare(qq{
-<<<<<<< HEAD
-    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, d.disease_id, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id
-=======
-    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id, gfd.variant_consequence_attrib
->>>>>>> 67f1b24c20dd2316fce7cd1a4907054264385309
+    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id, gfd.variant_consequence_attrib,  d.disease_id
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
@@ -230,17 +226,10 @@ sub write_data {
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
-<<<<<<< HEAD
-  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $disease_id, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id);
+  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib, $disease_id);
   # Bind values from SQL query to variables
   # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $disease_id, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id));
-=======
-  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib);
-  # Bind values from SQL query to variables
-  # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib));
->>>>>>> 67f1b24c20dd2316fce7cd1a4907054264385309
+  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib, $disease_id));
 
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -281,11 +270,7 @@ sub write_data {
     my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "No comment";
     my $ontology = ($disease_id && $ontology_accession->{$disease_id}) ? $ontology_accession->{$disease_id} : "No ontology";
     # The order is important and corresponds to the order of the fields in the header row 
-<<<<<<< HEAD
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $ontology, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments);
-=======
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence);
->>>>>>> 67f1b24c20dd2316fce7cd1a4907054264385309
+    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence, $ontology);
 
     $csv->print ($fh, \@row);
   }
