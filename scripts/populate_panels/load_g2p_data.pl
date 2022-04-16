@@ -1078,33 +1078,52 @@ sub add_public_comments {
 }
 
 sub add_ontology_accession {
-   my ($disease, $disease_mim, $disease_mondo) = @_;
-   my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
-   if (scalar @mondo > 0){
-     my $attribute = "Data source";
-     my $disease_id = $disease->dbID;
-     my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
-     foreach my $mondo (@mondo){
-       my $ontology_accession_id = $mondo->ontology_term_id;
-       my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
-        -disease_id => $disease_id,
-        -ontology_term_id => $ontology_accession_id,
-        -mapped_by_attrib => $mapped_by_attrib,
-        -adaptor => $disease_ontology_adaptor,
-       );
-       $dom = $disease_ontology_adaptor->store($dom);
-     }
-   }
+  my ($disease, $disease_mim, $disease_mondo) = @_;
+  
+  if (defined($disease_mim) && !defined($disease_mondo)){
+    my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
+    if (scalar @mondo > 0){
+      my $attribute = "Data source";
+      my $disease_id = $disease->dbID;
+      my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
+      foreach my $mondo (@mondo){
+        my $ontology_accession_id = $mondo->ontology_term_id;
+        my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
+          -disease_id => $disease_id,
+          -ontology_term_id => $ontology_accession_id,
+          -mapped_by_attrib => $mapped_by_attrib,
+          -adaptor => $disease_ontology_adaptor,
+        );
+        $dom = $disease_ontology_adaptor->store($dom);
+      }
+    }
+  }
+
+  if ($disease_mondo) {
+    my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
+    if (scalar @mondo > 0){
+      my $mondo_attribute = "OLS exact";
+      my $disease_id = $disease->dbID;
+      my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $mondo_attribute);
+      foreach my $mondo (@mondo){
+        my $ontology_accession_id = $mondo->ontology_term_id;
+        my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
+          -disease_id => $disease_id,
+          -ontology_term_id => $ontology_accession_id,
+          -mapped_by_attrib => $mapped_by_attrib,
+          -adaptor => $disease_ontology_adaptor,
+        );
+        $dom = $disease_ontology_adaptor->store($dom);
+      }
+    }
+  }
+}
+
   
   print $fh_report "Disease ontology mapping has been added to the database"; 
  
 }
-sub check_ontology_accession {
-  my @list = shift;
-  my $ontology_accession = join (',', @list);
-  print STDERR "    ADD: Planning to add ontologies $ontology_accession\n";
- 	  
-}
+
 sub get_ontology_accession {
   my ($disease_mim, $disease_mondo) = @_;
   my @mondos_stored;
