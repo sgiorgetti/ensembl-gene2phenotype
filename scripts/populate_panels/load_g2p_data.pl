@@ -829,7 +829,6 @@ sub get_cross_cutting_modifier_attrib{
 
 sub get_mutation_consequence_attrib {
   my $mutation_consequence = shift;
-  $mutation_consequence = lc $mutation_consequence;
   my @values = ();
   foreach my $value (split/;|,/, $mutation_consequence){
     my $mc = lc $value;
@@ -1079,7 +1078,7 @@ sub add_public_comments {
 
 sub add_ontology_accession {
   my ($disease, $disease_mim, $disease_mondo) = @_;
-  
+
   if (defined($disease_mim) && !defined($disease_mondo)){
     my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
     if (scalar @mondo > 0){
