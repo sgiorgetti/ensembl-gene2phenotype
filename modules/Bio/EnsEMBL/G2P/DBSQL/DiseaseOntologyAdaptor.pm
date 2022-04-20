@@ -106,17 +106,15 @@ sub fetch_by_dbID {
 
 sub fetch_by_disease {
  my $self = shift;
- my $disease = shift;
- my $disease_id = $disease->dbID;
+ my $disease_id = shift;
  my $constraint = "DO.disease_id=$disease_id";
  my $result = $self->generic_fetch($constraint);
- return $result->[0];
+ return $result;
 }
 
 sub fetch_by_ontology {
   my $self = shift;
-  my $ontology_term = shift;
-  my $ontology_term_id = $ontology_term->ontology_term_id;
+  my $ontology_term_id = shift;
   my $constraint = "DO.ontology_term_id=$ontology_term_id";
   my $result = $self->generic_fetch($constraint);
   return $result->[0];

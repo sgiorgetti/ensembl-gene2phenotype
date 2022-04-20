@@ -74,13 +74,11 @@ $disease_ontology = $doa->fetch_by_dbID($dbID);
 ok($disease_ontology->disease_id == 90, "fetched by dbID");
 
 my $disease_id = 90;
-my $disease = $d_adaptor->fetch_by_dbID($disease_id);
-$disease_ontology = $doa->fetch_by_disease($disease);
+$disease_ontology = $doa->fetch_by_disease($disease_id);
 ok($disease_ontology->ontology_term_id == 2, 'fetched by disease' );
 
 my $ontology = 2;
-my $ontology_id = $ontology_adaptor->fetch_by_dbID($ontology);
-$disease_ontology = $doa->fetch_by_ontology($ontology_id);
+$disease_ontology = $doa->fetch_by_ontology($ontology);
 ok($disease_ontology->disease_id == 90, 'Fetched by ontology');
 
 done_testing();
