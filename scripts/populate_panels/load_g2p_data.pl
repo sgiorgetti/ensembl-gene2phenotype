@@ -1082,7 +1082,7 @@ sub add_ontology_accession {
   if (defined($disease_mim) && !defined($disease_mondo)){
     my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
     if (scalar @mondo > 0){
-      my $attribute = "Data source";
+      my $attribute = "OLS exact";
       my $disease_id = $disease->dbID;
       my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
       foreach my $mondo (@mondo){
@@ -1101,7 +1101,7 @@ sub add_ontology_accession {
   if ($disease_mondo) {
     my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
     if (scalar @mondo > 0){
-      my $mondo_attribute = "OLS exact";
+      my $mondo_attribute = "Data source";
       my $disease_id = $disease->dbID;
       my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $mondo_attribute);
       foreach my $mondo (@mondo){
