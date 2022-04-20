@@ -1116,12 +1116,9 @@ sub add_ontology_accession {
       }
     }
   }
+  print $fh_report "Disease ontology mapping has been added to the database"; 
 }
 
-  
-  print $fh_report "Disease ontology mapping has been added to the database"; 
- 
-}
 
 sub get_ontology_accession {
   my ($disease_mim, $disease_mondo) = @_;
