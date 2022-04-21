@@ -16,4 +16,4 @@
 INSERT into panel(name, is_visible) VALUES("Cardiac", 0);
 
 # patch identifier
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_i.sql|adding cardiac to the panel table'); 
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_j.sql|adding cardiac to the panel table'); 
