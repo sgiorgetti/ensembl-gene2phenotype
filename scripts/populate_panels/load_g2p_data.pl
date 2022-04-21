@@ -1126,6 +1126,7 @@ sub get_ontology_accession {
   my $mondos_label = {};
   my @mondos_only;
   if (defined($disease_mim) && !defined($disease_mondo)){
+    #fetching MONDO accession based on defined disease_mim 
     my $server = 'http://www.ebi.ac.uk/ols/api/search?q=';
     my $ontology = '&ontology=mondo';
     my $request = $server . $disease_mim . $ontology;

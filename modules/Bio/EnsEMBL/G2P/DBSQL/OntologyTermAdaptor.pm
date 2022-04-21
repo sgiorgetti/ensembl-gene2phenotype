@@ -75,7 +75,7 @@ sub update {
 
   $sth->execute(
     $ontology_accession->ontology_accession,
-    $ontology_accession->description,
+    $ontology_accession->description || undef,
     $ontology_accession->dbID
   );
 
