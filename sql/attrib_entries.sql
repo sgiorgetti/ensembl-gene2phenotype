@@ -147,3 +147,13 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (112, 16, 'i
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (113, 16, 'regulatory_region_variant');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (114, 16, 'intergenic_variant');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (115, 16, 'inframe_insertion');
+INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (116, 16, 'NMD_triggering');
+INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (117, 16, 'NMD_escaping');
+INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (118, 16, 'stop_gained_NMD_triggering');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (119, 16, 'stop_gained_NMD_escaping');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (120, 16, 'splice_donor_variant_NMD_triggering');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (121, 16, 'frameshift_variant_NMD_triggering');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (122, 16, 'splice_acceptor_variant_escaping');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (123, 16, 'splice_acceptor_variant_NMD_triggering');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (124, 16, 'splice_donor_variant_NMD_escaping');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (125, 16, 'frameshift_variant_NMD_escaping');
