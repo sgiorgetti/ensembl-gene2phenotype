@@ -25,10 +25,10 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (123, 16, 's
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (124, 16, 'splice_donor_variant_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (125, 16, 'frameshift_variant_NMD_escaping');
 
-ALTER TABLE genomic_feature_disease ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
+ALTER TABLE genomic_feature_disease MODIFY COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
 
-ALTER TABLE genomic_feature_disease_log ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
+ALTER TABLE genomic_feature_disease_log MODIFY COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
 
-ALTER TABLE genomic_feature_disease_deleted ADD COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
+ALTER TABLE genomic_feature_disease_deleted MODIFY COLUMN variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL AFTER mutation_consequence_flag_attrib;
 
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_i.sql|adding new attrib variant consequences to support cardiac'); 
