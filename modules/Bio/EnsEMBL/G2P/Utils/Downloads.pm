@@ -266,9 +266,9 @@ sub write_data {
       $prev_symbols = join(';', keys %{$gfid2synonyms->{$gfid}});
     }  
 
-    $created = $gfd_panel_create_dates->{$gfd_panel_id} || 'No date';
-    my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "No comment";
-    my $ontology = ($disease_id && $ontology_accession->{$disease_id}) ? $ontology_accession->{$disease_id} : "No ontology";
+    $created = $gfd_panel_create_dates->{$gfd_panel_id} || '';
+    my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "";
+    my $ontology = ($disease_id && $ontology_accession->{$disease_id}) ? $ontology_accession->{$disease_id} : "";
     # The order is important and corresponds to the order of the fields in the header row 
     my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence, $ontology);
 

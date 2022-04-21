@@ -1146,7 +1146,7 @@ sub get_ontology_accession {
       if (! defined $mondos){
         my $mondo = Bio::EnsEMBL::G2P::OntologyTerm->new(
           -ontology_accession => $mondo_id,
-          -description        => $mondos_label->{$mondo_id},
+          -description        => $mondos_label->{$mondo_id} || undef,
           -adaptor            => $ontology_accession_adaptor,
         );
         $mondo = $ontology_accession_adaptor->store($mondo);
@@ -1164,7 +1164,7 @@ sub get_ontology_accession {
     if (!defined($mondos)){
       my $mondo = Bio::EnsEMBL::G2P::OntologyTerm->new(
           -ontology_accession => $disease_mondo,
-          -description        => "NULL",
+          -description        => undef,
           -adaptor            => $ontology_accession_adaptor,
       );
       $mondo = $ontology_accession_adaptor->store($mondo);

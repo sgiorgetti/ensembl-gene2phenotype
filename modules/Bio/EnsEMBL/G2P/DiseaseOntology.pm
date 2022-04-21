@@ -80,14 +80,11 @@ sub mapped_by_attrib {
   if ($mapped_by_attrib){
     $self->{mapped_by_attrib} = $mapped_by_attrib;
   }
-  else {
-    if (!defined $self->{mapped_by_attrib} && defined $self->{mapped_by}){
+  elsif (!defined $self->{mapped_by_attrib} && defined $self->{mapped_by}){
       my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
       $mapped_by_attrib = $attribute_adaptor->get_attrib('ontology_mapping', $self->{mapped_by});
       $self->{mapped_by_attrib} = $mapped_by_attrib;
-    }
   }
- 
   return $self->{mapped_by_attrib};
 }
 
@@ -96,14 +93,12 @@ sub mapped_by {
   my $mapped_by = shift;
   if($mapped_by){
     $self->{mapped_by} = $mapped_by;
-  } else{
-    if ($self->{mapped_by_attrib} && !$self->{mapped_by}){
+  } 
+  elsif ($self->{mapped_by_attrib} && !$self->{mapped_by}){
       my $attribute_adaptor = $self->{adaptor}->db->get_AttributeAdaptor;
       $mapped_by = $attribute_adaptor->get_value('ontology_mapping', $self->{mapped_by_attrib});
       $self->{mapped_by} = $mapped_by;
-    }
   }
-
   return $self->{mapped_by};
 }
 
