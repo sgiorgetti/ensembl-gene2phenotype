@@ -29,6 +29,7 @@ sub get_available_adaptors {
   my %pairs = (
     'Attribute'                        => 'Bio::EnsEMBL::G2P::DBSQL::AttributeAdaptor',
     'Disease'                          => 'Bio::EnsEMBL::G2P::DBSQL::DiseaseAdaptor',
+    'DiseaseOntology'                  => 'Bio::EnsEMBL::G2P::DBSQL::DiseaseOntologyAdaptor',
     'GFDDiseaseSynonym'                => 'Bio::EnsEMBL::G2P::DBSQL::GFDDiseaseSynonymAdaptor',
     'GFDPhenotypeComment'              => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeCommentAdaptor',
     'GFDPhenotypeLog'                  => 'Bio::EnsEMBL::G2P::DBSQL::GFDPhenotypeLogAdaptor',
@@ -45,6 +46,7 @@ sub get_available_adaptors {
     'GenomicFeatureStatistic'          => 'Bio::EnsEMBL::G2P::DBSQL::GenomicFeatureStatisticAdaptor', 
     'MetaContainer'                    => 'Bio::EnsEMBL::G2P::DBSQL::MetaContainer',
     'Organ'                            => 'Bio::EnsEMBL::G2P::DBSQL::OrganAdaptor',
+    'OntologyTerm'                     => 'Bio::EnsEMBL::G2P::DBSQL::OntologyTermAdaptor',
     'Panel'                            => 'Bio::EnsEMBL::G2P::DBSQL::PanelAdaptor',
     'Phenotype'                        => 'Bio::EnsEMBL::G2P::DBSQL::PhenotypeAdaptor',
     'Publication'                      => 'Bio::EnsEMBL::G2P::DBSQL::PublicationAdaptor',

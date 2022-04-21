@@ -18,7 +18,7 @@ limitations under the License.
 use strict;
 use warnings;
 
-package Bio::EnsEMBL::G2P::Disease;
+package Bio::EnsEMBL::G2P::OntologyTerm;
 
 use Bio::EnsEMBL::Storable;
 use Bio::EnsEMBL::Utils::Argument qw(rearrange);
@@ -26,56 +26,45 @@ use Bio::EnsEMBL::Utils::Argument qw(rearrange);
 our @ISA = ('Bio::EnsEMBL::Storable');
 
 sub new {
-  my $caller = shift;
+  my $caller = shift; 
   my $class = ref($caller) || $caller;
+  my ($ontology_term_id, $ontology_accession, $description, $adaptor) = 
+  rearrange(['ontology_term_id', 'ontology_accession', 'description', 'adaptor'] , @_);
 
-  my ($disease_id, $mim, $name, $adaptor) =
-    rearrange(['disease_id', 'mim', 'name', 'adaptor'], @_);
 
   my $self = bless {
-    'dbID' => $disease_id,
+    'dbID' => $ontology_term_id,
+    'ontology_term_id' => $ontology_term_id, 
+    'ontology_accession' => $ontology_accession,
+    'description' => $description, 
     'adaptor' => $adaptor,
-    'name' => $name,
-    'mim' => $mim,
   }, $class;
 
   return $self;
 }
 
-sub new_fast {
-  my $class = shift;
-  my $hashref = shift;
-  return bless $hashref, $class;
-}
-
 sub dbID {
   my $self = shift;
-  $self->{dbID} = shift if ( @_ );
-  return $self->{dbID};
+  $self->{ontology_term_id} = shift if ( @_ );
+  return $self->{ontology_term_id};
 }
 
-sub name {
+sub ontology_term_id {
   my $self = shift;
-  $self->{name} = shift if ( @_ );
-  return $self->{name};
+  $self->{ontology_term_id} = shift if ( @_ );
+  return $self->{ontology_term_id};
 }
 
-sub mim {
+sub ontology_accession {
   my $self = shift;
-  $self->{mim} = shift if ( @_ );
-  return $self->{mim};
+  $self->{ontology_accession} = shift if ( @_ );
+  return $self->{ontology_accession};
 }
 
-sub get_all_GenomicFeatureDiseases {
+sub description {
   my $self = shift;
-  my $genomic_feature_disease_adaptor = $self->{adaptor}->db->get_GenomicFeatureDiseaseAdaptor;
-  return $genomic_feature_disease_adaptor->fetch_all_by_disease_id($self->dbID);
-}
-
-sub get_DiseaseOntology {
-  my $self = shift;
-  my $disease_ontology_adaptor = $self->{adaptor}->db->get_DiseaseOntologyAdaptor;
-  return $disease_ontology_adaptor->fetch_by_disease($self->dbID);
-}
+  $self->{description} = shift if ( @_ );
+  return $self->{description};
+} 
 
 1;

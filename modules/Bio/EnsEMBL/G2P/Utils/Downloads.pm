@@ -28,6 +28,7 @@ my $gfd_attributes = {};
 my $gfd_panel_create_dates = {};
 my $gfid2synonyms = {};
 my $comments_text = {};
+my $ontology_accession = {};
 my $confidence_category_attribs = {};
 my $allelic_requirement_attribs = {};
 my $cross_cutting_modifier_attribs = {};
@@ -64,6 +65,8 @@ sub download_data {
   my $GFD_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'genomicfeaturedisease');
   my $attribute_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'attribute');
   my $panel_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'panel');
+  my $disease_ontology_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'diseaseontology');
+  my $ontology_term_adaptor = $registry->get_adaptor('human', 'gene2phenotype', 'ontologyterm');
 
   my @g2p_panels;
   if ($is_logged_in) {
@@ -87,7 +90,7 @@ sub download_data {
   open my $fh, ">:encoding(utf8)", "$file" or die "$file: $!";
 
   # Write header to file
-  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments', 'variant consequence']);
+  $csv->print($fh, ['gene symbol', 'gene mim', 'disease name', 'disease mim', 'confidence category', 'allelic requirement', 'mutation consequence', 'phenotypes', 'organ specificity list', 'pmids', 'panel', 'prev symbols', 'hgnc id', 'gene disease pair entry date', 'cross cutting modifier', 'mutation consequence flag', 'confidence value flag', 'comments', 'variant consequence', 'disease ontology']);
 
   $csv->eol ("\r\n");
 
@@ -97,7 +100,7 @@ sub download_data {
     organ => {sql => 'SELECT gfdo.genomic_feature_disease_id, o.name FROM genomic_feature_disease_organ gfdo, organ o WHERE gfdo.organ_id = o.organ_id'},
     publication => {sql => 'SELECT gfdp.genomic_feature_disease_id, p.pmid FROM genomic_feature_disease_publication gfdp, publication p WHERE gfdp.publication_id = p.publication_id;'},
   };
-   
+  
   foreach my $table (keys %$gfd_attribute_tables) {
     my $sql = $gfd_attribute_tables->{$table}->{sql};
     my $sth = $dbh->prepare($sql);
@@ -107,7 +110,7 @@ sub download_data {
       $gfd_attributes->{$id}->{$table}->{$value} = 1;
     }
   }
-
+  
   # $gfd_attributes = {
   #    $gfd_id => {
   #       phenotype => {
@@ -154,6 +157,14 @@ sub download_data {
   while (my $row = $sth->fetchrow_arrayref()) {
     my ($gfd_comment_id, $text) = @$row;
     $comments_text->{$gfd_comment_id} = $text;
+  }
+  $sth->finish();
+  
+  $sth = $dbh->prepare(q{SELECT gfd.disease_id, ot.ontology_accession FROM disease_ontology_mapping do INNER JOIN genomic_feature_disease gfd ON do.disease_id = gfd.disease_id INNER JOIN ontology_term ot ON ot.ontology_term_id = do.ontology_term_id });
+  $sth->execute() or die "Could not execute statement ". $sth->errstr;
+  while (my $row = $sth->fetchrow_arrayref()){
+    my ($gfd_disease_id, $ontology_terminology ) = @$row;
+    $ontology_accession->{$gfd_disease_id} = $ontology_terminology;
   }
   $sth->finish();
 
@@ -204,7 +215,7 @@ sub write_data {
   # only select visible entries if constraint is given in the where clause 
 
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id, gfd.variant_consequence_attrib
+    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id, gfd.variant_consequence_attrib,  d.disease_id
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
@@ -215,10 +226,10 @@ sub write_data {
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
-  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib);
+  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib, $disease_id);
   # Bind values from SQL query to variables
   # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib));
+  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib, $disease_id));
 
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -255,10 +266,11 @@ sub write_data {
       $prev_symbols = join(';', keys %{$gfid2synonyms->{$gfid}});
     }  
 
-    $created = $gfd_panel_create_dates->{$gfd_panel_id} || 'No date';
-    my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "No comment";
+    $created = $gfd_panel_create_dates->{$gfd_panel_id} || '';
+    my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "";
+    my $ontology = ($disease_id && $ontology_accession->{$disease_id}) ? $ontology_accession->{$disease_id} : "";
     # The order is important and corresponds to the order of the fields in the header row 
-    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence);
+    my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence, $ontology);
 
     $csv->print ($fh, \@row);
   }

@@ -1,0 +1,3 @@
+1	MONDO0_004192	urethra cancer
+2	MONDO_25689	A mammal
+3	MONDO-2879 	A cow

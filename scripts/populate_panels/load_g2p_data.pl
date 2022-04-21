@@ -74,6 +74,7 @@ Supported columns:
 - gene mim
 - disease name
 - disease mim
+- disease mondo
 - confidence category
 - allelic requirement
 - cross cutting modifier
@@ -100,11 +101,14 @@ use Bio::EnsEMBL::Registry;
 use DBI;
 use FileHandle;
 use Getopt::Long;
+use HTTP::Tiny;
+use JSON;
 use Pod::Usage qw(pod2usage);
 use Spreadsheet::Read;
 use Text::CSV;
 
 my $args = scalar @ARGV;
+my $http = HTTP::Tiny->new();
 my $config = {};
 GetOptions(
   $config,
@@ -130,6 +134,8 @@ $registry->load_all($registry_file);
 my $species = 'human';
 my $gf_adaptor                  = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeature');
 my $disease_adaptor             = $registry->get_adaptor($species, 'gene2phenotype', 'Disease');
+my $ontology_accession_adaptor  = $registry->get_adaptor($species, 'gene2phenotype', 'OntologyTerm');
+my $disease_ontology_adaptor    = $registry->get_adaptor($species, 'gene2phenotype', 'DiseaseOntology');
 my $gfd_adaptor                 = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDisease');
 my $gfd_panel_adaptor           = $registry->get_adaptor($species, 'gene2phenotype', 'GenomicFeatureDiseasePanel');
 my $gfd_disease_synonym_adaptor = $registry->get_adaptor($species, 'gene2phenotype', 'GFDDiseaseSynonym');
@@ -186,6 +192,7 @@ foreach my $row (@rows) {
   my $gene_mim = $data{'gene mim'};
   my $disease_name = $data{'disease name'};
   my $disease_mim = $data{'disease mim'};
+  my $disease_mondo = $data{'disease mondo'};
   my $confidence_category = $data{'confidence category'};
   my $allelic_requirement = $data{'allelic requirement'};
   my $cross_cutting_modifier = $data{'cross cutting modifier'};
@@ -356,6 +363,7 @@ foreach my $row (@rows) {
       # Create new GenomicFeatureDiease and GenomicFeatureDiseasePanel
       my $gfd = create_gfd($gf, $disease, $allelic_requirement_attrib, $cross_cutting_modifier_attrib, $mutation_consequence_attrib, $mutation_consequence_flag_attrib, $variant_consequence_attrib);
       add_gfd_to_panel($gfd, $g2p_panel, $confidence_attrib);
+      add_ontology_accession($disease, $disease_mim, $disease_mondo);
       add_annotations($gfd, %data);
     } elsif (scalar @gfds_with_matching_disease_name == 1) {
       my $gfd = $gfds_with_matching_disease_name[0];
@@ -821,7 +829,6 @@ sub get_cross_cutting_modifier_attrib{
 
 sub get_mutation_consequence_attrib {
   my $mutation_consequence = shift;
-  $mutation_consequence = lc $mutation_consequence;
   my @values = ();
   foreach my $value (split/;|,/, $mutation_consequence){
     my $mc = lc $value;
@@ -1067,4 +1074,106 @@ sub add_public_comments {
   }
   return $count;
 
+}
+
+sub add_ontology_accession {
+  my ($disease, $disease_mim, $disease_mondo) = @_;
+
+  if (defined($disease_mim) && !defined($disease_mondo)){
+    my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
+    if (scalar @mondo > 0){
+      my $attribute = "OLS exact";
+      my $disease_id = $disease->dbID;
+      my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $attribute);
+      foreach my $mondo (@mondo){
+        my $ontology_accession_id = $mondo->ontology_term_id;
+        my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
+          -disease_id => $disease_id,
+          -ontology_term_id => $ontology_accession_id,
+          -mapped_by_attrib => $mapped_by_attrib,
+          -adaptor => $disease_ontology_adaptor,
+        );
+        $dom = $disease_ontology_adaptor->store($dom);
+      }
+    }
+  }
+
+  if ($disease_mondo) {
+    my @mondo = get_ontology_accession($disease_mim, $disease_mondo);
+    if (scalar @mondo > 0){
+      my $mondo_attribute = "Data source";
+      my $disease_id = $disease->dbID;
+      my $mapped_by_attrib = $attrib_adaptor->get_attrib('ontology_mapping', $mondo_attribute);
+      foreach my $mondo (@mondo){
+        my $ontology_accession_id = $mondo->ontology_term_id;
+        my $dom = Bio::EnsEMBL::G2P::DiseaseOntology->new(
+          -disease_id => $disease_id,
+          -ontology_term_id => $ontology_accession_id,
+          -mapped_by_attrib => $mapped_by_attrib,
+          -adaptor => $disease_ontology_adaptor,
+        );
+        $dom = $disease_ontology_adaptor->store($dom);
+      }
+    }
+  }
+  print $fh_report "Disease ontology mapping has been added to the database"; 
+}
+
+
+sub get_ontology_accession {
+  my ($disease_mim, $disease_mondo) = @_;
+  my @mondos_stored;
+  my $mondos_label = {};
+  my @mondos_only;
+  if (defined($disease_mim) && !defined($disease_mondo)){
+    #fetching MONDO accession based on defined disease_mim 
+    my $server = 'http://www.ebi.ac.uk/ols/api/search?q=';
+    my $ontology = '&ontology=mondo';
+    my $request = $server . $disease_mim . $ontology;
+    my $response = $http->get($request, 
+             {headers => { 'Content-type' => 'application/xml' }
+    });
+    warn "Failed!\n" unless $response->{success};
+    my $result = JSON->new->decode($response->{content});
+    foreach my $id  (@{$result->{response}->{docs}}){
+      if ($id->{obo_id}  =~   m/MONDO/){
+        push @mondos_only, $id->{obo_id};
+        $mondos_label->{$id->{obo_id}} = $id->{label};
+      }
+    }
+    
+    foreach my $mondo_id (@mondos_only){
+      my $mondos = $ontology_accession_adaptor->fetch_by_accession($mondo_id);
+      if (! defined $mondos){
+        my $mondo = Bio::EnsEMBL::G2P::OntologyTerm->new(
+          -ontology_accession => $mondo_id,
+          -description        => $mondos_label->{$mondo_id} || undef,
+          -adaptor            => $ontology_accession_adaptor,
+        );
+        $mondo = $ontology_accession_adaptor->store($mondo);
+        push @mondos_stored, $mondo;
+        
+
+      }
+    }
+    
+  }
+
+  if ($disease_mondo){	  
+    $disease_mondo =~ m/MONDO/;
+    my $mondos = $ontology_accession_adaptor->fetch_by_accession($disease_mondo);
+    if (!defined($mondos)){
+      my $mondo = Bio::EnsEMBL::G2P::OntologyTerm->new(
+          -ontology_accession => $disease_mondo,
+          -description        => undef,
+          -adaptor            => $ontology_accession_adaptor,
+      );
+      $mondo = $ontology_accession_adaptor->store($mondo);
+      push @mondos_stored, $mondo;
+     
+     
+    }
+    
+  }
+  return @mondos_stored;
 }
