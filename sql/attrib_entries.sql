@@ -130,6 +130,7 @@ INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (77, 15, 'al
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (78, 15, 'cis-regulatory or promotor mutation');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (79, 15, 'increased gene product level');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (80, 15, 'uncertain');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (84, 15, 'decreased gene product level');
 
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (100, 16, 'splice_region_variant');
 INSERT IGNORE INTO attrib (atrrib_id, attrib_type_id, value) VALUES (101, 16, 'splice_acceptor_variant');
@@ -153,7 +154,7 @@ INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (118, 16, 's
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (119, 16, 'stop_gained_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (120, 16, 'splice_donor_variant_NMD_triggering');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (121, 16, 'frameshift_variant_NMD_triggering');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (122, 16, 'splice_acceptor_variant_escaping');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (122, 16, 'splice_acceptor_variant_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (123, 16, 'splice_acceptor_variant_NMD_triggering');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (124, 16, 'splice_donor_variant_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (125, 16, 'frameshift_variant_NMD_escaping');

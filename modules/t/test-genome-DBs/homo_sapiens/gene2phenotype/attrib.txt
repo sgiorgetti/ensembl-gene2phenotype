@@ -78,6 +78,7 @@
 78	15	cis-regulatory or promotor mutation
 79	15	increased gene product level
 80	15	uncertain
+84      15      decreased gene product level 
 82	12	potential IF
 83	4	Skeletal
 100	16	splice_region_variant

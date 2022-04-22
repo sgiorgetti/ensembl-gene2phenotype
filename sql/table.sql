@@ -33,7 +33,7 @@ INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patc
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_h.sql|creating ontology_term and ontology_accession table'); 
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_i.sql|adding new attrib variant consequences to support cardiac'); 
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_j.sql|adding cardiac to the panel table');
-
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_k.sql|adding decreased gene product level as a mutation consequence to support cardiac'); 
 
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
@@ -92,7 +92,7 @@ CREATE TABLE genomic_feature_disease (
   allelic_requirement_attrib set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL,
   cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL,
   original_mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  mutation_consequence_attrib set('75','76','77','78','79','80') DEFAULT NULL,
+  mutation_consequence_attrib set('75','76','77','78','79','80','84') DEFAULT NULL,
   mutation_consequence_flag_attrib set('71','72','73','74') DEFAULT NULL,
   variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL,
   restricted_mutation_set tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -120,7 +120,7 @@ CREATE TABLE genomic_feature_disease_deleted (
   allelic_requirement_attrib set('59','60','63','64','65','66','67','68') DEFAULT NULL,
   cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL,
   original_mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  mutation_consequence_attrib set('75','76','77','78','79','80') DEFAULT NULL,
+  mutation_consequence_attrib set('75','76','77','78','79','80','84') DEFAULT NULL,
   mutation_consequence_flag_attrib set('71','72','73','74') DEFAULT NULL,
   variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL,
   deleted timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -139,7 +139,7 @@ CREATE TABLE `genomic_feature_disease_log` (
   allelic_requirement_attrib set('59','60','63','64','65','66','67','68') DEFAULT NULL,
   cross_cutting_modifier_attrib set('54','55','56','57','58','70','82') DEFAULT NULL,
   original_mutation_consequence_attrib set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  mutation_consequence_attrib set('75','76','77','78','79','80') DEFAULT NULL,
+  mutation_consequence_attrib set('75','76','77','78','79','80','84') DEFAULT NULL,
   mutation_consequence_flag_attrib set('71','72','73','74') DEFAULT NULL,
   variant_consequence_attrib set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL,
   created timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
