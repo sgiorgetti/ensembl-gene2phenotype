@@ -20,7 +20,7 @@ INSERT IGNORE into attrib (attrib_id, attrib_type_id, value) VALUES (118, 16, 's
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (119, 16, 'stop_gained_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (120, 16, 'splice_donor_variant_NMD_triggering');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (121, 16, 'frameshift_variant_NMD_triggering');
-INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (122, 16, 'splice_acceptor_variant_escaping');
+INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (122, 16, 'splice_acceptor_variant_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (123, 16, 'splice_acceptor_variant_NMD_triggering');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (124, 16, 'splice_donor_variant_NMD_escaping');
 INSERT IGNORE INTO attrib (attrib_id, attrib_type_id, value) VALUES (125, 16, 'frameshift_variant_NMD_escaping');

@@ -859,7 +859,7 @@ sub get_variant_consequence_attrib {
   my $variant_consequence = shift; 
   my @values = ();
   foreach my $value (split/,/, $variant_consequence){
-    my $vc = lc $value;
+    my $vc = $value;
     $vc =~ s/^\s+|\s+$//g;
     push @values, $vc;
   }
