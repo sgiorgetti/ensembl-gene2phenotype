@@ -10,5 +10,6 @@
 12	\N	patch	patch_104_105_d.sql|adding skeletal column to the panel table
 13	\N	patch	patch_104_105_e.sql|adding a column is_public to the comments table
 14	\N	patch	patch_104_105_f.sql|adding new attrib variant consequences
+15	\N	patch	patch_105_106_a.sql|schema version
 1	\N	schema_type	gene2phenotype
-2	\N	schema_version	105
+2	\N	schema_version	106
