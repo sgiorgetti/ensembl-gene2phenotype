@@ -34,6 +34,7 @@ INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patc
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_i.sql|adding new attrib variant consequences to support cardiac'); 
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_j.sql|adding cardiac to the panel table');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_k.sql|adding decreased gene product level as a mutation consequence to support cardiac'); 
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_105_106_a.sql|schema version');
 
 CREATE TABLE attrib_type (
   attrib_type_id smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
