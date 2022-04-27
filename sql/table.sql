@@ -21,19 +21,7 @@ CREATE TABLE meta (
   UNIQUE KEY species_key_value_idx (species_id, meta_key, meta_value ),
   KEY species_value_idx (species_id, meta_value )
 ) ENGINE=INNODB;
-
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '105');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_a.sql|schema version');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_b.sql|adding potential IF as a cross cutting modifier');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_c.sql|Adding Skeletal panel');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_d.sql|adding Skeletal to the panel table'); 
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_e.sql|adding a column is_public to the comments table'); 
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_f.sql|adding new attrib variant consequences'); 
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_g.sql|allowing multiple mutation consequence');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_h.sql|creating ontology_term and ontology_accession table'); 
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_i.sql|adding new attrib variant consequences to support cardiac'); 
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_j.sql|adding cardiac to the panel table');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_104_105_k.sql|adding decreased gene product level as a mutation consequence to support cardiac'); 
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '106');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_105_106_a.sql|schema version');
 
 CREATE TABLE attrib_type (
