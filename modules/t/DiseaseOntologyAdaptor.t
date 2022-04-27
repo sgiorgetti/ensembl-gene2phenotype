@@ -75,7 +75,7 @@ ok($disease_ontology->disease_id == 90, "fetched by dbID");
 
 my $disease_id = 90;
 $disease_ontology = $doa->fetch_by_disease($disease_id);
-ok($disease_ontology->ontology_term_id == 2, 'fetched by disease' );
+ok(@{$disease_ontology}[0]->ontology_term_id == 2, 'fetched by disease' );
 
 my $ontology = 2;
 $disease_ontology = $doa->fetch_by_ontology($ontology);
