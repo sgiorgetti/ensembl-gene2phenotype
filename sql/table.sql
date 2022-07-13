@@ -21,8 +21,7 @@ CREATE TABLE meta (
   UNIQUE KEY species_key_value_idx (species_id, meta_key, meta_value ),
   KEY species_value_idx (species_id, meta_value )
 ) ENGINE=INNODB;
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '106');
-INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_105_106_a.sql|schema version');
+INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'schema_type', 'gene2phenotype'), (NULL, 'schema_version', '107');
 INSERT INTO meta (species_id, meta_key, meta_value) VALUES (NULL, 'patch', 'patch_106_107_a.sql|schema version');
 
 CREATE TABLE attrib_type (
