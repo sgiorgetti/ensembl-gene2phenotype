@@ -102,6 +102,16 @@ CREATE TABLE `disease` (
   KEY `name_idx` (`name`)
 ) ENGINE=InnoDB  ;
 
+CREATE TABLE `disease_ontology_mapping` (
+  `disease_ontology_mapping_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `disease_id` int(10) unsigned NOT NULL,
+  `ontology_term_id` int(10) unsigned NOT NULL,
+  `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
+  PRIMARY KEY (`disease_ontology_mapping_id`),
+  KEY `ontology_term_id` (`ontology_term_id`),
+  KEY `disease_id` (`disease_id`)
+) ENGINE=InnoDB  ;
+
 CREATE TABLE `genomic_feature` (
   `genomic_feature_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `gene_symbol` varchar(128) DEFAULT NULL,
@@ -127,7 +137,7 @@ CREATE TABLE `genomic_feature_disease` (
   `allelic_requirement_attrib` set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL,
   `cross_cutting_modifier_attrib` set('54','55','56','57','58','70','82') DEFAULT NULL,
   `original_mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  `mutation_consequence_attrib`  set('75','76','77','78','79','80','84') DEFAULT NULL,
+  `mutation_consequence_attrib` set('75','76','77','78','79','80','84') DEFAULT NULL,
   `mutation_consequence_flag_attrib` set('71','72','73','74') DEFAULT NULL,
   `variant_consequence_attrib` set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL,
   `restricted_mutation_set` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -156,7 +166,7 @@ CREATE TABLE `genomic_feature_disease_deleted` (
   `allelic_requirement_attrib` set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL,
   `cross_cutting_modifier_attrib` set('54','55','56','57','58','70','82') DEFAULT NULL,
   `original_mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  `mutation_consequence_attrib`  set('75','76','77','78','79','80','84') DEFAULT NULL,
+  `mutation_consequence_attrib` set('75','76','77','78','79','80','84') DEFAULT NULL,
   `mutation_consequence_flag_attrib` set('71','72','73','74') DEFAULT NULL,
   `variant_consequence_attrib` set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL,
   `deleted` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -175,7 +185,7 @@ CREATE TABLE `genomic_feature_disease_log` (
   `allelic_requirement_attrib` set('59','60','61','62','63','64','65','66','67','68','69','70') DEFAULT NULL,
   `cross_cutting_modifier_attrib` set('54','55','56','57','58','70','82') DEFAULT NULL,
   `original_mutation_consequence_attrib` set('21','22','23','24','25','26','27','28','29','30','44') DEFAULT NULL,
-  `mutation_consequence_attrib`  set('75','76','77','78','79','80','84') DEFAULT NULL,
+  `mutation_consequence_attrib` set('75','76','77','78','79','80','84') DEFAULT NULL,
   `mutation_consequence_flag_attrib` set('71','72','73','74') DEFAULT NULL,
   `variant_consequence_attrib` set('100','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118','119','120','121','122','123','124','125') DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -311,6 +321,13 @@ CREATE TABLE `meta` (
   KEY `species_value_idx` (`species_id`,`meta_value`)
 ) ENGINE=InnoDB  ;
 
+CREATE TABLE `ontology_term` (
+  `ontology_term_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ontology_accession` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`ontology_term_id`)
+) ENGINE=InnoDB  ;
+
 CREATE TABLE `organ` (
   `organ_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -367,19 +384,3 @@ CREATE TABLE `user` (
   UNIQUE KEY `email_idx` (`email`)
 ) ENGINE=InnoDB  ;
 
-CREATE TABLE `ontology_term`  (
-  `ontology_term_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ontology_accession` VARCHAR(255) NOT NULL,
-  `description` VARCHAR(255) DEFAULT NULL,
-  PRIMARY KEY (`ontology_term_id`)
-) ENGINE=InnoDB ;
-
-CREATE TABLE `disease_ontology_mapping` (
-  `disease_ontology_mapping_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `disease_id` int(10) unsigned NOT NULL,
-  `ontology_term_id` int(10) unsigned NOT NULL,
-  `mapped_by_attrib` set('437','438','439','440','441','442','443','444') DEFAULT NULL,
-  PRIMARY KEY (`disease_ontology_mapping_id`),
-  KEY `ontology_term_id` (`ontology_term_id`),
-  KEY `disease_id` (`disease_id`)
-) ENGINE=InnoDB ;
