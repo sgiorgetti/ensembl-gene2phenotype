@@ -80,7 +80,7 @@
 84      15      decreased gene product level 
 80	15	uncertain
 82	12	potential IF
-83	4	Skeletal	
+83	4	Skeletal
 100	16	splice_region_variant
 101	16	splice_acceptor_variant
 102	16	splice_donor_variant
@@ -107,6 +107,7 @@
 123     16      splice_acceptor_variant_NMD_triggering
 124     16      splice_donor_variant_NMD_escaping
 125     16      frameshift_variant_NMD_escaping
+437	6	Data source
 438	6	OLS exact
 439	6	OLS partial
 440	6	Zooma exact
