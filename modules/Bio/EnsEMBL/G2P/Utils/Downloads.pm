@@ -270,8 +270,6 @@ sub write_data {
     my $ontology = ($disease_id && $ontology_accession->{$disease_id}) ? $ontology_accession->{$disease_id} : "";
     # The order is important and corresponds to the order of the fields in the header row 
     my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence, $ontology);
-    use Data::Dumper;
-    print Dumper(@row);
     $csv->print ($fh, \@row);
   }
   $sth->finish;
