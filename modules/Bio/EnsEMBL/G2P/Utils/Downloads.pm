@@ -152,7 +152,7 @@ sub download_data {
   }
   $sth->finish();
 
-  $sth = $dbh->prepare(q{SELECT genomic_feature_disease_comment_id, comment_text from genomic_feature_disease_comment WHERE is_public = 1;});
+  $sth = $dbh->prepare(q{SELECT genomic_feature_disease_id, comment_text from genomic_feature_disease_comment WHERE is_public = 1;});
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
   while (my $row = $sth->fetchrow_arrayref()) {
     my ($gfd_comment_id, $text) = @$row;
@@ -215,21 +215,20 @@ sub write_data {
   # only select visible entries if constraint is given in the where clause 
 
   my $sth = $dbh->prepare(qq{
-    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfdc.genomic_feature_disease_comment_id, gfd.variant_consequence_attrib,  d.disease_id
+    SELECT gfd.genomic_feature_disease_id, gfdp.genomic_feature_disease_panel_id, gf.gene_symbol, gf.hgnc_id, gf.mim, d.name, d.mim, gfdp.confidence_category_attrib, gfd.allelic_requirement_attrib, gfd.mutation_consequence_attrib, a.value, gf.genomic_feature_id, gfd.cross_cutting_modifier_attrib, gfd.mutation_consequence_flag_attrib, gfdp.clinical_review, gfd.variant_consequence_attrib,  d.disease_id
     FROM genomic_feature_disease gfd
     LEFT JOIN genomic_feature_disease_panel gfdp ON gfd.genomic_feature_disease_id = gfdp.genomic_feature_disease_id
     LEFT JOIN genomic_feature gf ON gfd.genomic_feature_id = gf.genomic_feature_id
     LEFT JOIN disease d ON gfd.disease_id = d.disease_id
     LEFT JOIN attrib a ON gfdp.panel_attrib = a.attrib_id
-    LEFT JOIN genomic_feature_disease_comment gfdc ON gfd.genomic_feature_disease_id = gfdc.genomic_feature_disease_id 
     $where;
   });
   $sth->execute() or die 'Could not execute statement: ' . $sth->errstr;
 
-  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib, $disease_id);
+  my ($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $prev_symbols, $created, $ccm_attrib, $mcf_attrib, $clinical_review,  $vc_attrib, $disease_id);
   # Bind values from SQL query to variables
   # it is important that the order is kept as defined in the SQL query
-  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $gfdc_id, $vc_attrib, $disease_id));
+  $sth->bind_columns(\($gfd_id, $gfd_panel_id, $gene_symbol, $hgnc_id, $gene_mim, $disease_name, $disease_mim, $confidence_category_attrib, $ar_attrib, $mc_attrib, $panel, $gfid, $ccm_attrib, $mcf_attrib, $clinical_review, $vc_attrib, $disease_id));
 
   while ( $sth->fetch ) {
     $gene_symbol ||= 'No gene symbol';
@@ -267,11 +266,10 @@ sub write_data {
     }  
 
     $created = $gfd_panel_create_dates->{$gfd_panel_id} || '';
-    my $comments = ($gfdc_id && $comments_text->{$gfdc_id}) ? $comments_text->{$gfdc_id} : "";
+    my $comments = ($gfd_id && $comments_text->{$gfd_id}) ? $comments_text->{$gfd_id} : "";
     my $ontology = ($disease_id && $ontology_accession->{$disease_id}) ? $ontology_accession->{$disease_id} : "";
     # The order is important and corresponds to the order of the fields in the header row 
     my @row = ($gene_symbol, $gene_mim, $disease_name, $disease_mim, $confidence_category, $allelic_requirement, $mutation_consequence, @annotations, $panel, $prev_symbols, $hgnc_id, $created, $cross_cutting_modifier, $mutation_consequence_flag, $clinical_review_flag, $comments, $variant_consequence, $ontology);
-
     $csv->print ($fh, \@row);
   }
   $sth->finish;
